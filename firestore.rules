@@ -1,0 +1,145 @@
+// SafeBuy Nepal — Firestore Security Rules
+// Last updated: 2026-05-18
+//
+// Security Model:
+// - Sellers: public read (anyone can verify), authenticated write (own only)
+// - Reports: authenticated read, only reporter creates, seller can add response
+// - Reviews: public read, authenticated create, immutable
+// - Users: own document only (except admin)
+// - Trust score fields are LOCKED (only Cloud Functions / admin SDK)
+// - Admin actions logged and immutable
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isSellerOwner(sellerId) {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/sellers/$(sellerId)).data.linkedUserId == request.auth.uid;
+    }
+
+    // Trust score and verification fields locked to admin / Cloud Functions only.
+    function trustFieldsUnchanged() {
+      return request.resource.data.trustScore == resource.data.trustScore &&
+             request.resource.data.trustVerdict == resource.data.trustVerdict &&
+             request.resource.data.verifiedBadge == resource.data.verifiedBadge &&
+             request.resource.data.scamReportCount == resource.data.scamReportCount;
+    }
+
+    // ── Sellers ────────────────────────────────────────────────────────────────
+
+    match /sellers/{sellerId} {
+      allow read: if true; // public verification
+
+      allow create: if isAuthenticated() &&
+        request.resource.data.linkedUserId == request.auth.uid &&
+        // Force safe defaults on create
+        request.resource.data.trustScore == 50 &&
+        request.resource.data.trustVerdict == 'unverified' &&
+        request.resource.data.verifiedBadge == false &&
+        request.resource.data.scamReportCount == 0;
+
+      allow update: if isAdmin() ||
+        (isSellerOwner(sellerId) && trustFieldsUnchanged());
+
+      allow delete: if isAdmin();
+    }
+
+    // ── Reports ────────────────────────────────────────────────────────────────
+
+    match /reports/{reportId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated() &&
+        request.resource.data.reporterId == request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.reporterDeclaration == true;
+
+      // Seller can add response only; admin can update status/notes
+      allow update: if isAdmin() ||
+        (isAuthenticated() &&
+         isSellerOwner(resource.data.sellerId) &&
+         request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['sellerResponse']));
+
+      allow delete: if false; // never deletable (anonymisation only)
+    }
+
+    // ── Reviews ────────────────────────────────────────────────────────────────
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+
+      allow create: if isAuthenticated() &&
+        request.resource.data.reviewerId == request.auth.uid &&
+        request.resource.data.rating >= 1 &&
+        request.resource.data.rating <= 5;
+
+      allow update: if isAdmin(); // admin can adjust authenticityWeight
+      allow delete: if false;
+    }
+
+    // ── Users ──────────────────────────────────────────────────────────────────
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Admin audit log ────────────────────────────────────────────────────────
+
+    match /admin_audit_log/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    match /admin_actions/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // ── Cyber Bureau escalations (admin-only) ────────────────────────────────────
+    // Prepared/approved/submitted निवेदन letters for flagged sellers.
+    // Only admins may read, create, or update; never client-deletable.
+    match /cyber_bureau_escalations/{sellerId} {
+      allow read: if isAdmin();
+      allow create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ── Admin notifications & community alerts (written by Cloud Functions) ──────
+    match /admin_notifications/{docId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /community_alerts/{docId} {
+      allow read: if true; // public scam alerts
+      allow write: if isAdmin();
+    }
+
+    match /fraud_detector_log/{docId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}

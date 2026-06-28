@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "903416774153",
+    "project_id": "safebuy-nepal",
+    "storage_bucket": "safebuy-nepal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903416774153:android:a0d98530250e4d90a902d8",
+        "android_client_info": {
+          "package_name": "com.sagesh.safebuy.safebuy_nepal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6Ww7TzJyaKODGOOkVKHNJuDud-aPKOVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

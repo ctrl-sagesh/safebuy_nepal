@@ -1,0 +1,80 @@
+name: safebuy_nepal
+description: Community-Driven Seller Trust Verification and Fraud Reporting Platform for Nepali Social Media Buyers
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  firebase_storage: ^12.3.2
+  firebase_messaging: ^15.1.3
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  equatable: ^2.0.5
+
+  # Navigation
+  go_router: ^14.2.7
+
+  # UI & Animations
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  flutter_animate: ^4.5.0
+  lottie: ^3.1.2
+
+  # Responsive layout
+  flutter_screenutil: ^5.9.3
+
+  # Connectivity & offline
+  connectivity_plus: ^6.0.5
+
+  # Splash screen
+  flutter_native_splash: ^2.4.1
+
+  # Utilities
+  image_picker: ^1.1.2
+  intl: ^0.19.0
+  uuid: ^4.5.1
+  cupertino_icons: ^1.0.8
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/animations/
+    - assets/icon/
+
+# ── Launcher icon (SafeBuy Nepal — moon + sun emblem) ──────────────────────────
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "assets/icon/app_icon_bg.png"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+
+flutter_native_splash:
+  color: "#0D47A1"
+  color_dark: "#0D47A1"
+  image: assets/icon/splash_logo.png
+  image_dark: assets/icon/splash_logo.png
+  android_12:
+    color: "#0D47A1"
+    image: assets/icon/splash_logo.png
