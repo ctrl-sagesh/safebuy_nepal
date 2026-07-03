@@ -41,10 +41,20 @@
   }
   </script>
 
+  <!-- PWA: installable app + auto-update -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#1565C0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SafeBuy Nepal">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <!-- Scroll progress bar -->
@@ -469,10 +479,23 @@
     </div>
   </footer>
 
+  <!-- Floating AI assistant -->
+  <button class="sb-fab" id="sbFab" aria-label="Ask SafeGuard AI"><span class="fab-ico">🛡️</span> <span data-en="Ask SafeGuard AI" data-ne="SafeGuard AI लाई सोध्नुहोस्">Ask SafeGuard AI</span></button>
+
   <!-- Back to top -->
   <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
 
-  <script src="script.js"></script>
-  <script src="app.js"></script>
+  <script src="script.js?v=2"></script>
+  <script src="app.js?v=4"></script>
+  <script>
+    // Register the service worker → makes the site installable & auto-updating
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function (err) {
+          console.warn('SW registration failed:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
