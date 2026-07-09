@@ -54,7 +54,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <!-- Scroll progress bar -->
@@ -153,6 +153,7 @@
       <div class="nav-links" id="navLinks">
         <a href="#trydemo" data-en="Live Demo" data-ne="लाइभ डेमो">Live Demo</a>
         <a href="#who" data-en="Who It's For" data-ne="कसका लागि">Who It's For</a>
+        <a href="#verify-criteria" data-en="How We Verify" data-ne="कसरी प्रमाणित">How We Verify</a>
         <a href="#features" data-en="Features" data-ne="विशेषताहरू">Features</a>
         <a href="#how-it-works" data-en="How It Works" data-ne="कसरी काम गर्छ">How It Works</a>
         <a href="#stats" data-en="Impact" data-ne="प्रभाव">Impact</a>
@@ -299,6 +300,7 @@
         <div class="demo-results" id="demoResults"></div>
         <div class="demo-foot">
           <button class="demo-reset" id="demoReset">↺ <span data-en="Reset demo data" data-ne="डेमो डाटा रिसेट">Reset demo data</span></button>
+          <button class="demo-guide" data-guide="search">📖 <span data-en="Before you start: rules" data-ne="सुरु गर्नु अघि: नियमहरू">Before you start: rules</span></button>
           <a href="#" class="demo-addseller" id="demoAddSeller">+ <span data-en="Add a seller" data-ne="विक्रेता थप्नुहोस्">Add a seller</span></a>
         </div>
       </div>
@@ -454,6 +456,46 @@
     </div>
   </section>
 
+  <!-- How We Verify — Criteria & Trust Levels -->
+  <section class="verify-section" id="verify-criteria">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag" data-en="How We Verify" data-ne="कसरी प्रमाणित गर्छौं">How We Verify</span>
+        <h2 data-en="What we check <span class='grad-text'>before</span> a seller is trusted" data-ne="विक्रेता विश्वसनीय हुनु <span class='grad-text'>अघि</span> हामी के जाँच्छौं">What we check <span class="grad-text">before</span> a seller is trusted</h2>
+        <p data-en="Full transparency: here are the exact criteria behind every trust score, what each level means, and how a seller earns verification." data-ne="पूर्ण पारदर्शिता: हरेक विश्वास स्कोरका मापदण्ड, प्रत्येक स्तरको अर्थ, र विक्रेताले कसरी प्रमाणीकरण पाउँछन्।">Full transparency: here are the exact criteria behind every trust score, what each level means, and how a seller earns verification.</p>
+      </div>
+
+      <!-- Criteria -->
+      <div class="criteria-grid">
+        <div class="criteria-card reveal"><div class="criteria-ico">🪪</div><h4>Identity verified</h4><p>National ID uploaded and <b>manually approved by an admin</b> — no bots, no auto-approval.</p></div>
+        <div class="criteria-card reveal"><div class="criteria-ico">📱</div><h4>Contact confirmed</h4><p>Phone number (OTP) and email verified so a real, reachable person is behind the account.</p></div>
+        <div class="criteria-card reveal"><div class="criteria-ico">🏢</div><h4>Business legitimacy</h4><p>PAN / business registration (optional) boosts trust and signals an official, accountable seller.</p></div>
+        <div class="criteria-card reveal"><div class="criteria-ico">📉</div><h4>Fraud record</h4><p>Severity-weighted fraud reports. Serious, repeated, evidence-backed reports lower the score most.</p></div>
+        <div class="criteria-card reveal"><div class="criteria-ico">⭐</div><h4>Authentic reviews</h4><p>Positive &amp; negative reviews — each filtered by a <b>6-layer anti-bot</b> system so fakes can't game it.</p></div>
+        <div class="criteria-card reveal"><div class="criteria-ico">⏳</div><h4>Account age &amp; disputes</h4><p>Older accounts and fairly-resolved disputes earn more trust than brand-new pages.</p></div>
+      </div>
+
+      <!-- Trust levels -->
+      <div class="levels-grid reveal">
+        <div class="level-card trusted"><div class="level-top"><span class="level-badge">80–100</span><b>🟢 Trusted</b></div><p>Verified identity and a clean record. Reasonably safe — still prefer Cash on Delivery when you can.</p></div>
+        <div class="level-card unverified"><div class="level-top"><span class="level-badge">50–79</span><b>🟠 Unverified</b></div><p>Limited data or minor flags. Proceed with caution, avoid large advance payments, ask for COD.</p></div>
+        <div class="level-card risk"><div class="level-top"><span class="level-badge">0–49</span><b>🔴 High Risk</b></div><p>Multiple or serious reports. Do not pay in advance. May be escalated to the Cyber Bureau.</p></div>
+      </div>
+
+      <!-- Seller verification steps -->
+      <div class="verify-steps reveal">
+        <h3 data-en="How a seller earns the Verified badge" data-ne="विक्रेताले प्रमाणित ब्याज कसरी पाउँछन्">How a seller earns the <b>Verified</b> badge</h3>
+        <div class="vstep-row">
+          <div class="vstep"><span>1</span><p>Register with phone + email</p></div>
+          <div class="vstep"><span>2</span><p>Upload National ID (+ PAN optional)</p></div>
+          <div class="vstep"><span>3</span><p>Admin manually reviews &amp; approves</p></div>
+          <div class="vstep"><span>4</span><p>Keep a clean, evidence-checked record</p></div>
+        </div>
+        <button class="btn btn-primary" data-guide="search" data-en="Read the full guidelines &amp; policies" data-ne="पूर्ण दिशानिर्देश र नीतिहरू पढ्नुहोस्">📖 Read the full guidelines &amp; policies</button>
+      </div>
+    </div>
+  </section>
+
   <!-- Safety Tips -->
   <section class="safety-section" id="safety">
     <div class="container">
@@ -533,10 +575,11 @@
           <a href="#download" data-en="Download" data-ne="डाउनलोड">Download</a>
         </div>
         <div class="footer-links">
-          <h4 data-en="Legal" data-ne="कानुनी">Legal</h4>
-          <a href="#" data-en="Privacy Policy" data-ne="गोपनीयता नीति">Privacy Policy</a>
-          <a href="#" data-en="Terms of Service" data-ne="सेवा सर्तहरू">Terms of Service</a>
-          <a href="#" data-en="ETA 2063 Compliance" data-ne="ETA 2063 अनुपालन">ETA 2063 Compliance</a>
+          <h4 data-en="Legal &amp; Guidelines" data-ne="कानुनी र दिशानिर्देश">Legal &amp; Guidelines</h4>
+          <a href="#" data-guide="privacy" data-en="Privacy Policy" data-ne="गोपनीयता नीति">Privacy Policy</a>
+          <a href="#" data-guide="report" data-en="Reporting Rules" data-ne="रिपोर्टिङ नियम">Reporting Rules</a>
+          <a href="#" data-guide="verify" data-en="Seller Verification" data-ne="विक्रेता प्रमाणीकरण">Seller Verification</a>
+          <a href="#" data-guide="privacy" data-en="ETA 2063 Compliance" data-ne="ETA 2063 अनुपालन">ETA 2063 Compliance</a>
         </div>
         <div class="footer-academic">
           <h4>Academic</h4>
@@ -570,7 +613,7 @@
   <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
 
   <script src="script.js?v=2"></script>
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
   <script>
     // Register the service worker → makes the site installable & auto-updating
     if ('serviceWorker' in navigator) {

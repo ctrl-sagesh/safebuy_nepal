@@ -528,7 +528,7 @@
         '<label>Describe what happened</label><textarea id="rpDesc" rows="3" minlength="20" placeholder="Explain the incident in at least 20 characters..." required></textarea>' +
         '<label class="sb-file-label">📎 Evidence (required) — screenshot of chat / payment' +
         '<input type="file" id="rpEvidence" accept="image/*" required></label>' +
-        '<div class="sb-anon">🔒 Your name & phone stay private. False reports hurt the community — only report real incidents.</div>' +
+        '<div class="sb-anon">🔒 Your name & phone stay private. False reports hurt the community — only report real incidents. <button type="button" class="sb-inline-link" data-guide="report">Read the reporting rules ›</button></div>' +
         '<button type="submit" class="btn btn-primary sb-submit">Submit Report</button></form>',
         function (card) {
           var slider = card.querySelector('#rpAmount'), lbl = card.querySelector('#rpAmtLabel');
@@ -579,7 +579,7 @@
     requireSignIn(function (user) {
       var s = getSeller(id); if (!s) return;
       openModal(
-        '<h3 class="sb-form-title">⭐ Write a Review</h3><p class="sb-form-sub">Reviewing <b>' + esc(s.name) + '</b>. Evidence is required for positive <i>and</i> negative reviews to keep ratings fair.</p>' +
+        '<h3 class="sb-form-title">⭐ Write a Review</h3><p class="sb-form-sub">Reviewing <b>' + esc(s.name) + '</b>. Evidence is required for positive <i>and</i> negative reviews to keep ratings fair. <button type="button" class="sb-inline-link" data-guide="review">Review rules ›</button></p>' +
         '<form id="sbReviewForm" class="sb-form">' +
         '<label>Your rating</label><div class="sb-rate" id="rvRate">' +
         [1, 2, 3, 4, 5].map(function (i) { return '<span class="sb-rate-star" data-v="' + i + '">★</span>'; }).join('') + '</div>' +
@@ -803,6 +803,84 @@
     );
   }
 
+  // Guidelines & Policies — what to know before searching / reporting / verifying
+  var GUIDE = {
+    search: {
+      label: '🔍 Before you search', title: 'Before you search & verify',
+      items: [
+        'Search by <b>phone number, eSewa / Khalti ID, or social @handle / username</b>.',
+        'A <b>low score is a community warning</b>, not legal proof of guilt.',
+        'No record yet does <b>not</b> guarantee safety — new scam pages have no history.',
+        'Always prefer <b>Cash on Delivery</b> and confirm the person before paying any advance.'
+      ]
+    },
+    report: {
+      label: '🚩 Before you report', title: 'Reporting rules',
+      items: [
+        '<b>Evidence is mandatory</b> — attach chat and/or payment screenshots.',
+        'Only report <b>real incidents</b> you personally experienced or witnessed.',
+        'False or malicious reports are <b>removed</b> and hurt the whole community.',
+        'You stay <b>anonymous</b>: your name may show, your phone & personal details never do.',
+        'Serious or repeated cases are <b>escalated to the Cyber Bureau</b> after admin review (official निवेदन).',
+        'A report here is not a legal complaint by itself — for crimes, also file with the police / Cyber Bureau.'
+      ]
+    },
+    review: {
+      label: '⭐ Before you review', title: 'Review rules',
+      items: [
+        '<b>Evidence is required for positive AND negative</b> reviews — this keeps ratings fair.',
+        'Be <b>honest and specific</b> about your real experience.',
+        'One review per seller · minimum 20 characters · no spam or copy-paste.',
+        'Reviews are <b>weighted by authenticity</b>; fakes are filtered by the 6-layer anti-bot system.'
+      ]
+    },
+    verify: {
+      label: '🪪 Getting verified', title: 'How sellers get verified',
+      items: [
+        'Register with a <b>real phone + email</b>.',
+        'Upload a valid <b>National ID</b>; PAN / business registration is optional but recommended.',
+        'An <b>admin manually reviews and approves</b> — this can take some time.',
+        'Verification can be <b>revoked</b> if fraud is later confirmed.',
+        'A <b>Verified badge</b> + good reviews build customer trust and more sales.'
+      ]
+    },
+    privacy: {
+      label: '⚖️ Privacy & law', title: 'Privacy & legal',
+      items: [
+        'Reporter identity is <b>protected</b>: name shown, contact details hidden.',
+        'Evidence is used only for verification and, if escalated, for the Cyber Bureau.',
+        'Aligned with the <b>Electronic Transactions Act 2063</b> and <b>Consumer Protection Act 2075</b>.',
+        'Your data is <b>never sold</b>. You may request removal of your data.'
+      ]
+    }
+  };
+  function openGuidelines(tab) {
+    var order = ['search', 'report', 'review', 'verify', 'privacy'];
+    if (!GUIDE[tab]) tab = 'search';
+    function paneHTML(key) {
+      var g = GUIDE[key];
+      return '<h3 class="pol-title">' + g.label.replace(/^\S+\s/, '') + '</h3><ul class="pol-list">' +
+        g.items.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>';
+    }
+    openModal(
+      '<h3 class="sb-form-title">📖 Guidelines &amp; Policies</h3>' +
+      '<p class="sb-form-sub">Know how SafeBuy works and the rules before you search, report, or verify.</p>' +
+      '<div class="pol-tabs">' + order.map(function (k) {
+        return '<button class="pol-tab" data-pol="' + k + '">' + GUIDE[k].label + '</button>';
+      }).join('') + '</div><div class="pol-pane" id="polPane"></div>',
+      function (card) {
+        var tabs = card.querySelectorAll('.pol-tab');
+        var pane = card.querySelector('#polPane');
+        function select(key) {
+          tabs.forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-pol') === key); });
+          pane.innerHTML = paneHTML(key);
+        }
+        tabs.forEach(function (t) { t.onclick = function () { select(t.getAttribute('data-pol')); }; });
+        select(tab);
+      }
+    );
+  }
+
   function wireActionableSections() {
     var featureActions = ['verify', 'report', 'chatbot', 'trust', 'alerts', 'lang'];
     document.querySelectorAll('#features .feature-card').forEach(function (card, i) {
@@ -865,6 +943,11 @@
     wireActionableSections();
     wireStakeholderTabs();
     wireSpeedDial();
+    // Any element with data-guide opens the guidelines/policy modal
+    document.addEventListener('click', function (e) {
+      var g = e.target.closest && e.target.closest('[data-guide]');
+      if (g) { e.preventDefault(); openGuidelines(g.getAttribute('data-guide')); }
+    });
     if (!search) return; // section not present
 
     // popular chips
