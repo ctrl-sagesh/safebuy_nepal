@@ -54,7 +54,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <!-- Scroll progress bar -->
@@ -152,6 +152,7 @@
       </a>
       <div class="nav-links" id="navLinks">
         <a href="#trydemo" data-en="Live Demo" data-ne="लाइभ डेमो">Live Demo</a>
+        <a href="#who" data-en="Who It's For" data-ne="कसका लागि">Who It's For</a>
         <a href="#features" data-en="Features" data-ne="विशेषताहरू">Features</a>
         <a href="#how-it-works" data-en="How It Works" data-ne="कसरी काम गर्छ">How It Works</a>
         <a href="#stats" data-en="Impact" data-ne="प्रभाव">Impact</a>
@@ -339,6 +340,82 @@
     </div>
   </section>
 
+  <!-- Stakeholders / Design Thinking (Buyer · Seller · Government) -->
+  <section class="stakeholders-section" id="who">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag" data-en="Who It's For" data-ne="कसका लागि">Who It's For</span>
+        <h2 data-en="Built for <span class='grad-text'>everyone</span> in the deal" data-ne="किनमेलमा संलग्न <span class='grad-text'>सबैका लागि</span>">Built for <span class="grad-text">everyone</span> in the deal</h2>
+        <p data-en="A design-thinking view of the three people in every online sale — and why each of them actually uses SafeBuy Nepal." data-ne="हरेक अनलाइन किनमेलमा संलग्न तीन पक्षको दृष्टिकोण, र किन प्रत्येकले SafeBuy प्रयोग गर्छन्।">A design-thinking view of the three people in every online sale — and why each of them actually uses SafeBuy Nepal.</p>
+      </div>
+
+      <div class="stk-tabs reveal">
+        <button class="stk-tab active" data-stk="buyer">🛒 <span data-en="Buyers" data-ne="खरिदकर्ता">Buyers</span></button>
+        <button class="stk-tab" data-stk="seller">🏪 <span data-en="Sellers" data-ne="विक्रेता">Sellers</span></button>
+        <button class="stk-tab" data-stk="gov">🏛️ <span data-en="Government" data-ne="सरकार">Government</span></button>
+      </div>
+
+      <!-- Buyer -->
+      <div class="stk-pane active" id="stk-buyer">
+        <div class="stk-card">
+          <div class="stk-persona">
+            <div class="stk-emoji">🛒</div>
+            <div><h3>The Buyer</h3><p class="stk-quote">“I saw it on TikTok, paid on WhatsApp… then got blocked. Police won’t act on Rs 900.”</p></div>
+          </div>
+          <div class="stk-grid">
+            <div class="stk-box pain"><h4>😣 The problem</h4><ul><li>No way to know if a seller is real before paying</li><li>Advance paid via QR, then ghosted &amp; blocked</li><li>Amount too small for police to pursue</li><li>Suffers alone; can’t warn the next buyer</li></ul></div>
+            <div class="stk-box need"><h4>🎯 What they need</h4><ul><li>A quick safety check before sending money</li><li>A place to report and warn others</li><li>To stay anonymous while doing it</li></ul></div>
+            <div class="stk-box help"><h4>🛡️ How SafeBuy helps</h4><ul><li>Instant trust score by phone / eSewa / @handle</li><li>Evidence-backed reports &amp; reviews</li><li>Free, bilingual, anonymous</li></ul></div>
+            <div class="stk-box why"><h4>💡 Why they use it</h4><p>A <b>30-second check</b> before paying can save weeks of stress and real money. It costs nothing and it protects the whole community.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seller -->
+      <div class="stk-pane" id="stk-seller">
+        <div class="stk-card">
+          <div class="stk-persona">
+            <div class="stk-emoji">🏪</div>
+            <div><h3>The Honest Seller</h3><p class="stk-quote">“I run a genuine shop, but customers hesitate to pay because scammers ruined the trust.”</p></div>
+          </div>
+          <div class="stk-grid">
+            <div class="stk-box pain"><h4>😣 The problem</h4><ul><li>Lumped together with scammers</li><li>Buyers demand COD or hesitate to pay advance</li><li>No way to prove they’re legitimate</li></ul></div>
+            <div class="stk-box need"><h4>🎯 What they need</h4><ul><li>To prove they are real and trustworthy</li><li>To stand out from fake pages</li><li>A fair way to answer false accusations</li></ul></div>
+            <div class="stk-box help"><h4>🛡️ How SafeBuy helps</h4><ul><li><b>“SafeBuy Verified”</b> badge (ID + admin approval)</li><li>Positive reviews with evidence build reputation</li><li>Dispute / appeal flow for unfair reports</li></ul></div>
+            <div class="stk-box why"><h4>💡 Why they use it</h4><p>A verified badge and a high trust score <b>win customer confidence = more sales</b>. Getting verified is a competitive advantage over unregistered rivals.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Government -->
+      <div class="stk-pane" id="stk-gov">
+        <div class="stk-card">
+          <div class="stk-persona">
+            <div class="stk-emoji">🏛️</div>
+            <div><h3>Government &amp; Cyber Bureau</h3><p class="stk-quote">“Thousands of small online-fraud cases, no structured evidence, and unregistered social sellers.”</p></div>
+          </div>
+          <div class="stk-grid">
+            <div class="stk-box pain"><h4>😣 The problem</h4><ul><li>Cyber Bureau overwhelmed; small cases go unrecorded</li><li>No structured, evidence-backed complaints</li><li>Social-commerce sellers operate unregistered</li></ul></div>
+            <div class="stk-box need"><h4>🎯 What they need</h4><ul><li>Documented, ready-to-act complaints</li><li>Accountability &amp; registration for online sellers</li><li>Data on scam trends and hotspots</li></ul></div>
+            <div class="stk-box help"><h4>🛡️ How SafeBuy helps</h4><ul><li>Auto-drafted <b>निवेदन</b> with attached evidence</li><li>Escalation only past a threshold + admin approval</li><li>Seller registration aligned to official standards</li></ul></div>
+            <div class="stk-box why"><h4>💡 Why they use it</h4><p>SafeBuy does the paperwork: <b>fewer manual hours, better-documented cases</b>, and trend data that supports enforcement and future policy.</p></div>
+          </div>
+          <div class="stk-policy">
+            <h4>📜 Registration &amp; policy alignment</h4>
+            <p>SafeBuy proposes a light verification step before a social seller is marked <b>Trusted</b> — supporting stronger rules around opening TikTok / social-commerce accounts:</p>
+            <div class="stk-policy-tags">
+              <span>PAN / business registration</span>
+              <span>Identity (National ID) verification</span>
+              <span>Electronic Transactions Act 2063</span>
+              <span>Consumer Protection Act 2075</span>
+              <span>Cyber Bureau escalation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Trust Algorithm -->
   <section class="algorithm-section" id="trust-algorithm">
     <div class="container">
@@ -479,14 +556,21 @@
     </div>
   </footer>
 
-  <!-- Floating AI assistant -->
-  <button class="sb-fab" id="sbFab" aria-label="Ask SafeGuard AI"><span class="fab-ico">🛡️</span> <span data-en="Ask SafeGuard AI" data-ne="SafeGuard AI लाई सोध्नुहोस्">Ask SafeGuard AI</span></button>
+  <!-- Floating quick-action gadget (speed dial) -->
+  <div class="sb-speeddial" id="sbSpeedDial">
+    <div class="sd-actions">
+      <button class="sd-item" data-sd="verify"><span class="sd-label">Verify a seller</span><span class="sd-ico">🔍</span></button>
+      <button class="sd-item" data-sd="report"><span class="sd-label">Report fraud</span><span class="sd-ico">🚩</span></button>
+      <button class="sd-item" data-sd="chatbot"><span class="sd-label">Ask SafeGuard AI</span><span class="sd-ico">🛡️</span></button>
+    </div>
+    <button class="sd-main" id="sdMain" aria-label="Quick actions"><span class="sd-plus">＋</span></button>
+  </div>
 
   <!-- Back to top -->
   <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
 
   <script src="script.js?v=2"></script>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
   <script>
     // Register the service worker → makes the site installable & auto-updating
     if ('serviceWorker' in navigator) {

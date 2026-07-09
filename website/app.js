@@ -826,6 +826,34 @@
     if (dl) dl.onclick = function (e) { e.preventDefault(); openInstall(); };
   }
 
+  // Stakeholder (Buyer / Seller / Government) tab switching
+  function wireStakeholderTabs() {
+    var tabs = document.querySelectorAll('.stk-tab');
+    if (!tabs.length) return;
+    tabs.forEach(function (t) {
+      t.onclick = function () {
+        tabs.forEach(function (x) { x.classList.remove('active'); });
+        t.classList.add('active');
+        var key = t.getAttribute('data-stk');
+        document.querySelectorAll('.stk-pane').forEach(function (p) {
+          p.classList.toggle('active', p.id === 'stk-' + key);
+        });
+      };
+    });
+  }
+
+  // Floating speed-dial gadget
+  function wireSpeedDial() {
+    var dial = document.getElementById('sbSpeedDial');
+    if (!dial) return;
+    var main = document.getElementById('sdMain');
+    main.onclick = function (e) { e.stopPropagation(); dial.classList.toggle('open'); };
+    document.addEventListener('click', function () { dial.classList.remove('open'); });
+    dial.querySelectorAll('.sd-item').forEach(function (b) {
+      b.onclick = function (e) { e.stopPropagation(); dial.classList.remove('open'); runAction(b.getAttribute('data-sd')); };
+    });
+  }
+
   // Expose for inline handlers if ever needed
   window.SafeBuy = { action: runAction, chatbot: openChatbot, alerts: openScamAlerts };
 
@@ -835,8 +863,8 @@
     var searchBtn = document.getElementById('demoSearchBtn');
     var chips = document.getElementById('demoChips');
     wireActionableSections();
-    var fab = document.getElementById('sbFab');
-    if (fab) fab.onclick = openChatbot;
+    wireStakeholderTabs();
+    wireSpeedDial();
     if (!search) return; // section not present
 
     // popular chips
