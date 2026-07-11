@@ -13,6 +13,10 @@ class ReviewModel extends Equatable {
   final double authenticityWeight; // 0.0 - 1.0
   final int helpfulCount;
   final String? evidenceUrl; // required proof backing the review
+  final String productImageUrl; // photo of the product received
+  final String productName; // what product was purchased
+  final double productRating; // rating specifically for the product
+  final bool isTopReview; // admin marked as featured
 
   const ReviewModel({
     required this.reviewId,
@@ -26,6 +30,10 @@ class ReviewModel extends Equatable {
     required this.authenticityWeight,
     required this.helpfulCount,
     this.evidenceUrl,
+    this.productImageUrl = '',
+    this.productName = '',
+    this.productRating = 0,
+    this.isTopReview = false,
   });
 
   factory ReviewModel.fromMap(String id, Map<String, dynamic> data) {
@@ -46,6 +54,10 @@ class ReviewModel extends Equatable {
           (data['authenticityWeight'] as num?)?.toDouble() ?? 1.0,
       helpfulCount: (data['helpfulCount'] as num?)?.toInt() ?? 0,
       evidenceUrl: data['evidenceUrl'] as String?,
+      productImageUrl: data['productImageUrl'] as String? ?? '',
+      productName: data['productName'] as String? ?? '',
+      productRating: (data['productRating'] as num?)?.toDouble() ?? 0,
+      isTopReview: data['isTopReview'] as bool? ?? false,
     );
   }
 
@@ -66,6 +78,10 @@ class ReviewModel extends Equatable {
         'authenticityWeight': authenticityWeight,
         'helpfulCount': helpfulCount,
         'evidenceUrl': evidenceUrl,
+        'productImageUrl': productImageUrl,
+        'productName': productName,
+        'productRating': productRating,
+        'isTopReview': isTopReview,
       };
 
   ReviewModel copyWith({
@@ -80,6 +96,10 @@ class ReviewModel extends Equatable {
     double? authenticityWeight,
     int? helpfulCount,
     String? evidenceUrl,
+    String? productImageUrl,
+    String? productName,
+    double? productRating,
+    bool? isTopReview,
   }) {
     return ReviewModel(
       reviewId: reviewId ?? this.reviewId,
@@ -93,6 +113,10 @@ class ReviewModel extends Equatable {
       authenticityWeight: authenticityWeight ?? this.authenticityWeight,
       helpfulCount: helpfulCount ?? this.helpfulCount,
       evidenceUrl: evidenceUrl ?? this.evidenceUrl,
+      productImageUrl: productImageUrl ?? this.productImageUrl,
+      productName: productName ?? this.productName,
+      productRating: productRating ?? this.productRating,
+      isTopReview: isTopReview ?? this.isTopReview,
     );
   }
 
@@ -109,5 +133,9 @@ class ReviewModel extends Equatable {
         authenticityWeight,
         helpfulCount,
         evidenceUrl,
+        productImageUrl,
+        productName,
+        productRating,
+        isTopReview,
       ];
 }

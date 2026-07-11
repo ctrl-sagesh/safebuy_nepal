@@ -141,5 +141,43 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if isAdmin();
     }
+
+    // ── KYC submissions ─────────────────────────────────────────────────────────
+    // Sellers submit KYC documents; only the submitter and admins may read.
+    // Only admins can approve/reject. Never deletable.
+    match /kyc_submissions/{submissionId} {
+      allow read: if isAuthenticated() &&
+        (isOwner(resource.data.submittedBy) || isAdmin());
+      allow create: if isAuthenticated() &&
+        request.resource.data.submittedBy == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ── Monthly leaderboard — public read ───────────────────────────────────────
+    match /leaderboard/{month} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /entries/{entryId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+    }
+
+    // ── Verification cards — public read ────────────────────────────────────────
+    match /verification_cards/{cardId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── QR change requests ──────────────────────────────────────────────────────
+    match /qr_change_requests/{requestId} {
+      allow read: if isAuthenticated() &&
+        (isSellerOwner(resource.data.sellerId) || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
   }
 }

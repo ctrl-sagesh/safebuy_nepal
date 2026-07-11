@@ -164,6 +164,73 @@ abstract final class AppStrings {
     'inc_payment_issue'     : 'Payment Taken, No Response',
     'inc_impersonation'     : 'Account Impersonation',
     'inc_other'             : 'Other',
+
+    // ── Popup messages ────────────────────────────────────────────────────────────
+    'success_report'        : 'Report submitted successfully!',
+    'success_review'        : 'Review submitted!',
+    'success_kyc'           : 'KYC submitted for review',
+    'success_signout'       : 'Signed out successfully',
+    'warning_auth_required' : 'Sign in to continue',
+    'error_upload'          : 'Upload failed. Please check your connection and try again.',
+    'error_load'            : 'Could not load data. Please try again.',
+
+    // ── KYC ───────────────────────────────────────────────────────────────────────
+    'kyc_title'             : 'Get SafeBuy Verified',
+    'kyc_subtitle'          : 'Protect your business and build buyer trust',
+    'kyc_start'             : 'Start Verification',
+    'kyc_tier_basic'        : 'Basic',
+    'kyc_tier_verified'     : 'Verified',
+    'kyc_tier_premium'      : 'Premium',
+    'kyc_link_gmail'        : 'Link Gmail Account',
+    'kyc_upload_qr'         : 'Upload your eSewa QR code',
+    'kyc_selfie_title'      : 'Selfie with Citizenship Card',
+    'kyc_pan_title'         : 'PAN Card Upload',
+    'kyc_location_title'    : 'Business Location Photos',
+    'kyc_submitted'         : 'KYC Submitted for Review',
+    'kyc_review_time'       : 'Our team will review within 24-48 hours',
+    'kyc_qr_locked'         : 'Payment QR — Locked by SafeBuy Nepal',
+    'kyc_request_qr_change' : 'Request QR Change',
+
+    // ── Leaderboard ───────────────────────────────────────────────────────────────
+    'leaderboard_title'     : 'Monthly Leaderboard',
+    'leaderboard_subtitle'  : 'Top verified sellers this month',
+    'leaderboard_this_month': 'This Month',
+    'leaderboard_last_month': 'Last Month',
+    'leaderboard_all_time'  : 'All Time',
+    'leaderboard_empty'     : 'No rankings available yet for this period',
+
+    // ── Reviews ───────────────────────────────────────────────────────────────────
+    'review_write'          : 'Write a Review',
+    'review_product_name'   : 'What did you purchase?',
+    'review_rating'         : 'Your rating',
+    'review_experience'     : 'Overall experience',
+    'review_verified'       : 'Verified Purchase',
+    'review_top'            : 'Top Review',
+
+    // ── Guide ─────────────────────────────────────────────────────────────────────
+    'guide_title'           : 'How It Works',
+    'guide_for_buyers'      : 'For Buyers',
+    'guide_for_sellers'     : 'For Sellers',
+    'guide_about'           : 'About SafeBuy',
+
+    // ── Scam news ─────────────────────────────────────────────────────────────────
+    'scam_news_title'       : 'Scam Reports Nepal',
+    'scam_news_cases'       : 'Cases',
+    'scam_news_stats'       : 'Statistics',
+    'scam_news_rights'      : 'Your Rights',
+    'scam_news_read_more'   : 'Read More',
+    'scam_news_show_less'   : 'Show Less',
+    'scam_news_lesson'      : 'Lesson',
+
+    // ── Search ────────────────────────────────────────────────────────────────────
+    'search_title'          : 'Verify a Seller',
+    'search_member_since'   : 'Member since',
+    'search_verified_until' : 'Verified until',
+    'search_overdue'        : 'Re-verification Overdue',
+    'search_view_profile'   : 'View Full Profile',
+    'search_report_seller'  : 'Report This Seller',
+    'search_sign_in_report' : 'Sign in to Report',
+    'search_not_found'      : 'No seller found with this information',
   };
 
   static const _ne = <String, String>{
@@ -327,6 +394,73 @@ abstract final class AppStrings {
     'inc_payment_issue'     : 'भुक्तानी लिएर कुनै प्रतिक्रिया छैन',
     'inc_impersonation'     : 'खाता नक्कल',
     'inc_other'             : 'अन्य',
+
+    // ── Popup messages ────────────────────────────────────────────────────────────
+    'success_report'        : 'रिपोर्ट सफलतापूर्वक पेश गरियो!',
+    'success_review'        : 'समीक्षा पेश गरियो!',
+    'success_kyc'           : 'KYC समीक्षाका लागि पेश गरियो',
+    'success_signout'       : 'सफलतापूर्वक साइन आउट भयो',
+    'warning_auth_required' : 'जारी राख्न साइन इन गर्नुस्',
+    'error_upload'          : 'अपलोड असफल भयो। जडान जाँचेर पुनः प्रयास गर्नुहोस्।',
+    'error_load'            : 'डाटा लोड गर्न सकिएन। पुनः प्रयास गर्नुहोस्।',
+
+    // ── KYC ───────────────────────────────────────────────────────────────────────
+    'kyc_title'             : 'SafeBuy प्रमाणित बन्नुहोस्',
+    'kyc_subtitle'          : 'आफ्नो व्यवसाय जोगाउनुहोस् र विश्वास बनाउनुहोस्',
+    'kyc_start'             : 'प्रमाणीकरण सुरु गर्नुहोस्',
+    'kyc_tier_basic'        : 'आधारभूत',
+    'kyc_tier_verified'     : 'प्रमाणित',
+    'kyc_tier_premium'      : 'प्रिमियम',
+    'kyc_link_gmail'        : 'Gmail खाता जोड्नुहोस्',
+    'kyc_upload_qr'         : 'आफ्नो eSewa QR कोड अपलोड गर्नुहोस्',
+    'kyc_selfie_title'      : 'नागरिकतासहित सेल्फी',
+    'kyc_pan_title'         : 'PAN कार्ड अपलोड',
+    'kyc_location_title'    : 'व्यवसाय स्थानका फोटोहरू',
+    'kyc_submitted'         : 'KYC समीक्षाका लागि पेश गरियो',
+    'kyc_review_time'       : 'हाम्रो टिमले २४-४८ घण्टाभित्र समीक्षा गर्नेछ',
+    'kyc_qr_locked'         : 'भुक्तानी QR — SafeBuy Nepal द्वारा लक गरिएको',
+    'kyc_request_qr_change' : 'QR परिवर्तन अनुरोध',
+
+    // ── Leaderboard ───────────────────────────────────────────────────────────────
+    'leaderboard_title'     : 'मासिक लिडरबोर्ड',
+    'leaderboard_subtitle'  : 'यस महिनाका उत्कृष्ट प्रमाणित विक्रेता',
+    'leaderboard_this_month': 'यो महिना',
+    'leaderboard_last_month': 'गत महिना',
+    'leaderboard_all_time'  : 'सबै समय',
+    'leaderboard_empty'     : 'यस अवधिको लागि कुनै र्‍याङ्किङ छैन',
+
+    // ── Reviews ───────────────────────────────────────────────────────────────────
+    'review_write'          : 'समीक्षा लेख्नुहोस्',
+    'review_product_name'   : 'तपाईंले के किन्नुभयो?',
+    'review_rating'         : 'तपाईंको रेटिङ',
+    'review_experience'     : 'समग्र अनुभव',
+    'review_verified'       : 'प्रमाणित खरिद',
+    'review_top'            : 'उत्कृष्ट समीक्षा',
+
+    // ── Guide ─────────────────────────────────────────────────────────────────────
+    'guide_title'           : 'कसरी काम गर्छ',
+    'guide_for_buyers'      : 'खरिदारका लागि',
+    'guide_for_sellers'     : 'विक्रेताका लागि',
+    'guide_about'           : 'SafeBuy बारे',
+
+    // ── Scam news ─────────────────────────────────────────────────────────────────
+    'scam_news_title'       : 'नेपाल ठगी रिपोर्टहरू',
+    'scam_news_cases'       : 'घटनाहरू',
+    'scam_news_stats'       : 'तथ्याङ्क',
+    'scam_news_rights'      : 'तपाईंका अधिकार',
+    'scam_news_read_more'   : 'थप पढ्नुहोस्',
+    'scam_news_show_less'   : 'कम देखाउनुहोस्',
+    'scam_news_lesson'      : 'पाठ',
+
+    // ── Search ────────────────────────────────────────────────────────────────────
+    'search_title'          : 'विक्रेता प्रमाणित गर्नुहोस्',
+    'search_member_since'   : 'सदस्य बनेको',
+    'search_verified_until' : 'प्रमाणित अवधि',
+    'search_overdue'        : 'पुनः प्रमाणीकरण बाँकी',
+    'search_view_profile'   : 'पूरा प्रोफाइल हेर्नुहोस्',
+    'search_report_seller'  : 'यो विक्रेता रिपोर्ट गर्नुहोस्',
+    'search_sign_in_report' : 'रिपोर्ट गर्न साइन इन गर्नुहोस्',
+    'search_not_found'      : 'यो जानकारीसँग कुनै विक्रेता भेटिएन',
   };
 
   static String get(String key, String lang) =>

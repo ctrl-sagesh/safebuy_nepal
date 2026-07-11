@@ -30,5 +30,36 @@ service firebase.storage {
         request.resource.contentType.matches('image/(jpeg|jpg|png|webp)');
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
+
+    // KYC documents: kyc/{userId}/{fileName}
+    // Selfie, citizenship, PAN card, and location photos.
+    // Readable only by authenticated users (admin review); never deletable.
+    match /kyc/{userId}/{fileName} {
+      allow write: if request.auth != null &&
+        request.auth.uid == userId &&
+        request.resource.size <= 10 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+      allow read: if request.auth != null;
+      allow delete: if false;
+    }
+
+    // Payment QR codes: qr_codes/{userId}/{fileName}
+    // Publicly readable so buyers can verify the locked QR. Never deletable.
+    match /qr_codes/{userId}/{fileName} {
+      allow write: if request.auth != null &&
+        request.auth.uid == userId &&
+        request.resource.size <= 2 * 1024 * 1024;
+      allow read: if true;
+      allow delete: if false;
+    }
+
+    // Review product images: review_images/{reviewId}/{fileName}
+    match /review_images/{reviewId}/{fileName} {
+      allow write: if request.auth != null &&
+        request.resource.size <= 5 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+      allow read: if true;
+      allow delete: if false;
+    }
   }
 }

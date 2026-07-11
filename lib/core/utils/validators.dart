@@ -133,6 +133,57 @@ abstract final class Validators {
     return null;
   }
 
+  // ── PAN number (Nepal: exactly 9 digits) ─────────────────────────────────────
+  static String? panNumber(String? value, [String lang = 'en']) {
+    final v = value?.trim() ?? '';
+    if (v.isEmpty) {
+      return lang == 'ne' ? 'PAN नम्बर आवश्यक छ' : 'PAN number is required';
+    }
+    if (!RegExp(r'^\d{9}$').hasMatch(v)) {
+      return lang == 'ne'
+          ? 'PAN नम्बर ठीक ९ अंकको हुनुपर्छ'
+          : 'PAN number must be exactly 9 digits';
+    }
+    return null;
+  }
+
+  // ── Gmail address ─────────────────────────────────────────────────────────────
+  static String? gmail(String? value, [String lang = 'en']) {
+    final v = value?.trim().toLowerCase() ?? '';
+    if (v.isEmpty) {
+      return lang == 'ne' ? 'Gmail आवश्यक छ' : 'Gmail address is required';
+    }
+    if (!RegExp(r'^[\w.+-]+@gmail\.com$').hasMatch(v)) {
+      return lang == 'ne'
+          ? 'वैध Gmail ठेगाना लेख्नुहोस्'
+          : 'Please enter a valid Gmail address';
+    }
+    return null;
+  }
+
+  // ── OTP (6 digits) ────────────────────────────────────────────────────────────
+  static String? otp(String? value, [String lang = 'en']) {
+    final v = value?.trim() ?? '';
+    if (v.length != 6 || !RegExp(r'^\d{6}$').hasMatch(v)) {
+      return lang == 'ne'
+          ? 'कृपया सबै ६ अंक लेख्नुहोस्'
+          : 'Please enter all 6 digits';
+    }
+    return null;
+  }
+
+  // ── Social handle (no spaces) ─────────────────────────────────────────────────
+  static String? socialHandle(String? value, [String lang = 'en']) {
+    final v = value?.trim() ?? '';
+    if (v.isEmpty) return null; // optional
+    if (v.contains(' ')) {
+      return lang == 'ne'
+          ? 'ह्यान्डलमा स्पेस राख्न मिल्दैन (@ स्वतः थपिन्छ)'
+          : 'Enter handle without spaces (@ will be added automatically)';
+    }
+    return null;
+  }
+
   // ── HTML sanitize (strips tags before Firestore writes) ───────────────────────
   static String sanitize(String input) =>
       input.replaceAll(RegExp(r'<[^>]*>'), '').trim();
