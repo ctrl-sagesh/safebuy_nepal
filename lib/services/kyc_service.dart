@@ -1,56 +1,41 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 import '../models/kyc_submission_model.dart';
+import 'storage_service.dart';
 
 /// Handles the full KYC verification pipeline:
-/// document uploads → submission → admin review → card issuance.
+/// document uploads (Supabase) → submission (Firestore) →
+/// admin review → card issuance.
 class KycService {
-  KycService({FirebaseFirestore? firestore, FirebaseStorage? storage})
-      : _db = firestore ?? FirebaseFirestore.instance,
-        _storage = storage ?? FirebaseStorage.instance;
+  KycService({FirebaseFirestore? firestore})
+      : _db = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _db;
-  final FirebaseStorage _storage;
 
-  // ── Uploads ──────────────────────────────────────────────────────────────────
+  // ── Uploads (Supabase Storage) ───────────────────────────────────────────────
 
-  /// Uploads a KYC document image. Returns the download URL.
+  /// Uploads a KYC document image. Returns a 1-year signed URL.
   /// [kind] is one of: selfie, citizenship, pan, location1, location2, location3.
   Future<String> uploadKycDocument({
     required String userId,
     required String kind,
     required File file,
-  }) async {
-    final ref = _storage
-        .ref()
-        .child('kyc')
-        .child(userId)
-        .child('$kind-${DateTime.now().millisecondsSinceEpoch}.jpg');
-    final task = await ref.putFile(
-      file,
-      SettableMetadata(contentType: 'image/jpeg'),
+  }) {
+    return StorageService.uploadKycDocument(
+      file: file,
+      userId: userId,
+      docType: kind,
     );
-    return task.ref.getDownloadURL();
   }
 
-  /// Uploads the seller's eSewa QR code screenshot.
+  /// Uploads the seller's eSewa QR code screenshot. Returns a public URL.
   Future<String> uploadQrCode({
     required String userId,
     required File file,
-  }) async {
-    final ref = _storage
-        .ref()
-        .child('qr_codes')
-        .child(userId)
-        .child('qr-${DateTime.now().millisecondsSinceEpoch}.jpg');
-    final task = await ref.putFile(
-      file,
-      SettableMetadata(contentType: 'image/jpeg'),
-    );
-    return task.ref.getDownloadURL();
+  }) {
+    return StorageService.uploadQrCode(file: file, sellerId: userId);
   }
 
   // ── Submission ───────────────────────────────────────────────────────────────

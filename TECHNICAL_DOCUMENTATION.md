@@ -266,11 +266,57 @@ flutter test test/unit/
 # Deploy Firestore rules
 firebase deploy --only firestore:rules
 
-# Deploy Storage rules
-firebase deploy --only storage
+# Deploy Firestore rules only (Firebase Storage is NOT used — see below)
+# firebase deploy --only storage   ← obsolete, storage moved to Supabase
 
 # Build release APK
 flutter build apk --release
 ```
+
+## Storage Architecture — Hybrid Cloud
+
+SafeBuy Nepal uses a hybrid cloud architecture:
+- Firebase: Phone OTP Auth, Google Sign In,
+  Firestore database, security rules
+- Supabase: All file storage (KYC documents,
+  evidence photos, review images, QR codes,
+  profile photos)
+
+Supabase Project: safebuy-nepal
+Region: South Asia (Mumbai) — ap-south-1
+Account: adhisage69@gmail.com
+
+Reason for hybrid approach:
+Firebase Storage requires Blaze billing plan which
+could not be activated due to payment gateway
+restrictions between Google Cloud and Nepali banking
+infrastructure (OR_BACR2_44 error). Supabase Storage
+provides equivalent functionality with a generous
+free tier (1GB storage, 2GB bandwidth) accessible
+without international payment requirements.
+
+Supabase Storage buckets:
+- kyc-documents (private, 10MB): KYC verification docs
+- evidence-files (private, 10MB): Fraud report evidence
+- review-images (public, 5MB): Product review photos
+- qr-codes (public, 2MB): Seller eSewa QR codes
+- profile-images (public, 5MB): User profile photos
+
+All images compressed to max 800px width, quality 75
+before upload. Private files use 1-year signed URLs.
+Public files use permanent public URLs.
+
+Implementation notes:
+- `lib/core/config/supabase_config.dart` holds the project URL,
+  publishable (anon) client key, and bucket names.
+- `lib/services/storage_service.dart` is the single upload facade
+  (Supabase); `KycService` delegates its uploads to it.
+- Because users authenticate with Firebase (not Supabase Auth),
+  the app talks to Supabase under the `anon` role. Bucket RLS
+  policies are therefore bucket-scoped anon-insert with no client
+  UPDATE/DELETE (immutable evidence); private buckets are readable
+  only through signed URLs. See
+  `lib/core/config/supabase_policies.sql` (run OPTION B in the
+  Supabase SQL editor).
 
 End of document.

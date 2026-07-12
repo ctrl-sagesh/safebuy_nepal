@@ -118,13 +118,10 @@ class _WriteReviewScreenState
       String productUrl = '';
       if (_productImage != null) {
         try {
-          productUrl =
-              await ref.read(storageServiceProvider).uploadEvidence(
-                    file: _productImage!,
-                    reportId: 'review-${const Uuid().v4()}',
-                    evidenceType: 'product',
-                    userId: user.uid,
-                  );
+          productUrl = await StorageService.uploadReviewImage(
+            file: _productImage!,
+            reviewId: 'review-${const Uuid().v4()}',
+          );
         } catch (_) {
           // Photo failed but review can proceed — inform honestly.
           if (mounted) {

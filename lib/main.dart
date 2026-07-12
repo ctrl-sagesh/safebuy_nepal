@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'firebase_options.dart';
 
 // Core
+import 'core/config/supabase_config.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/popup_helper.dart';
@@ -65,6 +67,11 @@ void main() async {
 
   await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform);
+
+  await Supabase.initialize(
+    url: supabaseUrl,
+    publishableKey: supabaseAnonKey,
+  );
 
   runApp(const ProviderScope(child: SafeBuyApp()));
 

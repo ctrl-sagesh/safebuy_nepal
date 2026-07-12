@@ -64,6 +64,8 @@ dependencies:
   google_sign_in: ^7.2.0
   image_cropper: ^12.2.1
   path_provider: ^2.1.6
+  supabase_flutter: ^2.16.0
+  flutter_image_compress: ^2.4.0
 
 dev_dependencies:
   flutter_test:
