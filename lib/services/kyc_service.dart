@@ -6,7 +6,7 @@ import '../models/kyc_submission_model.dart';
 import 'storage_service.dart';
 
 /// Handles the full KYC verification pipeline:
-/// document uploads (Supabase) → submission (Firestore) →
+/// document uploads (Firebase Storage) → submission (Firestore) →
 /// admin review → card issuance.
 class KycService {
   KycService({FirebaseFirestore? firestore})
@@ -14,9 +14,9 @@ class KycService {
 
   final FirebaseFirestore _db;
 
-  // ── Uploads (Supabase Storage) ───────────────────────────────────────────────
+  // ── Uploads (Firebase Storage) ───────────────────────────────────────────────
 
-  /// Uploads a KYC document image. Returns a 1-year signed URL.
+  /// Uploads a KYC document image. Returns the download URL.
   /// [kind] is one of: selfie, citizenship, pan, location1, location2, location3.
   Future<String> uploadKycDocument({
     required String userId,
@@ -30,7 +30,7 @@ class KycService {
     );
   }
 
-  /// Uploads the seller's eSewa QR code screenshot. Returns a public URL.
+  /// Uploads the seller's eSewa QR code screenshot. Returns the download URL.
   Future<String> uploadQrCode({
     required String userId,
     required File file,

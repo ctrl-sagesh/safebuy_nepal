@@ -266,57 +266,39 @@ flutter test test/unit/
 # Deploy Firestore rules
 firebase deploy --only firestore:rules
 
-# Deploy Firestore rules only (Firebase Storage is NOT used — see below)
-# firebase deploy --only storage   ← obsolete, storage moved to Supabase
+# Deploy Storage rules
+firebase deploy --only storage
 
 # Build release APK
 flutter build apk --release
 ```
 
-## Storage Architecture — Hybrid Cloud
+## Storage Architecture — Pure Firebase (Blaze)
 
-SafeBuy Nepal uses a hybrid cloud architecture:
-- Firebase: Phone OTP Auth, Google Sign In,
-  Firestore database, security rules
-- Supabase: All file storage (KYC documents,
-  evidence photos, review images, QR codes,
-  profile photos)
+SafeBuy Nepal runs entirely on Firebase:
+- Firebase Auth: Phone OTP + Google Sign In
+- Cloud Firestore: all application data, protected by
+  deployed security rules
+- Firebase Storage: all file uploads (KYC documents,
+  fraud evidence, review images, seller QR codes,
+  profile photos), protected by deployed storage rules
+- Cloud Functions: Node.js 20 runtime (trust-score and
+  escalation triggers)
 
-Supabase Project: safebuy-nepal
-Region: South Asia (Mumbai) — ap-south-1
-Account: adhisage69@gmail.com
+Storage paths (mirrored by storage.rules):
+- kyc/{userId}/…                 (private, 10MB): KYC verification docs
+- evidence/{userId}/{reportId}/… (private, 5MB): fraud report evidence
+- review_images/{reviewId}/…     (public read, 5MB): product review photos
+- qr_codes/{userId}/…            (public read, 2MB): seller eSewa QR codes
+- profiles/{userId}/…            (public read, 2MB): user profile photos
 
-Reason for hybrid approach:
-Firebase Storage requires Blaze billing plan which
-could not be activated due to payment gateway
-restrictions between Google Cloud and Nepali banking
-infrastructure (OR_BACR2_44 error). Supabase Storage
-provides equivalent functionality with a generous
-free tier (1GB storage, 2GB bandwidth) accessible
-without international payment requirements.
+All images are compressed client-side (max 800px, quality 75,
+flutter_image_compress) before upload. Evidence, KYC, and QR files
+are immutable from the client — storage rules block deletes to
+preserve fraud-record integrity.
 
-Supabase Storage buckets:
-- kyc-documents (private, 10MB): KYC verification docs
-- evidence-files (private, 10MB): Fraud report evidence
-- review-images (public, 5MB): Product review photos
-- qr-codes (public, 2MB): Seller eSewa QR codes
-- profile-images (public, 5MB): User profile photos
-
-All images compressed to max 800px width, quality 75
-before upload. Private files use 1-year signed URLs.
-Public files use permanent public URLs.
-
-Implementation notes:
-- `lib/core/config/supabase_config.dart` holds the project URL,
-  publishable (anon) client key, and bucket names.
-- `lib/services/storage_service.dart` is the single upload facade
-  (Supabase); `KycService` delegates its uploads to it.
-- Because users authenticate with Firebase (not Supabase Auth),
-  the app talks to Supabase under the `anon` role. Bucket RLS
-  policies are therefore bucket-scoped anon-insert with no client
-  UPDATE/DELETE (immutable evidence); private buckets are readable
-  only through signed URLs. See
-  `lib/core/config/supabase_policies.sql` (run OPTION B in the
-  Supabase SQL editor).
+`lib/services/storage_service.dart` is the single upload facade;
+`KycService`, the report flow, and the review flow all delegate
+file uploads to it.
 
 End of document.

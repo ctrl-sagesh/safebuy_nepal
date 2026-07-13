@@ -1,65 +1,75 @@
 import 'dart:io';
 
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
-import '../core/config/supabase_config.dart';
-
-/// SafeBuy Nepal — file storage on Supabase.
+/// SafeBuy Nepal — file storage on Firebase Storage (Blaze plan).
 ///
-/// Hybrid architecture: Firebase provides Auth + Firestore; Supabase
-/// provides all file storage (Firebase Storage needs Blaze billing,
-/// unavailable from Nepal — OR_BACR2_44).
+/// Pure Firebase architecture: Auth, Firestore, Storage, and Cloud
+/// Functions all run on Firebase. Storage paths mirror the deployed
+/// storage.rules:
+///   kyc/{userId}/…            (private — authenticated reads only)
+///   evidence/{userId}/{reportId}/… (private)
+///   review_images/{reviewId}/…     (public read)
+///   qr_codes/{userId}/…            (public read)
+///   profiles/{userId}/…            (public read)
 ///
-/// Private buckets (kyc-documents, evidence-files) return 1-year signed
-/// URLs; public buckets return permanent public URLs.
+/// All images are compressed (max 800px, quality 75) before upload.
 class StorageService {
-  static SupabaseClient get _client => Supabase.instance.client;
+  static FirebaseStorage get _storage => FirebaseStorage.instance;
   static const _uuid = Uuid();
 
   // ─── COMPRESS IMAGE ─────────────────────────────────────────
   static Future<Uint8List> _compressImage(File file) async {
-    final result = await FlutterImageCompress.compressWithFile(
-      file.absolute.path,
-      quality: 75,
-      minWidth: 800,
-      minHeight: 800,
-    );
-    return result ?? await file.readAsBytes();
+    try {
+      final result = await FlutterImageCompress.compressWithFile(
+        file.absolute.path,
+        quality: 75,
+        minWidth: 800,
+        minHeight: 800,
+      );
+      return result ?? await file.readAsBytes();
+    } catch (_) {
+      return file.readAsBytes();
+    }
+  }
+
+  static Future<String> _upload({
+    required String path,
+    required Uint8List bytes,
+    required String friendlyLabel,
+  }) async {
+    try {
+      final ref = _storage.ref(path);
+      await ref.putData(
+        bytes,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+      return await ref.getDownloadURL();
+    } on FirebaseException catch (e) {
+      throw Exception(
+          '$friendlyLabel upload failed: ${e.message ?? 'storage error'}');
+    } catch (_) {
+      throw Exception(
+          '$friendlyLabel upload failed. Check your connection.');
+    }
   }
 
   // ─── KYC DOCUMENT UPLOAD ────────────────────────────────────
+  /// [docType] is one of: selfie, citizenship, pan, location1-3.
   static Future<String> uploadKycDocument({
     required File file,
     required String userId,
     required String docType,
   }) async {
-    try {
-      final bytes = await _compressImage(file);
-      final fileName = '${docType}_${_uuid.v4()}.jpg';
-      final filePath = '$userId/$fileName';
-
-      await _client.storage.from(kycBucket).uploadBinary(
-            filePath,
-            bytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/jpeg',
-              upsert: false,
-            ),
-          );
-
-      final signedUrl = await _client.storage
-          .from(kycBucket)
-          .createSignedUrl(filePath, 31536000);
-
-      return signedUrl;
-    } on StorageException catch (e) {
-      throw Exception('KYC upload failed: ${e.message}');
-    } catch (e) {
-      throw Exception('KYC upload failed. Check your connection.');
-    }
+    final bytes = await _compressImage(file);
+    return _upload(
+      path: 'kyc/$userId/${docType}_${_uuid.v4()}.jpg',
+      bytes: bytes,
+      friendlyLabel: 'KYC',
+    );
   }
 
   // ─── EVIDENCE UPLOAD ────────────────────────────────────────
@@ -69,30 +79,12 @@ class StorageService {
     required String evidenceType,
     required String userId,
   }) async {
-    try {
-      final bytes = await _compressImage(file);
-      final fileName = '${evidenceType}_${_uuid.v4()}.jpg';
-      final filePath = '$userId/$reportId/$fileName';
-
-      await _client.storage.from(evidenceBucket).uploadBinary(
-            filePath,
-            bytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/jpeg',
-              upsert: false,
-            ),
-          );
-
-      final signedUrl = await _client.storage
-          .from(evidenceBucket)
-          .createSignedUrl(filePath, 31536000);
-
-      return signedUrl;
-    } on StorageException catch (e) {
-      throw Exception('Evidence upload failed: ${e.message}');
-    } catch (e) {
-      throw Exception('Evidence upload failed. Check your connection.');
-    }
+    final bytes = await _compressImage(file);
+    return _upload(
+      path: 'evidence/$userId/$reportId/${evidenceType}_${_uuid.v4()}.jpg',
+      bytes: bytes,
+      friendlyLabel: 'Evidence',
+    );
   }
 
   // ─── REVIEW IMAGE UPLOAD ────────────────────────────────────
@@ -100,27 +92,12 @@ class StorageService {
     required File file,
     required String reviewId,
   }) async {
-    try {
-      final bytes = await _compressImage(file);
-      final fileName = 'review_${_uuid.v4()}.jpg';
-      final filePath = '$reviewId/$fileName';
-
-      await _client.storage.from(reviewBucket).uploadBinary(
-            filePath,
-            bytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/jpeg',
-              upsert: false,
-            ),
-          );
-
-      return _client.storage.from(reviewBucket).getPublicUrl(filePath);
-    } on StorageException catch (e) {
-      throw Exception('Review image upload failed: ${e.message}');
-    } catch (e) {
-      throw Exception(
-          'Review image upload failed. Check your connection.');
-    }
+    final bytes = await _compressImage(file);
+    return _upload(
+      path: 'review_images/$reviewId/review_${_uuid.v4()}.jpg',
+      bytes: bytes,
+      friendlyLabel: 'Review image',
+    );
   }
 
   // ─── QR CODE UPLOAD ─────────────────────────────────────────
@@ -128,26 +105,12 @@ class StorageService {
     required File file,
     required String sellerId,
   }) async {
-    try {
-      final bytes = await file.readAsBytes();
-      final fileName = 'qr_${_uuid.v4()}.jpg';
-      final filePath = '$sellerId/$fileName';
-
-      await _client.storage.from(qrBucket).uploadBinary(
-            filePath,
-            bytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/jpeg',
-              upsert: false,
-            ),
-          );
-
-      return _client.storage.from(qrBucket).getPublicUrl(filePath);
-    } on StorageException catch (e) {
-      throw Exception('QR upload failed: ${e.message}');
-    } catch (e) {
-      throw Exception('QR upload failed. Check your connection.');
-    }
+    final bytes = await file.readAsBytes();
+    return _upload(
+      path: 'qr_codes/$sellerId/qr_${_uuid.v4()}.jpg',
+      bytes: bytes,
+      friendlyLabel: 'QR',
+    );
   }
 
   // ─── PROFILE IMAGE UPLOAD ───────────────────────────────────
@@ -155,56 +118,25 @@ class StorageService {
     required File file,
     required String userId,
   }) async {
-    try {
-      final bytes = await _compressImage(file);
-      final fileName = 'profile_${_uuid.v4()}.jpg';
-      final filePath = '$userId/$fileName';
-
-      await _client.storage.from(profileBucket).uploadBinary(
-            filePath,
-            bytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/jpeg',
-              upsert: true,
-            ),
-          );
-
-      return _client.storage.from(profileBucket).getPublicUrl(filePath);
-    } on StorageException catch (e) {
-      throw Exception('Profile upload failed: ${e.message}');
-    } catch (e) {
-      throw Exception('Profile upload failed. Check your connection.');
-    }
+    final bytes = await _compressImage(file);
+    return _upload(
+      path: 'profiles/$userId/profile_${_uuid.v4()}.jpg',
+      bytes: bytes,
+      friendlyLabel: 'Profile',
+    );
   }
 
   // ─── DELETE FILE ────────────────────────────────────────────
-  static Future<void> deleteFile({
-    required String bucket,
-    required String filePath,
-  }) async {
+  /// Deletes a file by its download URL. Note: storage rules block
+  /// client deletes for evidence/KYC/QR (fraud-record integrity) —
+  /// those throw a friendly error.
+  static Future<void> deleteFile(String downloadUrl) async {
     try {
-      await _client.storage.from(bucket).remove([filePath]);
-    } on StorageException catch (e) {
-      throw Exception('Delete failed: ${e.message}');
-    } catch (e) {
+      await _storage.refFromURL(downloadUrl).delete();
+    } on FirebaseException catch (e) {
+      throw Exception('Delete failed: ${e.message ?? 'not permitted'}');
+    } catch (_) {
       throw Exception('Delete failed. Check your connection.');
-    }
-  }
-
-  // ─── GET FRESH SIGNED URL ───────────────────────────────────
-  static Future<String> getSignedUrl({
-    required String bucket,
-    required String filePath,
-    int expiresInSeconds = 3600,
-  }) async {
-    try {
-      return await _client.storage
-          .from(bucket)
-          .createSignedUrl(filePath, expiresInSeconds);
-    } on StorageException catch (e) {
-      throw Exception('URL generation failed: ${e.message}');
-    } catch (e) {
-      throw Exception('URL generation failed.');
     }
   }
 }
