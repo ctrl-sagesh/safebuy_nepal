@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
 import '../../../../core/widgets/verification_card.dart';
@@ -180,6 +181,44 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
           const SizedBox(height: 18),
 
+          // Demo quick-search (debug builds only — for thesis demonstration)
+          if (AppConfig.showDemoFeatures) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary50,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.primary100),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('🎬 Demo Quick Search',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary900,
+                      )),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _demoChip('✅ Trusted', AppConfig.demoTrustedSeller,
+                          AppColors.trusted),
+                      _demoChip('⚠ Unverified',
+                          AppConfig.demoUnverifiedSeller,
+                          AppColors.unverified),
+                      _demoChip('🔴 High Risk',
+                          AppConfig.demoHighRiskSeller, AppColors.highRisk),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
           if (_searching)
             ...List.generate(
               2,
@@ -216,6 +255,32 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           else
             _IdleHelp(),
         ],
+      ),
+    );
+  }
+
+  Widget _demoChip(String label, String phone, Color color) {
+    return InkWell(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        _controller.text = phone;
+        setState(() => _mode = 0);
+        _search();
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.5)),
+        ),
+        child: Text(label,
+            style: GoogleFonts.inter(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: color,
+            )),
       ),
     );
   }

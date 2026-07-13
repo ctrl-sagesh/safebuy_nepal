@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
 import '../../../../core/widgets/verification_card.dart';
@@ -14,6 +17,7 @@ import '../../../../models/seller_model.dart';
 import '../../../../models/user_model.dart';
 import '../../../../services/firestore_service.dart';
 import '../../../../services/google_auth_service.dart';
+import '../../../../services/seed_data_service.dart';
 
 /// Profile tab — guest prompt, buyer dashboard, or seller dashboard.
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -135,6 +139,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         }
       },
     );
+  }
+
+  Future<void> _seedDemoData() async {
+    if (!kDebugMode) return;
+    PopupHelper.showLoadingDialog(context, 'Loading demo data...');
+    try {
+      final existing = await FirebaseFirestore.instance
+          .collection('sellers')
+          .doc('seed_priya_fashions')
+          .get();
+      if (existing.exists) {
+        if (!mounted) return;
+        PopupHelper.hideLoadingDialog(context);
+        PopupHelper.showInfo(context, 'Demo data already exists');
+        return;
+      }
+      await SeedDataService.seedDatabase();
+      if (!mounted) return;
+      PopupHelper.hideLoadingDialog(context);
+      PopupHelper.showSuccess(context, 'Demo data loaded successfully');
+    } catch (_) {
+      if (!mounted) return;
+      PopupHelper.hideLoadingDialog(context);
+      PopupHelper.showError(
+          context, 'Could not load demo data. Check your connection.');
+    }
   }
 
   void _respondToReport(ReportModel report) {
@@ -697,6 +727,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   Icons.description_outlined, 'Terms of Service', () {
                 Navigator.pushNamed(context, '/terms');
               }),
+              _divider(),
+              _settingRow(
+                  Icons.info_outline_rounded, 'About SafeBuy Nepal', () {
+                Navigator.pushNamed(context, '/about');
+              }),
               if (_me?.role == 'admin') ...[
                 _divider(),
                 _settingRow(
@@ -719,6 +754,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
         ),
+
+        // Developer Options — debug builds only.
+        if (AppConfig.showDemoFeatures) ...[
+          const SizedBox(height: 18),
+          Text('Developer Options',
+              style: GoogleFonts.poppins(
+                  fontSize: 15, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.borderLight),
+            ),
+            child: _settingRow(
+                Icons.dataset_outlined, 'Seed Demo Data', _seedDemoData),
+          ),
+        ],
       ],
     );
   }

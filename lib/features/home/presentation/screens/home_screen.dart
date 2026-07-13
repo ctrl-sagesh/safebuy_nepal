@@ -168,11 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Text('Sign In'),
             ),
           ] else ...[
-            IconButton(
-              icon: const Icon(Icons.notifications_none_rounded),
-              onPressed: () =>
-                  Navigator.pushNamed(context, '/notifications'),
-            ),
+            _NotificationBell(userId: user?.uid),
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: GestureDetector(
@@ -737,6 +733,65 @@ class _FeaturedSellerCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ── Notification bell with live unread badge ────────────────────────────────────
+
+class _NotificationBell extends StatelessWidget {
+  const _NotificationBell({this.userId});
+
+  final String? userId;
+
+  @override
+  Widget build(BuildContext context) {
+    final bell = IconButton(
+      icon: const Icon(Icons.notifications_none_rounded),
+      tooltip: 'Notifications',
+      onPressed: () => Navigator.pushNamed(context, '/notifications'),
+    );
+    if (userId == null) return bell;
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('notifications')
+          .where('userId', isEqualTo: userId)
+          .where('read', isEqualTo: false)
+          .snapshots(),
+      builder: (context, snap) {
+        final count = snap.hasData ? snap.data!.docs.length : 0;
+        if (count == 0) return bell;
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            bell,
+            Positioned(
+              top: 10,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                constraints:
+                    const BoxConstraints(minWidth: 18, minHeight: 18),
+                decoration: BoxDecoration(
+                  color: AppColors.highRisk,
+                  borderRadius: BorderRadius.circular(9),
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  count > 9 ? '9+' : '$count',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

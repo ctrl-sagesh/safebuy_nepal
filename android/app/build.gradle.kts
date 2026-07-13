@@ -23,19 +23,26 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.sagesh.safebuy.safebuy_nepal"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
     }
 
     buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
+        getByName("debug") {
+            isDebuggable = true
+            // NOTE: no applicationIdSuffix — the Firebase google-services.json
+            // only registers `com.sagesh.safebuy.safebuy_nepal`, so a ".debug"
+            // suffix would fail the google-services build step and break
+            // `flutter run`. The debug build keeps the same appId.
+            versionNameSuffix = "-debug"
+        }
+        getByName("release") {
+            isMinifyEnabled = false
+            isShrinkResources = false
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }

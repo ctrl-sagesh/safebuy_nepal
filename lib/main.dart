@@ -40,6 +40,7 @@ import 'features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import 'features/guide/presentation/screens/how_it_works_screen.dart';
 import 'features/legal/privacy_policy_screen.dart';
 import 'features/legal/terms_screen.dart';
+import 'features/profile/presentation/screens/about_screen.dart';
 import 'features/notifications/notifications_screen.dart';
 import 'features/admin/presentation/screens/admin_dashboard_screen.dart';
 import 'features/admin/presentation/screens/admin_kyc_screen.dart';
@@ -221,6 +222,8 @@ class SafeBuyApp extends StatelessWidget {
         return _route(const PrivacyPolicyScreen(), settings);
       case '/terms':
         return _route(const TermsScreen(), settings);
+      case '/about':
+        return _route(const AboutScreen(), settings);
       case '/admin':
       case '/admin/dashboard':
         return _route(const AdminDashboardScreen(), settings);
@@ -306,10 +309,10 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
           },
           backgroundColor: Colors.white,
           elevation: 0,
-          height: 66,
-          indicatorColor: AppColors.primary.withValues(alpha: 0.1),
+          height: 64,
+          indicatorColor: AppColors.primary.withValues(alpha: 0.12),
           labelBehavior:
-              NavigationDestinationLabelBehavior.alwaysShow,
+              NavigationDestinationLabelBehavior.onlyShowSelected,
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined, size: 24),
@@ -318,10 +321,10 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
               label: 'Home',
             ),
             NavigationDestination(
-              icon: Icon(Icons.search_rounded, size: 24),
-              selectedIcon: Icon(Icons.saved_search_rounded,
+              icon: Icon(Icons.verified_user_outlined, size: 24),
+              selectedIcon: Icon(Icons.verified_user_rounded,
                   color: AppColors.primary, size: 24),
-              label: 'Search',
+              label: 'Verify',
             ),
             NavigationDestination(
               icon: Icon(Icons.notifications_none_rounded, size: 24),
