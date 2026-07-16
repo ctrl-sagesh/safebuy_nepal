@@ -64,6 +64,18 @@ class _AlertsScreenState extends State<AlertsScreen> {
       appBar: AppBar(
         title: const Text('Safety Alerts'),
         automaticallyImplyLeading: false,
+        actions: [
+          TextButton.icon(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pushNamed(context, '/nepal-stats');
+            },
+            icon: const Icon(Icons.bar_chart_rounded, size: 18),
+            label: const Text('Nepal Fraud Data',
+                style: TextStyle(fontSize: 12.5)),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: RefreshIndicator(
         color: AppColors.primary,

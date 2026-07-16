@@ -8,6 +8,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/services/festival_alert_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
 import '../../../../core/widgets/verification_card.dart';
@@ -30,6 +31,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool get _isGuest => FirebaseAuth.instance.currentUser == null;
+
+  final String? _festival = FestivalAlertService.activeFestival();
 
   List<LeaderboardEntryModel>? _featured;
   bool _featuredFailed = false;
@@ -294,6 +297,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
+
+            // ── Festival fraud-alert banner ───────────────────────────────
+            if (_festival != null &&
+                !FestivalAlertService.dismissedThisSession)
+              _FestivalBanner(
+                festival: _festival,
+                onVerify: () {
+                  HapticFeedback.mediumImpact();
+                  widget.onSearchTap?.call();
+                },
+                onDismiss: () {
+                  FestivalAlertService.dismissedThisSession = true;
+                  setState(() {});
+                },
+              ),
 
             // ── Active alerts strip ───────────────────────────────────────
             if (_alerts != null && _alerts!.isNotEmpty)
@@ -888,5 +906,98 @@ class _NotificationBell extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+// ── Festival fraud-alert banner ────────────────────────────────────────────────
+
+/// Red dismissible warning shown under the hero while a festival shopping
+/// window is active (fraud complaints spike around festivals).
+class _FestivalBanner extends StatelessWidget {
+  const _FestivalBanner({
+    required this.festival,
+    required this.onVerify,
+    required this.onDismiss,
+  });
+
+  final String festival;
+  final VoidCallback onVerify;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFDC143C), Color(0xFF8B0000)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFDC143C).withValues(alpha: 0.35),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded,
+                  color: Colors.white, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('$festival Season Fraud Alert',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                    )),
+              ),
+              InkWell(
+                onTap: onDismiss,
+                borderRadius: BorderRadius.circular(14),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.close_rounded,
+                      color: Colors.white70, size: 18),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Fraud complaints increase 340% during festivals. '
+            'Verify every seller before paying.',
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.92),
+              fontSize: 12.5,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 38,
+            child: ElevatedButton(
+              onPressed: onVerify,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF8B0000),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              child: Text('Verify a Seller Now',
+                  style: GoogleFonts.inter(
+                      fontSize: 12.5, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 350.ms).slideY(begin: -0.15);
   }
 }

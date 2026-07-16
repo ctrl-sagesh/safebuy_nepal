@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -8,9 +9,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
+import '../../../../core/widgets/loyalty_badge.dart';
 import '../../../../core/widgets/verification_card.dart';
 import '../../../../models/report_model.dart';
 import '../../../../models/review_model.dart';
@@ -45,6 +48,17 @@ class _SellerProfileScreenState
   );
 
   bool get _isGuest => FirebaseAuth.instance.currentUser == null;
+
+  /// The signed-in user's own report against this seller, if any —
+  /// unlocks the "Escalate to Nepal Police" flow on high-risk profiles.
+  ReportModel? get _myReport {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null || _reports == null) return null;
+    for (final r in _reports!) {
+      if (r.reporterId == uid) return r;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -97,6 +111,52 @@ class _SellerProfileScreenState
         PopupHelper.showError(context, 'Could not load reports');
       }
     }
+  }
+
+  // ── WhatsApp fraud-warning share ─────────────────────────────────────────────
+
+  String _warningText(SellerModel s) {
+    final total = (_reports ?? const <ReportModel>[])
+        .fold<double>(0, (sum, r) => sum + r.amountLost);
+    final platforms = <String>[
+      if (s.tiktokHandle?.isNotEmpty == true) 'TikTok @${s.tiktokHandle}',
+      if (s.instagramHandle?.isNotEmpty == true)
+        'Instagram @${s.instagramHandle}',
+      if (s.facebookHandle?.isNotEmpty == true)
+        'Facebook ${s.facebookHandle}',
+    ];
+    return 'FRAUD WARNING — SafeBuy Nepal\n'
+        'Seller: ${s.displayName}${s.phone.isNotEmpty ? ' (${s.phone})' : ''}\n'
+        'Platform: ${platforms.isEmpty ? 'Social commerce' : platforms.join(', ')}\n'
+        'Trust Rating: HIGH RISK — ${s.trustScore.round()}/100\n'
+        'Fraud Reports: ${s.scamReportCount}\n'
+        'Amount Reported Lost: NPR ${NumberFormat('#,##0').format(total)}\n\n'
+        'Check any seller before paying:\n'
+        'safebuynepal.com\n\n'
+        '— Shared via SafeBuy Nepal';
+  }
+
+  Future<void> _shareOnWhatsApp(SellerModel s) async {
+    HapticFeedback.mediumImpact();
+    final text = _warningText(s);
+    final uri =
+        Uri.parse('whatsapp://send?text=${Uri.encodeComponent(text)}');
+    try {
+      final ok = await launchUrl(uri);
+      if (!ok) throw Exception('whatsapp unavailable');
+    } catch (_) {
+      await Clipboard.setData(ClipboardData(text: text));
+      if (!mounted) return;
+      PopupHelper.showSuccess(context,
+          'Warning text copied — WhatsApp is not installed. Paste it anywhere.');
+    }
+  }
+
+  Future<void> _copyWarning(SellerModel s) async {
+    HapticFeedback.lightImpact();
+    await Clipboard.setData(ClipboardData(text: _warningText(s)));
+    if (!mounted) return;
+    PopupHelper.showSuccess(context, 'Warning text copied to clipboard');
   }
 
   LinearGradient get _verdictGradient {
@@ -384,8 +444,69 @@ class _SellerProfileScreenState
                         ),
                       ],
                     ),
-                  )
-                else if (s.trustVerdict == 'trusted')
+                  ),
+                if (s.trustVerdict == 'high_risk')
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _shareOnWhatsApp(s),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF25D366),
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(0, 44),
+                            ),
+                            icon: const Icon(Icons.share_rounded, size: 16),
+                            label: const Text('Share on WhatsApp',
+                                style: TextStyle(fontSize: 12.5)),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _copyWarning(s),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.highRisk,
+                              side: const BorderSide(
+                                  color: AppColors.highRisk),
+                              minimumSize: const Size(0, 44),
+                            ),
+                            icon: const Icon(Icons.copy_rounded, size: 16),
+                            label: const Text('Copy Warning Text',
+                                style: TextStyle(fontSize: 12.5)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (s.trustVerdict == 'high_risk' && _myReport != null)
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        Navigator.pushNamed(
+                          context,
+                          '/cybercrime-report',
+                          arguments: {
+                            'reportId': _myReport!.reportId,
+                            'sellerId': s.sellerId,
+                          },
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryDark,
+                        foregroundColor: Colors.white,
+                      ),
+                      icon: const Icon(Icons.local_police_rounded, size: 18),
+                      label: const Text('Escalate to Nepal Police'),
+                    ),
+                  ),
+                if (s.trustVerdict == 'trusted')
                   Container(
                     margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                     padding: const EdgeInsets.all(14),
@@ -449,6 +570,11 @@ class _SellerProfileScreenState
                           (s.tiktokHandle?.isNotEmpty ?? false) ||
                               (s.instagramHandle?.isNotEmpty ?? false) ||
                               (s.facebookHandle?.isNotEmpty ?? false)),
+                      if (LoyaltyBadge.tierFor(s) != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Row(children: [LoyaltyBadge(seller: s)]),
+                        ),
                       const SizedBox(height: 6),
                       _kv('Registered',
                           DateFormat('dd MMM yyyy').format(s.accountCreatedAt)),
@@ -620,7 +746,23 @@ class _SellerProfileScreenState
       return _empty('✅ No fraud complaints on record',
           'This seller has a clean history.');
     }
-    return Column(children: _reports!.map((r) => _ReportCard(r)).toList());
+
+    // Verified sellers get 48 hours to answer their newest complaint.
+    ReportModel? awaiting;
+    if (_seller?.isVerified == true) {
+      final unresponded = _reports!
+          .where((r) =>
+              (r.sellerResponse ?? '').isEmpty &&
+              r.status != 'flagged_false')
+          .toList()
+        ..sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
+      if (unresponded.isNotEmpty) awaiting = unresponded.first;
+    }
+
+    return Column(children: [
+      if (awaiting != null) _ResponseCountdownCard(report: awaiting),
+      ..._reports!.map((r) => _ReportCard(r)),
+    ]);
   }
 
   Widget _aboutTab(SellerModel s) {
@@ -1034,6 +1176,121 @@ class _ReportCardState extends State<_ReportCard> {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── 48-hour seller response countdown ──────────────────────────────────────────
+
+/// Amber countdown while the seller's 48h response window is open;
+/// turns red once the window has expired without a response.
+class _ResponseCountdownCard extends StatefulWidget {
+  const _ResponseCountdownCard({required this.report});
+
+  final ReportModel report;
+
+  @override
+  State<_ResponseCountdownCard> createState() =>
+      _ResponseCountdownCardState();
+}
+
+class _ResponseCountdownCardState extends State<_ResponseCountdownCard> {
+  static const _window = Duration(hours: 48);
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    // Keep the remaining time fresh while the tab stays open.
+    _ticker = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final elapsed = DateTime.now().difference(widget.report.submittedAt);
+    final expired = elapsed >= _window;
+    final remaining = expired ? Duration.zero : _window - elapsed;
+    final color = expired ? AppColors.highRisk : AppColors.unverified;
+    final bg = expired ? AppColors.highRiskBg : AppColors.unverifiedBg;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.45)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                expired
+                    ? Icons.timer_off_rounded
+                    : Icons.hourglass_bottom_rounded,
+                size: 18,
+                color: color,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  expired
+                      ? 'Seller did not respond within 48 hours'
+                      : 'Seller has ${remaining.inHours}h '
+                          '${remaining.inMinutes % 60}m to respond',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (expired)
+            Text(
+              'This negatively affects their trust rating.',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: AppColors.textPrimary,
+                height: 1.5,
+              ),
+            )
+          else ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: (elapsed.inMinutes / _window.inMinutes)
+                    .clamp(0.0, 1.0),
+                minHeight: 6,
+                backgroundColor: Colors.white,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Verified sellers get 48 hours to publicly answer the '
+              'newest complaint before their trust rating is affected.',
+              style: GoogleFonts.inter(
+                fontSize: 11.5,
+                color: AppColors.textSecondary,
+                height: 1.45,
+              ),
+            ),
+          ],
         ],
       ),
     );

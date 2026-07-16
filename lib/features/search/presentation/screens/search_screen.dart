@@ -11,9 +11,11 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
+import '../../../../core/widgets/loyalty_badge.dart';
 import '../../../../core/widgets/verification_card.dart';
 import '../../../../models/seller_model.dart';
 import '../../../../services/firestore_service.dart';
+import 'qr_scan_screen.dart';
 
 /// Search tab — find sellers by phone, eSewa ID, or social handle and
 /// see their SafeBuy verification card.
@@ -74,6 +76,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _controller.dispose();
     _focus.dispose();
     super.dispose();
+  }
+
+  /// Opens the QR scanner; a scanned phone number pre-fills the field
+  /// and triggers the search immediately.
+  Future<void> _scanQr() async {
+    HapticFeedback.lightImpact();
+    final phone = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+          builder: (_) => const QrScanScreen(), fullscreenDialog: true),
+    );
+    if (phone == null || phone.isEmpty || !mounted) return;
+    _controller.text = phone;
+    setState(() {});
+    _search();
   }
 
   Future<void> _search() async {
@@ -171,6 +188,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         : const Text('Search'),
                   ),
                 ),
+                IconButton(
+                  onPressed: _scanQr,
+                  tooltip: 'Scan seller QR',
+                  icon: const Icon(Icons.qr_code_scanner_rounded,
+                      color: AppColors.primary),
+                ),
               ],
             ),
           ),
@@ -250,9 +273,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ..._results.asMap().entries.map(
                   (e) => Padding(
                     padding: const EdgeInsets.only(bottom: 14),
-                    child: _SellerResultCard(
-                      seller: e.value,
-                      isGuest: _isGuest,
+                    child: Column(
+                      children: [
+                        _SellerResultCard(
+                          seller: e.value,
+                          isGuest: _isGuest,
+                        ),
+                        if (e.value.trustVerdict == 'unverified')
+                          _BeforeYouPayChecklist(
+                              sellerId: e.value.sellerId),
+                      ],
                     )
                         .animate(delay: (e.key * 70).ms)
                         .fadeIn()
@@ -585,6 +615,13 @@ class _SellerResultCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (LoyaltyBadge.tierFor(seller) != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(children: [
+                      LoyaltyBadge(seller: seller, compact: true),
+                    ]),
+                  ),
                 const SizedBox(height: 10),
 
                 // Socials + stats
@@ -910,6 +947,179 @@ class _IdleHelp extends StatelessWidget {
               fontSize: 12.5,
               color: AppColors.textSecondary,
               height: 1.6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── "Before You Pay" safety checklist (unverified sellers) ────────────────────
+
+/// Interactive 5-step safety checklist shown under unverified search
+/// results. Check state and dismissal live for the app session only.
+class _BeforeYouPayChecklist extends StatefulWidget {
+  const _BeforeYouPayChecklist({required this.sellerId});
+
+  final String sellerId;
+
+  /// Session-scoped state, keyed by sellerId.
+  static final Set<String> _dismissed = {};
+  static final Map<String, Set<int>> _checked = {};
+
+  @override
+  State<_BeforeYouPayChecklist> createState() =>
+      _BeforeYouPayChecklistState();
+}
+
+class _BeforeYouPayChecklistState extends State<_BeforeYouPayChecklist> {
+  static const _steps = [
+    'Ask for a video call showing the actual product',
+    'Check their Instagram/TikTok comments for complaints',
+    'Start with a small test order under NPR 500',
+    'Screenshot their profile and QR before paying',
+    'Never pay the full amount before dispatch',
+  ];
+
+  Set<int> get _done =>
+      _BeforeYouPayChecklist._checked.putIfAbsent(widget.sellerId, () => {});
+
+  @override
+  Widget build(BuildContext context) {
+    if (_BeforeYouPayChecklist._dismissed.contains(widget.sellerId)) {
+      return const SizedBox.shrink();
+    }
+    final allDone = _done.length == _steps.length;
+
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: allDone ? AppColors.trustedBg : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: allDone
+              ? AppColors.trusted.withValues(alpha: 0.5)
+              : AppColors.unverified.withValues(alpha: 0.45),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                allDone
+                    ? Icons.verified_user_rounded
+                    : Icons.checklist_rounded,
+                size: 18,
+                color: allDone ? AppColors.trusted : AppColors.unverified,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  allDone
+                      ? 'You have completed all safety steps'
+                      : 'Unverified Seller — Check These Before Paying',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: allDone
+                        ? AppColors.trusted
+                        : AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              Text('${_done.length} of ${_steps.length}',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: allDone
+                        ? AppColors.trusted
+                        : AppColors.unverified,
+                  )),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: _done.length / _steps.length,
+              minHeight: 5,
+              backgroundColor: AppColors.borderLight,
+              color: allDone ? AppColors.trusted : AppColors.unverified,
+            ),
+          ),
+          const SizedBox(height: 6),
+          if (allDone)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Text('You are better protected now.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  )),
+            )
+          else
+            ...List.generate(_steps.length, (i) {
+              final checked = _done.contains(i);
+              return InkWell(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() {
+                    checked ? _done.remove(i) : _done.add(i);
+                  });
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        checked
+                            ? Icons.check_circle_rounded
+                            : Icons.radio_button_unchecked_rounded,
+                        size: 18,
+                        color: checked
+                            ? AppColors.trusted
+                            : AppColors.grey400,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _steps[i],
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            height: 1.4,
+                            color: checked
+                                ? AppColors.textMuted
+                                : AppColors.textPrimary,
+                            decoration: checked
+                                ? TextDecoration.lineThrough
+                                : null,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () {
+                setState(() => _BeforeYouPayChecklist._dismissed
+                    .add(widget.sellerId));
+              },
+              child: Text('I understand the risks',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textMuted,
+                  )),
             ),
           ),
         ],

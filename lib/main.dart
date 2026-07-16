@@ -41,8 +41,10 @@ import 'features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import 'features/guide/presentation/screens/how_it_works_screen.dart';
 import 'features/legal/privacy_policy_screen.dart';
 import 'features/legal/terms_screen.dart';
+import 'features/legal/presentation/screens/cybercrime_report_screen.dart';
 import 'features/profile/presentation/screens/about_screen.dart';
 import 'features/notifications/notifications_screen.dart';
+import 'features/stats/presentation/screens/nepal_fraud_stats_screen.dart';
 import 'features/admin/presentation/screens/admin_dashboard_screen.dart';
 import 'features/admin/presentation/screens/admin_kyc_screen.dart';
 import 'screens/register_business_screen.dart';
@@ -129,6 +131,7 @@ class SafeBuyApp extends StatelessWidget {
   /// Routes that require a signed-in user.
   static const _protected = {
     '/report',
+    '/cybercrime-report',
     '/register-business',
     '/kyc',
     '/kyc/gmail',
@@ -193,6 +196,13 @@ class SafeBuyApp extends StatelessWidget {
                   args['phone'] as String? ?? args['prefill'] as String?,
             ),
             settings);
+      case '/cybercrime-report':
+        return _route(
+            CybercrimeReportScreen(
+              reportId: args['reportId'] as String? ?? '',
+              sellerId: args['sellerId'] as String? ?? '',
+            ),
+            settings);
       case '/report/success':
         return _route(
             ReportSuccessScreen(
@@ -224,6 +234,8 @@ class SafeBuyApp extends StatelessWidget {
         return _route(const LeaderboardScreen(), settings);
       case '/guide':
         return _route(const HowItWorksScreen(), settings);
+      case '/nepal-stats':
+        return _route(const NepalFraudStatsScreen(), settings);
       case '/scam-news':
         return _route(const ScamNewsScreen(), settings);
       case '/notifications':
