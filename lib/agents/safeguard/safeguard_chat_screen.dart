@@ -157,8 +157,8 @@ class _SafeguardChatScreenState extends ConsumerState<SafeguardChatScreen> {
             color: const Color(0xFF0D1F3C),
             child: Text(
               isNe
-                  ? 'Online  |  Rule-based AI  |  बाहिर डाटा पठाइँदैन'
-                  : 'Online  |  Rule-based AI  |  No data sent externally',
+                  ? 'Online  |  तुरुन्त जवाफ  |  बाहिर डाटा पठाइँदैन'
+                  : 'Online  |  Instant answers  |  No data sent externally',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF546E7A),
@@ -223,7 +223,7 @@ class _SafeguardChatScreenState extends ConsumerState<SafeguardChatScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'SafeGuard AI',
+                'Safety Assistant',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -231,7 +231,9 @@ class _SafeguardChatScreenState extends ConsumerState<SafeguardChatScreen> {
                 ),
               ),
               Text(
-                isNe ? 'तपाईंको सुरक्षा सहायक' : 'Your safety assistant',
+                isNe
+                    ? 'सुरक्षित किनमेलबारे जवाफ पाउनुहोस्'
+                    : 'Answers about safe online shopping',
                 style: const TextStyle(
                   color: Color(0xFF64B5F6),
                   fontSize: 11,

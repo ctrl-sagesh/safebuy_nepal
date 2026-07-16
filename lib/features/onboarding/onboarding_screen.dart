@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,9 +8,10 @@ import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/popup_helper.dart';
 
-/// 4-slide visual tutorial onboarding.
-/// Slide 1: search flow demo  ·  Slide 2: verification card
-/// Slide 3: report pipeline   ·  Slide 4: account vs guest
+/// 4-slide onboarding that makes a stranger FEEL the problem before
+/// showing the solution.
+/// Slide 1: the ghosted-buyer story   · Slide 2: check before you pay
+/// Slide 3: report once, protect all  · Slide 4: account vs guest choice
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -87,11 +86,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView(
                 controller: _controller,
                 onPageChanged: (i) => setState(() => _page = i),
-                children: const [
-                  _Slide1(),
-                  _Slide2(),
-                  _Slide3(),
-                  _Slide4(),
+                children: [
+                  const _ProblemSlide(),
+                  const _SolutionSlide(),
+                  const _CommunitySlide(),
+                  _ChoiceSlide(
+                    onCreateAccount: () => _complete(asGuest: false),
+                    onBrowse: () => _complete(asGuest: true),
+                  ),
                 ],
               ),
             ),
@@ -108,11 +110,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 dotColor: AppColors.borderMedium,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Bottom actions
+            // Next button on slides 1-3; slide 4 uses its own card buttons.
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
               child: _page < 3
                   ? SizedBox(
                       width: double.infinity,
@@ -132,38 +134,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                     )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: AppColors.primaryGradient,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: ElevatedButton(
-                              onPressed: () => _complete(asGuest: false),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                              ),
-                              child: const Text('Create Free Account'),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: OutlinedButton(
-                            onPressed: () => _complete(asGuest: true),
-                            child: const Text('Browse as Guest'),
-                          ),
-                        ),
-                      ],
-                    ),
+                  : const SizedBox(height: 4),
             ),
           ],
         ),
@@ -177,17 +148,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 class _SlideBody extends StatelessWidget {
   const _SlideBody({
     required this.illustration,
-    required this.guideSteps,
-    required this.title,
-    required this.titleNe,
+    required this.headline,
     required this.body,
+    this.footnote,
   });
 
   final Widget illustration;
-  final List<(String, String)> guideSteps; // (emoji, text)
-  final String title;
-  final String titleNe;
+  final String headline;
   final String body;
+  final String? footnote;
 
   @override
   Widget build(BuildContext context) {
@@ -195,88 +164,432 @@ class _SlideBody extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
-          SizedBox(height: 210, child: Center(child: illustration)),
-          const SizedBox(height: 12),
-
-          // Mini guide steps with staggered entrance
-          ...List.generate(guideSteps.length, (i) {
-            final (emoji, text) = guideSteps[i];
-            return TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: 1),
-              duration: Duration(milliseconds: 350 + i * 300),
-              curve: Curves.easeOut,
-              builder: (context, t, child) => Opacity(
-                opacity: t,
-                child: Transform.translate(
-                  offset: Offset(24 * (1 - t), 0),
-                  child: child,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary50,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.primary100),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text('${i + 1}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                          )),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(emoji, style: const TextStyle(fontSize: 16)),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        text,
-                        style: GoogleFonts.inter(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-
-          const SizedBox(height: 18),
+          SizedBox(height: 260, child: Center(child: illustration)),
+          const SizedBox(height: 24),
           Text(
-            title,
+            headline,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 22,
+              fontSize: 23,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            titleNe,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.notoSansDevanagari(
-              fontSize: 14,
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Text(
             body,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 13.5,
+              height: 1.65,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          if (footnote != null) ...[
+            const SizedBox(height: 14),
+            Text(
+              footnote!,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 11.5,
+                fontStyle: FontStyle.italic,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Slide 1: THE PROBLEM — a conversation that goes silent ─────────────────────
+
+class _ProblemSlide extends StatelessWidget {
+  const _ProblemSlide();
+
+  Widget _bubble(String text,
+      {required bool isBuyer, double maxWidth = 200}) {
+    return Align(
+      alignment: isBuyer ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        margin: const EdgeInsets.symmetric(vertical: 3),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isBuyer ? AppColors.primary : const Color(0xFF2A3648),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(14),
+            topRight: const Radius.circular(14),
+            bottomLeft: Radius.circular(isBuyer ? 14 : 4),
+            bottomRight: Radius.circular(isBuyer ? 4 : 14),
+          ),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 12,
+            height: 1.4,
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _SlideBody(
+      illustration: Container(
+        width: 290,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10203A),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFF29405F), width: 2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _bubble('Payment garnu hos NPR 3,500', isBuyer: false),
+            _bubble('Delivery 3 din ma', isBuyer: false),
+            _bubble('eSewa garchhu', isBuyer: true),
+            const SizedBox(height: 6),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                'Seen',
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.45),
+                  fontSize: 10.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.schedule_rounded,
+                    color: Color(0xFFFF6B6B), size: 15),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    '7 days later... no product, no reply',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFFF6B6B),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      headline: 'Sound familiar?',
+      body: 'Every month, thousands of Nepali buyers lose money to '
+          'TikTok and Instagram sellers who disappear after payment. '
+          'There was no way to know who to trust.',
+      footnote: 'NPR 40 crore lost in 2023 alone — Nepal Police Report',
+    );
+  }
+}
+
+// ── Slide 2: THE SOLUTION — search before you pay ──────────────────────────────
+
+class _SolutionSlide extends StatelessWidget {
+  const _SolutionSlide();
+
+  @override
+  Widget build(BuildContext context) {
+    return _SlideBody(
+      illustration: Container(
+        width: 250,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10203A),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: const Color(0xFF29405F), width: 2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Search bar with the number typed in
+            Container(
+              height: 38,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.search,
+                      size: 15, color: Colors.white70),
+                  const SizedBox(width: 6),
+                  Text('9841234567',
+                      style: GoogleFonts.robotoMono(
+                          color: Colors.white, fontSize: 12.5)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Seller result card
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.trustedBg,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text('TRUSTED',
+                            style: GoogleFonts.poppins(
+                              color: AppColors.trusted,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.4,
+                            )),
+                      ),
+                      const Spacer(),
+                      Text('87/100',
+                          style: GoogleFonts.poppins(
+                            color: AppColors.trusted,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          )),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Priya Fashions',
+                      style: GoogleFonts.poppins(
+                        color: AppColors.textPrimary,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                      )),
+                  const SizedBox(height: 3),
+                  Text('23 reviews · 0 complaints · Verified',
+                      style: GoogleFonts.inter(
+                        color: AppColors.textSecondary,
+                        fontSize: 11,
+                      )),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      headline: 'Check before you pay',
+      body: 'Search any seller by their phone number, eSewa ID, or '
+          'TikTok handle. See their trust rating, reviews, and fraud '
+          'complaints — before sending a single rupee.',
+    );
+  }
+}
+
+// ── Slide 3: THE COMMUNITY — report once, protect thousands ────────────────────
+
+class _CommunitySlide extends StatelessWidget {
+  const _CommunitySlide();
+
+  Widget _stepBox(IconData icon, String label, Color color) {
+    return Container(
+      width: 88,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 26),
+          const SizedBox(height: 8),
+          Text(label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+                height: 1.35,
+              )),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _SlideBody(
+      illustration: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _stepBox(Icons.person_rounded, 'You report\nfraud',
+                  AppColors.primary),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Icon(Icons.arrow_forward_rounded,
+                    color: AppColors.textMuted, size: 20),
+              ),
+              _stepBox(Icons.warning_rounded, 'Score drops\ninstantly',
+                  AppColors.unverified),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Icon(Icons.arrow_forward_rounded,
+                    color: AppColors.textMuted, size: 20),
+              ),
+              _stepBox(Icons.groups_rounded, 'Next buyer\nsees warning',
+                  AppColors.trusted),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Your report protects the next buyer',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ),
+      headline: 'Report once, protect thousands',
+      body: 'When you file a fraud report, the seller\'s trust rating '
+          'drops immediately. Every future buyer who searches that '
+          'seller will see your warning.',
+    );
+  }
+}
+
+// ── Slide 4: THE CHOICE — account vs guest ─────────────────────────────────────
+
+class _ChoiceSlide extends StatelessWidget {
+  const _ChoiceSlide({
+    required this.onCreateAccount,
+    required this.onBrowse,
+  });
+
+  final VoidCallback onCreateAccount;
+  final VoidCallback onBrowse;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Create account card
+              Expanded(
+                child: _OptionCard(
+                  icon: Icons.person_add_alt_1_rounded,
+                  iconColor: AppColors.primary,
+                  borderColor: AppColors.primary,
+                  title: 'Create Account',
+                  points: const [
+                    'Report fraud',
+                    'Leave reviews',
+                    'Track your history',
+                    'Get notified',
+                  ],
+                  button: SizedBox(
+                    height: 44,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          onCreateAccount();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          padding: EdgeInsets.zero,
+                        ),
+                        child: const Text('Get Started',
+                            style: TextStyle(fontSize: 13.5)),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              // Guest card
+              Expanded(
+                child: _OptionCard(
+                  icon: Icons.visibility_outlined,
+                  iconColor: AppColors.grey500,
+                  borderColor: AppColors.borderMedium,
+                  title: 'Browse as Guest',
+                  points: const [
+                    'Search sellers',
+                    'View trust ratings',
+                    'Read community alerts',
+                    'No signup needed',
+                  ],
+                  button: SizedBox(
+                    height: 44,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        onBrowse();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        side: const BorderSide(
+                            color: AppColors.borderMedium),
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: const Text('Browse',
+                          style: TextStyle(fontSize: 13.5)),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 26),
+          Text(
+            'How do you want to join?',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 21,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Both options are free. Create an account to help the '
+            'community by reporting fraud and leaving reviews.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 13,
               height: 1.6,
               color: AppColors.textSecondary,
             ),
@@ -288,539 +601,60 @@ class _SlideBody extends StatelessWidget {
   }
 }
 
-// ── Slide 1: phone mockup with looping search demo ─────────────────────────────
+class _OptionCard extends StatelessWidget {
+  const _OptionCard({
+    required this.icon,
+    required this.iconColor,
+    required this.borderColor,
+    required this.title,
+    required this.points,
+    required this.button,
+  });
 
-class _Slide1 extends StatefulWidget {
-  const _Slide1();
-
-  @override
-  State<_Slide1> createState() => _Slide1State();
-}
-
-class _Slide1State extends State<_Slide1> {
-  int _step = 0;
-  String _typed = '';
-  Timer? _timer;
-  static const _number = '98XXXXXXXX';
-
-  @override
-  void initState() {
-    super.initState();
-    _loop();
-  }
-
-  void _loop() {
-    _timer?.cancel();
-    setState(() {
-      _step = 0;
-      _typed = '';
-    });
-    // Step 1 → type number → show result → hold → restart
-    _timer = Timer(const Duration(milliseconds: 700), () {
-      if (!mounted) return;
-      setState(() => _step = 1);
-      var i = 0;
-      _timer = Timer.periodic(const Duration(milliseconds: 110), (t) {
-        if (!mounted) return t.cancel();
-        if (i < _number.length) {
-          setState(() => _typed = _number.substring(0, ++i));
-        } else {
-          t.cancel();
-          setState(() => _step = 2);
-          _timer = Timer(const Duration(milliseconds: 1800), () {
-            if (mounted) _loop();
-          });
-        }
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
+  final IconData icon;
+  final Color iconColor;
+  final Color borderColor;
+  final String title;
+  final List<String> points;
+  final Widget button;
 
   @override
   Widget build(BuildContext context) {
-    return _SlideBody(
-      illustration: _phoneMockup(),
-      guideSteps: const [
-        ('🔍', 'Open Search tab'),
-        ('📱', 'Enter phone, eSewa ID, or @handle'),
-        ('✅', 'See trust verdict instantly'),
-      ],
-      title: 'Verify Any Seller Instantly',
-      titleNe: 'जुनसुकै विक्रेता तुरुन्त जाँच्नुस्',
-      body: 'Search any TikTok, Instagram, or Facebook seller by their '
-          'phone number, eSewa ID, or social media handle. See their '
-          'trust score before you pay.',
-    );
-  }
-
-  Widget _phoneMockup() {
     return Container(
-      width: 160,
-      height: 210,
-      decoration: BoxDecoration(
-        color: const Color(0xFF10203A),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFF29405F), width: 3),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('SafeBuy Nepal',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-              )),
-          const SizedBox(height: 10),
-          // Search bar
-          Container(
-            height: 30,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.search, size: 12, color: Colors.white70),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    _typed.isEmpty ? '' : _typed,
-                    style: GoogleFonts.robotoMono(
-                        color: Colors.white, fontSize: 10),
-                  ),
-                ),
-                // Blinking cursor
-                _BlinkingCursor(visible: _step <= 1),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Result card slides up
-          AnimatedSlide(
-            offset: _step == 2 ? Offset.zero : const Offset(0, 1.2),
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeOutCubic,
-            child: AnimatedOpacity(
-              opacity: _step == 2 ? 1 : 0,
-              duration: const Duration(milliseconds: 300),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.trustedBg,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text('TRUSTED',
-                              style: GoogleFonts.poppins(
-                                color: AppColors.trusted,
-                                fontSize: 7,
-                                fontWeight: FontWeight.w800,
-                              )),
-                        ),
-                        const Spacer(),
-                        Text('87',
-                            style: GoogleFonts.poppins(
-                              color: AppColors.trusted,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                            )),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text('Priya Fashions',
-                        style: GoogleFonts.inter(
-                          color: AppColors.textPrimary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        )),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BlinkingCursor extends StatefulWidget {
-  const _BlinkingCursor({required this.visible});
-  final bool visible;
-
-  @override
-  State<_BlinkingCursor> createState() => _BlinkingCursorState();
-}
-
-class _BlinkingCursorState extends State<_BlinkingCursor>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 800),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.visible) return const SizedBox.shrink();
-    return FadeTransition(
-      opacity: _c,
-      child: Container(width: 1.5, height: 12, color: Colors.white),
-    );
-  }
-}
-
-// ── Slide 2: verification card ─────────────────────────────────────────────────
-
-class _Slide2 extends StatefulWidget {
-  const _Slide2();
-
-  @override
-  State<_Slide2> createState() => _Slide2State();
-}
-
-class _Slide2State extends State<_Slide2>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _glow = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1600),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _glow.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _SlideBody(
-      illustration: AnimatedBuilder(
-        animation: _glow,
-        builder: (context, _) => Container(
-          width: 280,
-          height: 160,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Color.lerp(const Color(0xFFD4AF37),
-                  const Color(0xFFFFE082), _glow.value)!,
-              width: 2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFD4AF37)
-                    .withValues(alpha: 0.25 + 0.2 * _glow.value),
-                blurRadius: 18 + 8 * _glow.value,
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.shield_rounded,
-                      color: Colors.white, size: 18),
-                  const SizedBox(width: 6),
-                  Text('SafeBuy Nepal',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      )),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD4AF37),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text('VERIFIED',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
-                        )),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.person,
-                        color: Colors.white, size: 24),
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Your Business Name',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          )),
-                      Text('Clothing & Fashion · Kathmandu',
-                          style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontSize: 9,
-                          )),
-                    ],
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Row(
-                children: [
-                  Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Icon(Icons.qr_code_2,
-                        size: 26, color: Color(0xFF0A1628)),
-                  ),
-                  const SizedBox(width: 8),
-                  Text('SBV-2026-XXXXX',
-                      style: GoogleFonts.robotoMono(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      )),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      guideSteps: const [
-        ('📋', 'Register your business details'),
-        ('🪪', 'Upload KYC documents'),
-        ('🏆', 'Get your SafeBuy Verified card'),
-      ],
-      title: 'Get Your Business Verified',
-      titleNe: 'आफ्नो व्यवसाय प्रमाणित गर्नुस्',
-      body: 'Complete KYC verification and receive your SafeBuy '
-          'Verification Card. Buyers trust verified sellers with a '
-          'locked payment QR.',
-    );
-  }
-}
-
-// ── Slide 3: report pipeline ───────────────────────────────────────────────────
-
-class _Slide3 extends StatefulWidget {
-  const _Slide3();
-
-  @override
-  State<_Slide3> createState() => _Slide3State();
-}
-
-class _Slide3State extends State<_Slide3>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2600),
-  )..repeat();
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  Widget _card(String emoji, String label, Color color, double appearAt) {
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (context, _) {
-        final t = ((_c.value - appearAt) / 0.18).clamp(0.0, 1.0);
-        return Opacity(
-          opacity: t,
-          child: Transform.scale(
-            scale: 0.7 + 0.3 * Curves.easeOutBack.transform(t),
-            child: Container(
-              width: 86,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: color.withValues(alpha: 0.35)),
-              ),
-              child: Column(
-                children: [
-                  Text(emoji, style: const TextStyle(fontSize: 24)),
-                  const SizedBox(height: 6),
-                  Text(label,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      )),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _arrow(double appearAt) {
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (context, _) {
-        final t = ((_c.value - appearAt) / 0.12).clamp(0.0, 1.0);
-        return Opacity(
-          opacity: t,
-          child: const Icon(Icons.arrow_forward_rounded,
-              color: AppColors.primary, size: 20),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _SlideBody(
-      illustration: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _card('📸', 'Collect\nEvidence', AppColors.grey500, 0.05),
-          _arrow(0.25),
-          _card('📋', 'Submit\nReport', AppColors.primary, 0.38),
-          _arrow(0.58),
-          _card('🛡️', 'Score\nUpdated', AppColors.trusted, 0.70),
-        ],
-      ),
-      guideSteps: const [
-        ('📸', 'Screenshot payment and chat proof'),
-        ('📋', 'Fill in seller details and incident info'),
-        ('⚡', 'Trust score updates within minutes'),
-      ],
-      title: 'Report Fraud, Protect Others',
-      titleNe: 'ठगी रिपोर्ट गर्नुस्, अरूलाई बचाउनुस्',
-      body: 'Your evidence-backed report warns thousands of other '
-          'buyers and permanently lowers the scammer\'s trust score.',
-    );
-  }
-}
-
-// ── Slide 4: account vs guest ──────────────────────────────────────────────────
-
-class _Slide4 extends StatefulWidget {
-  const _Slide4();
-
-  @override
-  State<_Slide4> createState() => _Slide4State();
-}
-
-class _Slide4State extends State<_Slide4> {
-  bool _leftSelected = true;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 2), (_) {
-      if (mounted) setState(() => _leftSelected = !_leftSelected);
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  Widget _choiceCard({
-    required bool selected,
-    required String title,
-    required List<String> items,
-    required Color accent,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 450),
-      curve: Curves.easeOut,
-      width: 140,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: selected ? accent.withValues(alpha: 0.06) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: selected ? accent : AppColors.borderLight,
-          width: selected ? 2 : 1.2,
-        ),
-        boxShadow: selected
-            ? [
-                BoxShadow(
-                  color: accent.withValues(alpha: 0.18),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                )
-              ]
-            : null,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: borderColor, width: 1.5),
       ),
       child: Column(
         children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
+          const SizedBox(height: 10),
           Text(title,
+              textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               )),
-          const SizedBox(height: 10),
-          ...items.map((e) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
+          const SizedBox(height: 8),
+          ...points.map((p) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Row(
                   children: [
-                    Icon(Icons.check_circle_rounded, size: 13, color: accent),
-                    const SizedBox(width: 6),
+                    Icon(Icons.check_rounded, size: 13, color: iconColor),
+                    const SizedBox(width: 5),
                     Expanded(
-                      child: Text(e,
+                      child: Text(p,
                           style: GoogleFonts.inter(
                             fontSize: 10.5,
                             color: AppColors.textSecondary,
@@ -830,41 +664,10 @@ class _Slide4State extends State<_Slide4> {
                   ],
                 ),
               )),
+          const SizedBox(height: 12),
+          SizedBox(width: double.infinity, child: button),
         ],
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _SlideBody(
-      illustration: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _choiceCard(
-            selected: _leftSelected,
-            title: 'Full Account',
-            items: const ['Report fraud', 'Write reviews', 'Track impact'],
-            accent: AppColors.primary,
-          ),
-          const SizedBox(width: 16),
-          _choiceCard(
-            selected: !_leftSelected,
-            title: 'Browse Only',
-            items: const ['Search sellers', 'View scores', 'Read reviews'],
-            accent: AppColors.grey500,
-          ),
-        ],
-      ),
-      guideSteps: const [
-        ('🔐', 'Create a free account for full access'),
-        ('👀', 'Or browse instantly as a guest'),
-        ('🔄', 'Upgrade to an account any time'),
-      ],
-      title: 'Your Safety, Your Choice',
-      titleNe: 'तपाईंको सुरक्षा, तपाईंको छनौट',
-      body: 'Reporting and reviews need a verified account. '
-          'Searching and browsing are always free — no sign-in needed.',
     );
   }
 }

@@ -147,7 +147,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     } catch (_) {}
 
     setState(() => _sending = true);
-    await ref.read(authNotifierProvider.notifier).sendOtp('+977$phone');
+    // NOTE: pass the bare 10-digit number — AuthService adds the +977 prefix.
+    await ref.read(authNotifierProvider.notifier).sendOtp(phone);
 
     if (!mounted) return;
     setState(() => _sending = false);
@@ -205,7 +206,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
                         )),
-                    Text('Verify before you pay · तिर्नु अघि जाँच्नुस्',
+                    Text('Join 5,400+ Nepali buyers and sellers',
                         style: GoogleFonts.inter(
                           color: Colors.white.withValues(alpha: 0.85),
                           fontSize: 12.5,
@@ -247,16 +248,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         fontSize: 14.5,
                       ),
                       tabs: const [
-                        Tab(text: 'Sign In'),
                         Tab(text: 'Register'),
+                        Tab(text: 'Sign In'),
                       ],
                     ),
                     Expanded(
                       child: TabBarView(
                         controller: _tabs,
                         children: [
-                          _buildSignIn(),
                           _buildRegister(),
+                          _buildSignIn(),
                         ],
                       ),
                     ),
@@ -276,35 +277,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Google button
-          SizedBox(
-            height: 52,
-            child: OutlinedButton.icon(
-              onPressed: _googleSignIn,
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.borderMedium),
-                foregroundColor: AppColors.textPrimary,
-              ),
-              icon: const _GoogleG(),
-              label: Text('Continue with Google',
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14.5,
-                  )),
-            ),
+          Text('Welcome back',
+              style: GoogleFonts.poppins(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              )),
+          const SizedBox(height: 4),
+          Text(
+            'Enter your registered phone number and we will send '
+            'you a sign-in code.',
+            style: GoogleFonts.inter(
+                fontSize: 12.5, color: AppColors.textSecondary),
           ),
-          const SizedBox(height: 18),
-          Row(children: [
-            const Expanded(child: Divider()),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text('or',
-                  style: GoogleFonts.inter(
-                      color: AppColors.textMuted, fontSize: 12.5)),
-            ),
-            const Expanded(child: Divider()),
-          ]),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
 
           _PhoneField(
             controller: _signInPhone,
@@ -338,8 +324,36 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2.5),
                       )
-                    : const Text('Send OTP'),
+                    : const Text('Send Sign-In Code'),
               ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Row(children: [
+            const Expanded(child: Divider()),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text('or',
+                  style: GoogleFonts.inter(
+                      color: AppColors.textMuted, fontSize: 12.5)),
+            ),
+            const Expanded(child: Divider()),
+          ]),
+          const SizedBox(height: 18),
+          SizedBox(
+            height: 52,
+            child: OutlinedButton.icon(
+              onPressed: _googleSignIn,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.borderMedium),
+                foregroundColor: AppColors.textPrimary,
+              ),
+              icon: const _GoogleG(),
+              label: Text('Continue with Google',
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.5,
+                  )),
             ),
           ),
           const SizedBox(height: 20),
@@ -361,11 +375,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Text('Your phone number is your identity',
+              style: GoogleFonts.poppins(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              )),
+          const SizedBox(height: 4),
+          Text(
+            'We use it only for verification. We never share it or '
+            'use it for marketing.',
+            style: GoogleFonts.inter(
+                fontSize: 12.5, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 16),
           TextField(
             controller: _regName,
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
-              labelText: 'Full Name',
+              labelText: 'Your full name',
               prefixIcon: const Icon(Icons.person_outline_rounded),
               errorText: _regNameError,
             ),
@@ -383,9 +411,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             children: [
               Expanded(
                 child: _RoleCard(
-                  emoji: '🛒',
-                  title: 'Buyer',
-                  subtitle: 'Verify & stay safe',
+                  icon: Icons.shopping_bag_outlined,
+                  title: 'I am a Buyer',
+                  subtitle: 'I want to check sellers before paying',
                   selected: _regRole == 'buyer',
                   onTap: () => setState(() => _regRole = 'buyer'),
                 ),
@@ -393,9 +421,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: _RoleCard(
-                  emoji: '🏪',
-                  title: 'Seller',
-                  subtitle: 'Build my trust',
+                  icon: Icons.storefront_outlined,
+                  title: 'I am a Seller',
+                  subtitle: 'I want to build buyer trust in my business',
                   selected: _regRole == 'seller',
                   onTap: () => setState(() => _regRole = 'seller'),
                 ),
@@ -436,14 +464,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2.5),
                       )
-                    : const Text('Send OTP'),
+                    : const Text('Send Verification Code'),
               ),
             ),
           ),
           const SizedBox(height: 20),
           Text(
-            'Your number is only used for identity verification. '
-            'We never share it.',
+            'By registering you agree to our Terms of Service. '
+            "Your data is protected under Nepal's Privacy Act 2018.",
             textAlign: TextAlign.center,
             style:
                 GoogleFonts.inter(fontSize: 11.5, color: AppColors.textMuted),
@@ -498,14 +526,14 @@ class _PhoneField extends StatelessWidget {
 
 class _RoleCard extends StatelessWidget {
   const _RoleCard({
-    required this.emoji,
+    required this.icon,
     required this.title,
     required this.subtitle,
     required this.selected,
     required this.onTap,
   });
 
-  final String emoji;
+  final IconData icon;
   final String title;
   final String subtitle;
   final bool selected;
@@ -521,7 +549,8 @@ class _RoleCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding:
+            const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         decoration: BoxDecoration(
           color: selected ? AppColors.primary50 : Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -532,19 +561,26 @@ class _RoleCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 24)),
+            Icon(icon,
+                size: 26,
+                color:
+                    selected ? AppColors.primary : AppColors.textSecondary),
             const SizedBox(height: 6),
             Text(title,
+                textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w600,
                   color: selected
                       ? AppColors.primary
                       : AppColors.textPrimary,
                 )),
+            const SizedBox(height: 3),
             Text(subtitle,
+                textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 10.5,
+                  height: 1.35,
                   color: AppColors.textMuted,
                 )),
           ],

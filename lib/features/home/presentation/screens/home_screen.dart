@@ -14,12 +14,15 @@ import '../../../../core/widgets/verification_card.dart';
 import '../../../../models/leaderboard_model.dart';
 import '../../../../services/leaderboard_service.dart';
 
-/// Home tab — hero card, quick actions, featured sellers, alerts, tips.
+/// Home tab — one job: get the user to search a seller before paying.
+/// Hero search card → alerts strip → two actions → trusted sellers →
+/// recent alerts → safety tips.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.onSearchTap});
 
-  /// Switches the shell to the Search tab.
-  final VoidCallback? onSearchTap;
+  /// Switches the shell to the Search tab; when [query] is given the
+  /// search runs immediately with that text.
+  final void Function([String? query])? onSearchTap;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -44,6 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
     ('📸', 'Always keep payment and chat screenshots as evidence.'),
     ('🔒', 'Only trust QR codes shown on a SafeBuy verification card.'),
     ('🚚', 'Prefer Cash on Delivery whenever a seller offers it.'),
+  ];
+
+  static const _exampleSearches = [
+    '9841234567',
+    '@priyafashions',
+    '9881234571',
   ];
 
   @override
@@ -79,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
           _featured = [];
           _featuredFailed = true;
         });
-        PopupHelper.showWarning(context, 'Could not load featured sellers');
       }
     }
   }
@@ -116,17 +124,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    final hour = DateTime.now().hour;
-    final greeting = hour < 12
-        ? 'Good morning! 👋'
-        : hour < 17
-            ? 'Good afternoon! 👋'
-            : 'Good evening! 👋';
+    final firstName = (user?.displayName ?? '').trim().split(' ').first;
 
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        elevation: 0,
         centerTitle: false,
         title: Row(
           children: [
@@ -143,54 +147,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Ask SafeGuard AI',
+            tooltip: 'Help',
             icon: const Icon(Icons.help_outline_rounded),
             onPressed: () => Navigator.pushNamed(context, '/safeguard'),
           ),
-          if (_isGuest) ...[
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 14),
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                color: AppColors.grey100,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              alignment: Alignment.center,
-              child: Text('Guest',
-                  style: GoogleFonts.inter(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
-                  )),
-            ),
+          if (_isGuest)
             TextButton(
               onPressed: () => Navigator.pushNamed(context, '/auth'),
               child: const Text('Sign In'),
-            ),
-          ] else ...[
+            )
+          else
             _NotificationBell(userId: user?.uid),
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/profile'),
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: AppColors.primary50,
-                  child: Text(
-                    (user?.displayName?.isNotEmpty == true
-                            ? user!.displayName![0]
-                            : 'U')
-                        .toUpperCase(),
-                    style: GoogleFonts.poppins(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          const SizedBox(width: 6),
         ],
       ),
       body: RefreshIndicator(
@@ -202,12 +170,16 @@ class _HomeScreenState extends State<HomeScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.only(bottom: 32),
           children: [
-            // ── Hero card ─────────────────────────────────────────────────
+            // ── Hero search card ──────────────────────────────────────────
             Container(
               margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: AppColors.heroGradient,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1565C0), Color(0xFF1976D2)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -220,108 +192,185 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(greeting,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 19,
-                        fontWeight: FontWeight.w600,
-                      )),
-                  const SizedBox(height: 4),
-                  Text('Verify before you pay — every time.',
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 12.5,
-                      )),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _statPill('1,247', 'Verified'),
-                      const SizedBox(width: 8),
-                      _statPill('389', 'Reports'),
-                      const SizedBox(width: 8),
-                      _statPill('Rs 2.1M', 'Saved'),
-                    ],
+                  Text(
+                    !_isGuest && firstName.isNotEmpty
+                        ? 'Namaste, $firstName'
+                        : 'Verify Before You Pay',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
+                  const SizedBox(height: 4),
+                  Text('Search any seller before sending eSewa payment',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 13,
+                      )),
                   const SizedBox(height: 16),
-                  // Search bar → jumps to Search tab
+
+                  // Search bar → jumps to Search tab with keyboard open
                   GestureDetector(
                     onTap: () {
                       HapticFeedback.lightImpact();
                       widget.onSearchTap?.call();
                     },
                     child: Container(
-                      height: 48,
+                      height: 50,
                       padding:
                           const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.12),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
                           const Icon(Icons.search_rounded,
                               color: AppColors.primary),
                           const SizedBox(width: 10),
-                          Text(
-                            'Search by phone, eSewa ID, or @handle…',
-                            style: GoogleFonts.inter(
-                              color: AppColors.textMuted,
-                              fontSize: 13,
+                          Expanded(
+                            child: Text(
+                              'Phone number, @handle, or eSewa ID...',
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                color: AppColors.textMuted,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
+                          Text('Search',
+                              style: GoogleFonts.inter(
+                                color: AppColors.primary,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                              )),
                         ],
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Tappable example searches
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: _exampleSearches.map((q) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              widget.onSearchTap?.call(q);
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color:
+                                    Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text('Try: $q',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
+                                  )),
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ],
               ),
             ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
 
-            // ── Quick actions ─────────────────────────────────────────────
+            // ── Active alerts strip ───────────────────────────────────────
+            if (_alerts != null && _alerts!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: InkWell(
+                  onTap: () => Navigator.pushNamed(context, '/alerts'),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.warningSurface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color:
+                              AppColors.warning.withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.campaign_rounded,
+                            color: AppColors.warning, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            '${_alerts!.length} active fraud '
+                            'alert${_alerts!.length == 1 ? '' : 's'} in Nepal',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded,
+                            color: AppColors.warning, size: 22),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // ── Two clear actions ─────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
               child: Row(
                 children: [
                   Expanded(
-                    child: _QuickAction(
+                    child: _ActionCard(
                       icon: Icons.flag_rounded,
-                      label: 'Report\nFraud',
-                      gradient: AppColors.riskGradient,
+                      accent: AppColors.highRisk,
+                      title: 'Report a Fraud',
+                      subtitle: 'Were you scammed? Help protect others',
                       onTap: () => _guarded('/report'),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: _QuickAction(
+                    child: _ActionCard(
                       icon: Icons.storefront_rounded,
-                      label: 'Register\nBusiness',
-                      gradient: AppColors.trustGradient,
+                      accent: AppColors.trusted,
+                      title: 'Register Business',
+                      subtitle: 'Get verified and build buyer trust',
                       onTap: () => _guarded('/register-business'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _QuickAction(
-                      icon: Icons.menu_book_rounded,
-                      label: 'How It\nWorks',
-                      gradient: AppColors.primaryGradient,
-                      onTap: () {
-                        HapticFeedback.mediumImpact();
-                        Navigator.pushNamed(context, '/guide');
-                      },
                     ),
                   ),
                 ],
               ),
             ),
 
-            // ── Featured verified sellers ────────────────────────────────
+            // ── Trusted sellers this month ────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 10),
+              padding: const EdgeInsets.fromLTRB(16, 22, 16, 2),
               child: Row(
                 children: [
                   Expanded(
-                    child: Text('Top Verified Sellers This Month',
+                    child: Text('Trusted Sellers This Month',
                         style: GoogleFonts.poppins(
                           fontSize: 15.5,
                           fontWeight: FontWeight.w600,
@@ -336,14 +385,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              child: Text('Verified by the SafeBuy Nepal community',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    color: AppColors.textMuted,
+                  )),
+            ),
             SizedBox(
               height: 148,
               child: _featured == null
                   ? _horizontalShimmer()
                   : _featured!.isEmpty
                       ? _emptyBox(_featuredFailed
-                          ? 'Could not load sellers right now'
-                          : 'No verified sellers yet — be the first!')
+                          ? 'Could not load sellers. Check your '
+                              'connection and pull down to retry.'
+                          : 'No verified sellers yet. Run a business? '
+                              'Register it and be the first.')
                       : ListView.separated(
                           scrollDirection: Axis.horizontal,
                           padding:
@@ -361,15 +420,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
             ),
 
-            // ── Recent community alerts ──────────────────────────────────
+            // ── Community safety alerts (last 3) ─────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 22, 16, 10),
-              child: Text('Recent Community Alerts',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15.5,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  )),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text('Community Safety Alerts',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        )),
+                  ),
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/alerts'),
+                    child: const Text('View All'),
+                  ),
+                ],
+              ),
             ),
             if (_alerts == null)
               Padding(
@@ -388,8 +458,10 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _emptyBox(_alertsFailed
-                    ? 'Could not load alerts right now'
-                    : '✅ No active alerts in your area'),
+                    ? 'Could not load alerts. Check your connection '
+                        'and pull down to retry.'
+                    : 'No active alerts right now — the community '
+                        'is safe today.'),
               )
             else
               ..._alerts!.asMap().entries.map((entry) {
@@ -430,7 +502,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              a['body'] as String? ?? '',
+                              (a['body'] ?? a['description'] ?? '')
+                                  as String,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(
@@ -495,33 +568,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _statPill(String value, String label) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Text(value,
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                )),
-            Text(label,
-                style: GoogleFonts.inter(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontSize: 10.5,
-                )),
+            // ── Learn more ────────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              child: InkWell(
+                onTap: () => Navigator.pushNamed(context, '/guide'),
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.borderLight),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.menu_book_rounded,
+                          color: AppColors.primary, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'New here? Learn how SafeBuy Nepal works',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded,
+                          color: AppColors.textMuted),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -572,19 +654,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ── Quick action card ──────────────────────────────────────────────────────────
+// ── Action card with accent top border ─────────────────────────────────────────
 
-class _QuickAction extends StatelessWidget {
-  const _QuickAction({
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({
     required this.icon,
-    required this.label,
-    required this.gradient,
+    required this.accent,
+    required this.title,
+    required this.subtitle,
     required this.onTap,
   });
 
   final IconData icon;
-  final String label;
-  final Gradient gradient;
+  final Color accent;
+  final String title;
+  final String subtitle;
   final VoidCallback onTap;
 
   @override
@@ -595,32 +679,43 @@ class _QuickAction extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(18),
-        splashColor: AppColors.primary.withValues(alpha: 0.08),
+        splashColor: accent.withValues(alpha: 0.08),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.borderLight),
+            border: Border(
+              top: BorderSide(color: accent, width: 3),
+              left: const BorderSide(color: AppColors.borderLight),
+              right: const BorderSide(color: AppColors.borderLight),
+              bottom: const BorderSide(color: AppColors.borderLight),
+            ),
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  gradient: gradient,
-                  borderRadius: BorderRadius.circular(13),
+                  color: accent.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: Colors.white, size: 22),
+                child: Icon(icon, color: accent, size: 21),
               ),
-              const SizedBox(height: 8),
-              Text(label,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 11.5,
+              const SizedBox(height: 10),
+              Text(title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13.5,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
-                    height: 1.25,
+                  )),
+              const SizedBox(height: 3),
+              Text(subtitle,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
+                    height: 1.4,
                   )),
             ],
           ),

@@ -109,7 +109,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
     _startCountdown();
     await ref
         .read(authNotifierProvider.notifier)
-        .sendOtp('+977${widget.phone}');
+        .sendOtp(widget.phone); // bare number — AuthService adds +977
     if (!mounted) return;
     final state = ref.read(authNotifierProvider);
     if (state.status == AuthStatus.error) {
@@ -122,6 +122,20 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Surface late send-failures (e.g. invalid number, quota, network) that
+    // arrive after navigating here — never leave the user waiting silently.
+    ref.listen(authNotifierProvider, (prev, next) {
+      if (next.status == AuthStatus.error &&
+          prev?.status != AuthStatus.error &&
+          !_verifying &&
+          !_verified) {
+        PopupHelper.showError(
+            context,
+            next.errorMessage ??
+                'Could not send the OTP. Please go back and try again.');
+      }
+    });
+
     final defaultPin = PinTheme(
       width: 50,
       height: 56,
@@ -256,7 +270,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
               TextButton.icon(
                 onPressed: _resend,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('Resend OTP'),
+                label: const Text('Resend Code'),
               ),
 
             const SizedBox(height: 20),

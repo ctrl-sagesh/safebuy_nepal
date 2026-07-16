@@ -18,9 +18,13 @@ import '../../../../services/firestore_service.dart';
 /// Search tab — find sellers by phone, eSewa ID, or social handle and
 /// see their SafeBuy verification card.
 class SearchScreen extends ConsumerStatefulWidget {
-  const SearchScreen({super.key, this.autofocus = false});
+  const SearchScreen({super.key, this.autofocus = false, this.searchRequest});
 
   final bool autofocus;
+
+  /// When the Home tab requests a search (example chips), the query
+  /// arrives here and runs immediately.
+  final ValueNotifier<String?>? searchRequest;
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -30,7 +34,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   final _controller = TextEditingController();
   final _focus = FocusNode();
 
-  int _mode = 0; // 0 phone, 1 esewa, 2 social
   bool _searching = false;
   bool _searched = false;
   List<SellerModel> _results = const [];
@@ -41,17 +44,33 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final q = _controller.text.trim();
     if (q.isEmpty) return '';
     if (q.startsWith('97') || q.startsWith('98')) {
-      return '🛡️ Searching by phone number';
+      return 'Searching by phone number';
     }
-    if (q.startsWith('@')) return '🛡️ Searching by social handle';
+    if (q.startsWith('@')) return 'Searching by social handle';
     if (RegExp(r'^[A-Za-z]').hasMatch(q)) {
-      return '🛡️ Searching by business name';
+      return 'Searching by business name';
     }
     return '';
   }
 
   @override
+  void initState() {
+    super.initState();
+    widget.searchRequest?.addListener(_onExternalSearch);
+  }
+
+  void _onExternalSearch() {
+    final q = widget.searchRequest?.value;
+    if (q == null || q.isEmpty || !mounted) return;
+    widget.searchRequest?.value = null;
+    _controller.text = q;
+    setState(() {});
+    _search();
+  }
+
+  @override
   void dispose() {
+    widget.searchRequest?.removeListener(_onExternalSearch);
     _controller.dispose();
     _focus.dispose();
     super.dispose();
@@ -156,7 +175,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
           ),
 
-          // AI hint
+          // Live hint about what kind of search is running
           if (_hint.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8, left: 4),
@@ -167,19 +186,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     fontWeight: FontWeight.w500,
                   )),
             ),
-          const SizedBox(height: 12),
-
-          // Mode chips
-          Row(
-            children: [
-              _modeChip('📱 Phone', 0),
-              const SizedBox(width: 8),
-              _modeChip('💳 eSewa', 1),
-              const SizedBox(width: 8),
-              _modeChip('@ Social', 2),
-            ],
-          ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
 
           // Demo quick-search (debug builds only — for thesis demonstration)
           if (AppConfig.showDemoFeatures) ...[
@@ -264,7 +271,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       onTap: () {
         HapticFeedback.mediumImpact();
         _controller.text = phone;
-        setState(() => _mode = 0);
+        setState(() {});
         _search();
       },
       borderRadius: BorderRadius.circular(20),
@@ -285,37 +292,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _modeChip(String label, int value) {
-    final selected = _mode == value;
-    return Expanded(
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          setState(() => _mode = value);
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 9),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: selected ? AppColors.primary : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color:
-                  selected ? AppColors.primary : AppColors.borderLight,
-            ),
-          ),
-          child: Text(label,
-              style: GoogleFonts.inter(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : AppColors.textSecondary,
-              )),
-        ),
-      ),
-    );
-  }
 }
 
 // ── Seller result: the SafeBuy verification-card style result ─────────────────
@@ -326,12 +302,55 @@ class _SellerResultCard extends StatelessWidget {
   final SellerModel seller;
   final bool isGuest;
 
+  int get _monthsActive {
+    final days =
+        DateTime.now().difference(seller.accountCreatedAt).inDays;
+    return (days / 30).floor().clamp(0, 999);
+  }
+
+  (IconData, String, String, Color, Color) get _verdictContent {
+    switch (seller.trustVerdict) {
+      case 'trusted':
+        return (
+          Icons.check_circle_rounded,
+          'TRUSTED SELLER',
+          'This seller has a strong track record. '
+              '${seller.reviewCount} community reviews, '
+              '$_monthsActive months active, '
+              '${seller.scamReportCount == 0 ? 'zero complaints' : 'only ${seller.scamReportCount} complaint(s)'}.',
+          AppColors.trusted,
+          AppColors.trustedBg,
+        );
+      case 'high_risk':
+        return (
+          Icons.cancel_rounded,
+          'HIGH RISK — DO NOT PAY',
+          'WARNING: ${seller.scamReportCount} fraud '
+              'complaint${seller.scamReportCount == 1 ? ' has' : 's have'} '
+              'been filed against this seller. We strongly recommend '
+              'not paying this seller.',
+          AppColors.highRisk,
+          AppColors.highRiskBg,
+        );
+      default:
+        return (
+          Icons.help_rounded,
+          'UNVERIFIED SELLER',
+          'This seller has not been fully verified. Proceed with '
+              'caution — ask for video call proof before paying.',
+          AppColors.unverified,
+          AppColors.unverifiedBg,
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scoreColor = AppColors.trustScoreColor(seller.trustScore);
     final tier = seller.verificationTier;
     final tierColor = TierStyle.color(tier);
     final overdue = seller.isReverificationOverdue;
+    final (vIcon, vTitle, vExplain, vColor, vBg) = _verdictContent;
 
     return Container(
       decoration: BoxDecoration(
@@ -451,6 +470,47 @@ class _SellerResultCard extends StatelessWidget {
             ),
           ),
 
+          // VERDICT BANNER — the first thing eyes land on
+          Container(
+            width: double.infinity,
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: vBg,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(vIcon, color: vColor, size: 24),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(vTitle,
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: vColor,
+                            letterSpacing: 0.3,
+                          )),
+                    ),
+                    Text('${seller.trustScore.round()}/100',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: vColor,
+                        )),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(vExplain,
+                    style: GoogleFonts.inter(
+                      fontSize: 12.5,
+                      color: AppColors.textPrimary,
+                      height: 1.5,
+                    )),
+              ],
+            ),
+          ),
+
           // MIDDLE — white
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -543,7 +603,7 @@ class _SellerResultCard extends StatelessWidget {
                             color: AppColors.textSecondary)),
                     const SizedBox(width: 10),
                     Text(
-                      '📋 ${seller.scamReportCount} Reports',
+                      '📋 ${seller.scamReportCount} Complaints',
                       style: GoogleFonts.inter(
                         fontSize: 11.5,
                         fontWeight: seller.scamReportCount > 0
@@ -584,7 +644,7 @@ class _SellerResultCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text('Payment QR — Locked by SafeBuy Nepal 🔒',
+                  Text('🔒 This QR is locked by SafeBuy Nepal — safe to use',
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -689,24 +749,83 @@ class _NotFoundCard extends StatelessWidget {
                 color: AppColors.unverified, size: 32),
           ),
           const SizedBox(height: 14),
-          Text('No seller found with this information',
+          Text('Seller not found on SafeBuy Nepal',
               style: GoogleFonts.poppins(
                 fontSize: 15.5,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               )),
-          const SizedBox(height: 6),
-          Text(
-            'This seller has no SafeBuy record yet. That does NOT '
-            'mean they are safe — new scam accounts have no history.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 12.5,
-              color: AppColors.textSecondary,
-              height: 1.55,
+          const SizedBox(height: 14),
+
+          // Box 1 — what "not found" means
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.unverifiedBg,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                  color: AppColors.unverified.withValues(alpha: 0.35)),
+            ),
+            child: Text(
+              'This does not mean they are fraudulent. They may '
+              'simply not be registered yet.',
+              style: GoogleFonts.inter(
+                fontSize: 12.5,
+                color: AppColors.textPrimary,
+                height: 1.55,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Box 2 — safety tips
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.primary50,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Safety tips when buying from unverified sellers:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    )),
+                const SizedBox(height: 8),
+                ...[
+                  'Ask for a video call showing the real product',
+                  'Start with a small test order under NPR 500',
+                  'Never pay the full amount before seeing proof of dispatch',
+                  'Screenshot everything before and after payment',
+                ].map((t) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.check_rounded,
+                              size: 14, color: AppColors.primary),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(t,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: AppColors.textPrimary,
+                                  height: 1.5,
+                                )),
+                          ),
+                        ],
+                      ),
+                    )),
+              ],
             ),
           ),
           const SizedBox(height: 16),
+
           Row(
             children: [
               Expanded(
@@ -726,7 +845,9 @@ class _NotFoundCard extends StatelessWidget {
                     foregroundColor: AppColors.highRisk,
                     side: const BorderSide(color: AppColors.highRisk),
                   ),
-                  child: const Text('Were you scammed?'),
+                  child: const Text('Report if you were scammed',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12.5)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -743,54 +864,12 @@ class _NotFoundCard extends StatelessWidget {
                   },
                   style: OutlinedButton.styleFrom(
                       minimumSize: const Size(0, 46)),
-                  child: const Text('Are you this seller?'),
+                  child: const Text('This is my business — register',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12.5)),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.primary50,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('🛡️ SafeGuard AI Safety Tips',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    )),
-                const SizedBox(height: 8),
-                ...[
-                  'Ask for Cash on Delivery first',
-                  'Never pay full advance to unknown sellers',
-                  'Ask for their SafeBuy card ID',
-                  'Check their account age and reviews on the platform',
-                ].map((t) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('• ',
-                              style:
-                                  TextStyle(color: AppColors.primary)),
-                          Expanded(
-                            child: Text(t,
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  color: AppColors.textPrimary,
-                                  height: 1.5,
-                                )),
-                          ),
-                        ],
-                      ),
-                    )),
-              ],
-            ),
           ),
         ],
       ),

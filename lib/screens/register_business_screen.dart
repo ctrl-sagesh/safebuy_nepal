@@ -23,6 +23,7 @@ class _RegisterBusinessScreenState
     extends ConsumerState<RegisterBusinessScreen> {
   final _formKey = GlobalKey<FormState>();
   int _currentStep = 0;
+  bool _showIntro = true;
 
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
@@ -195,6 +196,8 @@ class _RegisterBusinessScreenState
       lang == 'ne' ? 'पुष्टि' : 'Confirm',
     ];
 
+    if (_showIntro) return _buildIntro(lang);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(AppStrings.get('register_business', lang)
@@ -217,6 +220,162 @@ class _RegisterBusinessScreenState
               ),
             ),
             _buildBottomNav(lang),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Motivation screen shown before the form: why register, what you
+  /// get, and one clear action.
+  Widget _buildIntro(String lang) {
+    final ne = lang == 'ne';
+    final benefits = [
+      (
+        Icons.handshake_outlined,
+        const Color(AppColors.primary),
+        ne ? 'खरिदारको विश्वास जित्नुहोस्' : 'Build Buyer Trust',
+        ne
+            ? 'प्रमाणित प्रोफाइलले तपाईं वास्तविक व्यवसाय हो भनी देखाउँछ'
+            : 'Show buyers you are a legitimate business with a '
+                'verified trust profile',
+      ),
+      (
+        Icons.trending_up_rounded,
+        const Color(AppColors.trusted),
+        ne ? 'अरूभन्दा अगाडि देखिनुहोस्' : 'Stand Out',
+        ne
+            ? 'खोज परिणाम र सिफारिसहरूमा अप्रमाणित विक्रेताभन्दा माथि देखिनुहोस्'
+            : 'Appear above unverified sellers in search results and '
+                'community recommendations',
+      ),
+      (
+        Icons.storefront_rounded,
+        const Color(AppColors.accent),
+        ne ? 'बिक्री बढाउनुहोस्' : 'Grow Sales',
+        ne
+            ? 'खरिदारहरू प्रमाणित विक्रेताबाट किन्न ३ गुणा बढी तयार हुन्छन्'
+            : 'Buyers are 3x more likely to purchase from a verified '
+                'seller',
+      ),
+    ];
+    final gets = ne
+        ? [
+            'तपाईंको फोटो र QR सहितको SafeBuy प्रमाणीकरण कार्ड',
+            'सार्वजनिक प्रोफाइलमा प्रमाणित ब्याज',
+            'मासिक लिडरबोर्डमा स्थान पाउने योग्यता',
+            'समीक्षा र उजुरी व्यवस्थापन ड्यासबोर्ड',
+          ]
+        : [
+            'SafeBuy Verification Card with your photo and QR',
+            'Verified badge on your public profile',
+            'Monthly leaderboard eligibility',
+            'Dashboard to manage reviews and complaints',
+          ];
+
+    return Scaffold(
+      backgroundColor: const Color(AppColors.background),
+      appBar: AppBar(
+        title: Text(ne ? 'प्रमाणित बन्नुहोस्' : 'Get SafeBuy Verified'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ...benefits.map((b) => Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                        color: const Color(AppColors.divider)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: b.$2.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(b.$1, color: b.$2, size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(b.$3,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14.5,
+                                  color: Color(AppColors.textDark),
+                                )),
+                            const SizedBox(height: 3),
+                            Text(b.$4,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  height: 1.5,
+                                  color: Color(AppColors.textGrey),
+                                )),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+            const SizedBox(height: 8),
+            Text(ne ? 'तपाईंले के पाउनुहुन्छ:' : 'What you will get:',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                  color: Color(AppColors.textDark),
+                )),
+            const SizedBox(height: 8),
+            ...gets.map((g) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle,
+                          color: Color(AppColors.trusted), size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(g,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(AppColors.textDark),
+                            )),
+                      ),
+                    ],
+                  ),
+                )),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 54,
+              child: ElevatedButton(
+                onPressed: () => setState(() => _showIntro = false),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(AppColors.trusted),
+                ),
+                child: Text(ne
+                    ? 'दर्ता सुरु गर्नुहोस् — निःशुल्क'
+                    : 'Start Registration — Free'),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              ne
+                  ? 'लगभग १० मिनेट लाग्छ। कुनै शुल्क छैन। कहिल्यै।'
+                  : 'Takes about 10 minutes. No payment required. Ever.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(AppColors.textGrey),
+              ),
+            ),
           ],
         ),
       ),

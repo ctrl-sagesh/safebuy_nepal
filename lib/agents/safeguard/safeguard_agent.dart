@@ -15,7 +15,7 @@ class SafeguardAgent extends AgentBase {
   SafeguardAgent()
       : super(
           agentId: 'safeguard',
-          agentName: 'SafeGuard AI',
+          agentName: 'Safety Assistant',
           agentDescription:
               'Conversational assistant for seller verification and fraud guidance',
         );

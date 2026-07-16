@@ -130,6 +130,23 @@ class FirestoreService {
     }
   }
 
+  /// Reports filed by a specific user (buyer's "My Reports" list).
+  /// Sorted client-side so no composite index is required.
+  Future<List<ReportModel>> getReportsByReporter(String reporterId) async {
+    try {
+      final snap = await _db
+          .collection(AppConstants.colReports)
+          .where('reporterId', isEqualTo: reporterId)
+          .get();
+      final reports =
+          snap.docs.map((d) => ReportModel.fromFirestore(d)).toList()
+            ..sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
+      return reports;
+    } catch (e) {
+      return [];
+    }
+  }
+
   /// Stream version for real-time (backward compat with SellerProfileScreen)
   Stream<List<ReportModel>> getReportsForSellerStream(String sellerId) {
     return _db

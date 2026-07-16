@@ -96,8 +96,8 @@ class MustKnowSheet extends StatelessWidget {
                   const SizedBox(height: 12),
                   _infoCard(
                     isNe
-                        ? 'हाम्रो ६-तह एन्टी-बोट प्रणालीले हरेक समीक्षालाई प्रमाणित गर्छ:'
-                        : 'Our 6-layer anti-bot system verifies every review:',
+                        ? 'हरेक समीक्षा गनिनु अघि ६ वटा जाँचबाट जान्छ:'
+                        : 'Every review passes six checks before it counts:',
                   ),
                   const SizedBox(height: 8),
                   _checkItem(
@@ -156,12 +156,12 @@ class MustKnowSheet extends StatelessWidget {
                         : 'The app auto-populates with 5 realistic seller profiles (trusted, unverified, high-risk) with reports and reviews on first launch.',
                   ),
                   _strategyCard(
-                    icon: Icons.smart_toy_outlined,
+                    icon: Icons.support_agent_rounded,
                     color: const Color(0xFFFF9800),
                     title: isNe ? 'नेटवर्क अघि नै मूल्य' : 'Value before network effect',
                     body: isNe
-                        ? 'शून्य प्रयोगकर्तामा पनि: AI सुरक्षा च्याटबोट, घोटाला अलर्ट, सुरक्षा सुझावहरू, र शैक्षिक सामग्रीले काम गर्छ।'
-                        : 'Even with zero users: AI safety chatbot, scam alerts feed, safety tips, and educational content all work from day one.',
+                        ? 'शून्य प्रयोगकर्तामा पनि: सुरक्षा सहायक, घोटाला अलर्ट, सुरक्षा सुझावहरू, र शैक्षिक सामग्रीले काम गर्छ।'
+                        : 'Even with zero users: the safety assistant, scam alerts feed, safety tips, and educational content all work from day one.',
                   ),
                   _strategyCard(
                     icon: Icons.storefront_rounded,

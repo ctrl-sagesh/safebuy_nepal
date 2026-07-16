@@ -31,6 +31,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   UserModel? _me;
   SellerModel? _mySeller;
   List<ReportModel> _myReports = const [];
+  List<ReportModel> _myFiledReports = const [];
   bool _loading = true;
 
   @override
@@ -56,11 +57,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (seller != null) {
         reports = await fs.getReportsForSeller(seller.sellerId);
       }
+      final filed = await fs.getReportsByReporter(user.uid);
       if (mounted) {
         setState(() {
           _me = me;
           _mySeller = seller;
           _myReports = reports;
+          _myFiledReports = filed;
           _loading = false;
         });
       }
@@ -252,7 +255,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           title: const Text('Profile'),
           automaticallyImplyLeading: false),
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(28),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -273,15 +276,57 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Text(
-                'Create a free account to report fraud, review sellers, '
-                'register your business, and track your impact.',
+                'Create a free account to:',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   color: AppColors.textSecondary,
-                  height: 1.6,
                 ),
               ),
+              const SizedBox(height: 14),
+              ...[
+                (
+                  Icons.flag_outlined,
+                  'Report fraudulent sellers and protect others'
+                ),
+                (
+                  Icons.star_outline_rounded,
+                  'Leave reviews for sellers you have used'
+                ),
+                (
+                  Icons.notifications_none_rounded,
+                  'Get notified when a seller you searched gets reported'
+                ),
+                (
+                  Icons.storefront_outlined,
+                  'Build your seller profile if you run a business'
+                ),
+              ].map((row) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary50,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(row.$1,
+                              size: 18, color: AppColors.primary),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(row.$2,
+                              style: GoogleFonts.inter(
+                                fontSize: 12.5,
+                                color: AppColors.textPrimary,
+                                height: 1.4,
+                              )),
+                        ),
+                      ],
+                    ),
+                  )),
               const SizedBox(height: 22),
               SizedBox(
                 width: double.infinity,
@@ -298,7 +343,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    child: const Text('Create Account'),
+                    child: const Text('Create Free Account'),
                   ),
                 ),
               ),
@@ -399,10 +444,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 12),
 
           // Impact stats
+          Text('Your contribution to SafeBuy Nepal',
+              style: GoogleFonts.poppins(
+                  fontSize: 15, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
           Row(
             children: [
-              _statCard('📋', '${me?.totalReportsSubmitted ?? 0}',
-                  'Reports submitted'),
+              _statCard('📋', '${_myFiledReports.length}',
+                  'Reports filed'),
               const SizedBox(width: 10),
               _statCard(
                   '🗓️',
@@ -412,6 +461,91 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   'Member since'),
             ],
           ),
+          const SizedBox(height: 18),
+
+          // My reports
+          Text('My Reports',
+              style: GoogleFonts.poppins(
+                  fontSize: 15, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          if (_myFiledReports.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.borderLight),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                'You have not filed any reports yet. If you have '
+                'been scammed, help the community by reporting it.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    color: AppColors.textSecondary,
+                    height: 1.5),
+              ),
+            )
+          else
+            ..._myFiledReports.take(5).map((r) => Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.borderLight),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(r.description,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 3),
+                            Text(
+                              'NPR ${r.amountLost.toStringAsFixed(0)} · '
+                              '${DateFormat('dd MMM yyyy').format(r.submittedAt)}',
+                              style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: AppColors.textMuted),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: r.status == 'verified'
+                              ? AppColors.trustedBg
+                              : AppColors.unverifiedBg,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          r.status == 'verified'
+                              ? 'Verified'
+                              : r.status == 'pending'
+                                  ? 'Under review'
+                                  : r.status,
+                          style: GoogleFonts.inter(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: r.status == 'verified'
+                                ? AppColors.trusted
+                                : AppColors.unverified,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
           const SizedBox(height: 18),
 
           _settingsSection(),

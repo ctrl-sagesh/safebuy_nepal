@@ -7,16 +7,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 
-/// SafeBuy Nepal splash — 3-second staged animation sequence driven by a
-/// single AnimationController (kept deliberately light so first-frame jank
-/// can never delay navigation).
+/// SafeBuy Nepal splash — a 3-second sequence that tells a stranger what
+/// the app is before the first screen even loads. Driven by a single
+/// AnimationController (kept deliberately light so first-frame jank can
+/// never delay navigation).
 ///
-/// t 0.00-0.17  shield outline draws itself
-/// t 0.17-0.30  shield fills (glass) + "SB" appears
-/// t 0.30-0.43  "SafeBuy Nepal" slides up
-/// t 0.43-0.57  Nepali + English taglines fade in
-/// t 0.57-0.77  three loading dots pulse
-/// t 0.77-1.00  fade to white, then navigate
+/// t 0.00-0.20  shield outline draws itself, then fills + "SB" appears
+/// t 0.20-0.40  "SafeBuy Nepal" fades up below the logo
+/// t 0.40-0.60  tagline "Nepal's Seller Verification Platform" fades in
+/// t 0.60-0.80  three benefit chips stagger in left → right
+/// t 0.80-1.00  fade to white, then navigate
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -28,6 +28,8 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c;
   bool _navigated = false;
+
+  static const _benefits = ['Verify Sellers', 'Report Fraud', 'Stay Safe'];
 
   @override
   void initState() {
@@ -83,12 +85,11 @@ class _SplashScreenState extends State<SplashScreen>
       body: AnimatedBuilder(
         animation: _c,
         builder: (context, _) {
-          final drawT = _seg(0.00, 0.17);
-          final fillT = _seg(0.17, 0.30);
-          final nameT = Curves.easeOutCubic.transform(_seg(0.30, 0.43));
-          final tagT = _seg(0.43, 0.57);
-          final dotsT = _seg(0.57, 0.77);
-          final fadeT = _seg(0.77, 1.00);
+          final drawT = _seg(0.00, 0.14);
+          final fillT = _seg(0.12, 0.20);
+          final nameT = Curves.easeOutCubic.transform(_seg(0.20, 0.40));
+          final tagT = Curves.easeOut.transform(_seg(0.40, 0.60));
+          final fadeT = _seg(0.80, 1.00);
 
           return Stack(
             fit: StackFit.expand,
@@ -138,7 +139,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                     const SizedBox(height: 24),
 
-                    // App name slides up
+                    // App name fades up
                     ClipRect(
                       child: Transform.translate(
                         offset: Offset(0, 20 * (1 - nameT)),
@@ -148,61 +149,58 @@ class _SplashScreenState extends State<SplashScreen>
                             'SafeBuy Nepal',
                             style: GoogleFonts.poppins(
                               color: Colors.white,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
                             ),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
 
-                    // Taglines fade in
+                    // One clear tagline
                     Opacity(
                       opacity: tagT,
-                      child: Column(
-                        children: [
-                          Text(
-                            'सुरक्षित किनमेल',
-                            style: GoogleFonts.notoSansDevanagari(
-                              color: Colors.white.withValues(alpha: 0.92),
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Secure Shopping',
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withValues(alpha: 0.75),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        "Nepal's Seller Verification Platform",
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 14,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 44),
+                    const SizedBox(height: 36),
 
-                    // Three staggered loading dots
+                    // Three benefit chips, staggered left → right
                     SizedBox(
-                      height: 18,
+                      height: 34,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: List.generate(3, (i) {
-                          final phase =
-                              ((dotsT * 3.0) - i * 0.33).clamp(0.0, 1.0);
-                          final scale = 1.0 + 0.5 * math.sin(phase * math.pi);
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 5),
-                            child: Transform.scale(
-                              scale: dotsT == 0 ? 0 : scale,
+                        children: List.generate(_benefits.length, (i) {
+                          final t = Curves.easeOutCubic.transform(
+                              _seg(0.60 + i * 0.06, 0.74 + i * 0.06));
+                          return Opacity(
+                            opacity: t,
+                            child: Transform.translate(
+                              offset: Offset(-16 * (1 - t), 0),
                               child: Container(
-                                width: 9,
-                                height: 9,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 5),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  shape: BoxShape.circle,
+                                  color:
+                                      Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _benefits[i],
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),

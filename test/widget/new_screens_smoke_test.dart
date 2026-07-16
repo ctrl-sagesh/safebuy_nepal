@@ -17,12 +17,12 @@ void main() {
   });
 
   group('Screen smoke tests', () {
-    testWidgets('Onboarding renders slide 1 with guide steps',
+    testWidgets('Onboarding renders slide 1 with the problem story',
         (tester) async {
       await tester
           .pumpWidget(const MaterialApp(home: OnboardingScreen()));
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.text('Verify Any Seller Instantly'), findsOneWidget);
+      expect(find.text('Sound familiar?'), findsOneWidget);
       expect(find.text('Skip'), findsOneWidget);
       expect(find.text('Next'), findsOneWidget);
     });

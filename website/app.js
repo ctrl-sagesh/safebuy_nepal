@@ -441,7 +441,7 @@
     var box = document.getElementById('demoResults');
     if (!box) return;
     if (!list.length) {
-      box.innerHTML = '<div class="sb-empty">🤖 No seller found. In the app, our AI suggests checking the spelling or <b>adding this seller</b> so the community can start building their trust record.</div>';
+      box.innerHTML = '<div class="sb-empty">🔍 No seller found. This does not mean they are fraudulent — they may simply not be registered yet. Check the spelling, or <b>add this seller</b> so the community can start building their trust record.</div>';
       return;
     }
     box.innerHTML = list.map(resultCard).join('');
@@ -711,11 +711,11 @@
     );
   }
 
-  // AI Safety Chatbot (rule-based SafeGuard assistant)
+  // Safety assistant (rule-based, runs fully in the browser)
   function botReply(q) {
     q = ' ' + q.toLowerCase() + ' ';
     function has() { for (var i = 0; i < arguments.length; i++) if (q.indexOf(arguments[i]) > -1) return true; return false; }
-    if (has('hello', 'hi ', 'hey', 'namaste')) return "Namaste! 🙏 I'm <b>SafeGuard</b>, your shopping-safety assistant. Ask me about advance payments, spotting fake sellers, or what to do if you were scammed.";
+    if (has('hello', 'hi ', 'hey', 'namaste')) return "Namaste! 🙏 I'm the <b>SafeBuy Safety Assistant</b>. Ask me about advance payments, spotting fake sellers, or what to do if you were scammed.";
     if (has('esewa', 'khalti', ' qr', 'advance', 'deposit', 'pay first', 'pay now')) return "⚠️ <b>Never pay the full amount in advance</b> to an unknown seller. Scammers ask for eSewa/Khalti/QR advance, then block you.<br>• Prefer Cash on Delivery.<br>• If advance is needed, pay only a small token.<br>• Check the seller's SafeBuy trust score first.<br>• Keep the payment screenshot as evidence.";
     if (has('fake', 'spot', 'genuine', ' real ', 'verify', 'legit', 'trustworthy')) return "🔍 <b>To spot a fake seller:</b><br>• Search them on SafeBuy — a score below 50 is High Risk.<br>• Brand-new account with only 5-star reviews = suspicious.<br>• They rush you to move to WhatsApp/Viber.<br>• No address and no COD option.<br>• Reverse-search their product photos.";
     if (has('scam', 'cheat', 'lost money', 'fraud', 'ripped', 'duped', 'got robbed')) return "😔 Sorry that happened. Do this now:<br>1. Stop any further payment.<br>2. Screenshot all chats + the payment receipt.<br>3. File a report on SafeBuy (with evidence) so others are warned.<br>4. For large amounts, the app escalates to the <b>Cyber Bureau (निवेदन)</b>.<br>5. Inform your payment provider (eSewa/Khalti/bank).";
@@ -730,7 +730,7 @@
   }
   function openChatbot() {
     openModal(
-      '<div class="sb-chat"><div class="sb-chat-head"><span class="cb-ava">🛡️</span><div><b>SafeGuard AI</b><small>Shopping-safety assistant · EN/नेपाली</small></div></div>' +
+      '<div class="sb-chat"><div class="sb-chat-head"><span class="cb-ava">🛡️</span><div><b>Safety Assistant</b><small>Shopping-safety answers · EN/नेपाली</small></div></div>' +
       '<div class="sb-chat-msgs" id="cbMsgs"></div>' +
       '<div class="sb-chat-chips" id="cbChips"></div>' +
       '<form class="sb-chat-input" id="cbForm"><input id="cbInput" autocomplete="off" placeholder="Ask about scams, payments, safety…"/><button class="btn btn-primary" type="submit" aria-label="Send">➤</button></form></div>',
@@ -738,7 +738,7 @@
         var msgs = card.querySelector('#cbMsgs');
         function add(who, html) { var d = document.createElement('div'); d.className = 'cb-msg ' + who; d.innerHTML = html; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; }
         function botSay(t) { var typ = document.createElement('div'); typ.className = 'cb-msg bot cb-typing'; typ.innerHTML = '<span></span><span></span><span></span>'; msgs.appendChild(typ); msgs.scrollTop = msgs.scrollHeight; setTimeout(function () { typ.remove(); add('bot', t); }, 550); }
-        add('bot', "Namaste! 🙏 I'm <b>SafeGuard</b>. Ask me anything about safe online shopping in Nepal — or tap a question below.");
+        add('bot', "Namaste! 🙏 I'm the <b>SafeBuy Safety Assistant</b>. Ask me anything about safe online shopping in Nepal — or tap a question below.");
         var qs = ['Is eSewa advance safe?', 'How to spot a fake seller?', 'I got scammed — what now?', 'How does the trust score work?'];
         var chipBox = card.querySelector('#cbChips');
         chipBox.innerHTML = qs.map(function (c) { return '<button type="button" class="cb-chip">' + esc(c) + '</button>'; }).join('');
@@ -783,7 +783,7 @@
       '<h3 class="sb-form-title">' + d.icon + ' ' + d.title + ' <span style="color:var(--high-risk)">' + d.pct + '</span></h3>' +
       '<p class="sb-form-sub">' + esc(d.desc) + '</p>' +
       '<div class="sb-tips"><h4>🛡️ How to protect yourself</h4><ul>' + d.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>' +
-      '<div class="sb-actions"><button class="btn btn-primary" id="sdChat">Ask SafeGuard AI</button><button class="btn btn-outline" id="sdVerify">Verify a seller</button></div>',
+      '<div class="sb-actions"><button class="btn btn-primary" id="sdChat">Ask the Safety Assistant</button><button class="btn btn-outline" id="sdVerify">Verify a seller</button></div>',
       function (card) {
         card.querySelector('#sdChat').onclick = function () { closeModal(); setTimeout(openChatbot, 260); };
         card.querySelector('#sdVerify').onclick = function () { closeModal(); gotoDemo(true); };
@@ -831,7 +831,7 @@
         '<b>Evidence is required for positive AND negative</b> reviews — this keeps ratings fair.',
         'Be <b>honest and specific</b> about your real experience.',
         'One review per seller · minimum 20 characters · no spam or copy-paste.',
-        'Reviews are <b>weighted by authenticity</b>; fakes are filtered by the 6-layer anti-bot system.'
+        'Reviews are <b>weighted by credibility</b>; fake and copy-pasted reviews are filtered out.'
       ]
     },
     verify: {

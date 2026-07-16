@@ -68,8 +68,8 @@ class AboutScreen extends StatelessWidget {
           _section(
             'Technology',
             'Built with Flutter and Firebase\n'
-                'Trust Score Algorithm: 5-factor weighted model\n'
-                'AI Agents: 4 rule-based safety agents\n'
+                'Trust ratings: 5-factor weighted model\n'
+                'Automated safety checks run around the clock\n'
                 'Academic Year: 2025-2026',
           ),
 

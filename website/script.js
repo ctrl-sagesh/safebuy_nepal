@@ -10,13 +10,20 @@
   // ═══════════════════════════════════════════════════════════════
   // Welcome Overlay
   // ═══════════════════════════════════════════════════════════════
+  // Shown only on the first visit — returning visitors land straight
+  // on the hero so the value proposition is readable immediately.
   const welcomeOverlay = document.getElementById('welcomeOverlay');
   const welcomeEnterBtn = document.getElementById('welcomeEnterBtn');
-  if (welcomeOverlay && welcomeEnterBtn) {
+  let welcomed = false;
+  try { welcomed = localStorage.getItem('sb_welcomed') === '1'; } catch (e) { /* private mode */ }
+  if (welcomeOverlay && welcomed) {
+    welcomeOverlay.classList.add('hidden');
+  } else if (welcomeOverlay && welcomeEnterBtn) {
     document.body.style.overflow = 'hidden';
     welcomeEnterBtn.addEventListener('click', () => {
       welcomeOverlay.classList.add('hidden');
       document.body.style.overflow = '';
+      try { localStorage.setItem('sb_welcomed', '1'); } catch (e) { /* ignore */ }
     });
   }
 

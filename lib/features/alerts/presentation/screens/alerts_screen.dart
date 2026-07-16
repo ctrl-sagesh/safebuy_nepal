@@ -62,7 +62,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
       appBar: AppBar(
-        title: const Text('Alerts'),
+        title: const Text('Safety Alerts'),
         automaticallyImplyLeading: false,
       ),
       body: RefreshIndicator(
@@ -70,8 +70,18 @@ class _AlertsScreenState extends State<AlertsScreen> {
         onRefresh: _load,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
           children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                'Active fraud warnings from the SafeBuy Nepal community',
+                style: GoogleFonts.inter(
+                  fontSize: 12.5,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
             // Scam news entry card
             InkWell(
               onTap: () {
@@ -207,18 +217,29 @@ class _AlertsScreenState extends State<AlertsScreen> {
               Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: _failed ? Colors.white : AppColors.trustedBg,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.borderLight),
+                  border: Border.all(
+                      color: _failed
+                          ? AppColors.borderLight
+                          : AppColors.trusted.withValues(alpha: 0.35)),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   _failed
-                      ? 'Could not load alerts. Pull down to retry.'
-                      : '✅ No active alerts right now',
+                      ? 'Could not load alerts. Check your connection '
+                          'and pull down to retry.'
+                      : 'No active alerts right now. Nepal\'s social '
+                          'commerce community is safe today.',
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: _failed
+                        ? AppColors.textSecondary
+                        : AppColors.success,
+                    fontWeight:
+                        _failed ? FontWeight.w400 : FontWeight.w600,
+                    height: 1.5,
                   ),
                 ),
               )
@@ -278,7 +299,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              a['body'] as String? ?? '',
+                              (a['body'] ?? a['description'] ?? '')
+                                  as String,
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 color: AppColors.textSecondary,

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,6 +67,15 @@ void main() async {
 
   await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform);
+
+  // Debug builds only: skip Play Integrity / reCAPTCHA app verification so
+  // the Firebase TEST phone numbers (Console → Auth → Phone → test numbers)
+  // work instantly on emulators and devices. Release builds are unaffected
+  // and use full verification for real SMS.
+  if (kDebugMode) {
+    await FirebaseAuth.instance
+        .setSettings(appVerificationDisabledForTesting: true);
+  }
 
   runApp(const ProviderScope(child: SafeBuyApp()));
 
@@ -279,11 +289,28 @@ class MainAppScreen extends ConsumerStatefulWidget {
 class _MainAppScreenState extends ConsumerState<MainAppScreen> {
   int _selectedIndex = 0;
 
+  /// Set by the Home tab's example chips: switches to the Search tab
+  /// with the query pre-filled and the search already running.
+  final _searchRequest = ValueNotifier<String?>(null);
+
+  @override
+  void dispose() {
+    _searchRequest.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final screens = [
-      HomeScreen(onSearchTap: () => setState(() => _selectedIndex = 1)),
-      const SearchScreen(),
+      HomeScreen(
+        onSearchTap: ([String? query]) {
+          setState(() => _selectedIndex = 1);
+          if (query != null && query.isNotEmpty) {
+            _searchRequest.value = query;
+          }
+        },
+      ),
+      SearchScreen(searchRequest: _searchRequest),
       const AlertsScreen(),
       const ProfileScreen(),
     ];

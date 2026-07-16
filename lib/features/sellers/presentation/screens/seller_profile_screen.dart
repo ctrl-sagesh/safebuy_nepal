@@ -337,6 +337,79 @@ class _SellerProfileScreenState
                   ),
                 ),
 
+                // Verdict explanation — warning or confidence message
+                if (s.trustVerdict == 'high_risk')
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.highRiskBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                          color: AppColors.highRisk
+                              .withValues(alpha: 0.4)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.warning_rounded,
+                                color: AppColors.highRisk, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'This seller has received '
+                                '${s.scamReportCount} fraud '
+                                'complaint${s.scamReportCount == 1 ? '' : 's'}',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.highRisk,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'We recommend NOT paying this seller. Read '
+                          'the complaints below before making any '
+                          'decision.',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            color: AppColors.textPrimary,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (s.trustVerdict == 'trusted')
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.trustedBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                          color:
+                              AppColors.trusted.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      'This seller has been active for '
+                      '${(DateTime.now().difference(s.accountCreatedAt).inDays / 30).floor()} '
+                      'months. The community has left ${s.reviewCount} '
+                      'review${s.reviewCount == 1 ? '' : 's'}, and '
+                      '${s.scamReportCount == 0 ? 'there are zero fraud complaints on record' : 'only ${s.scamReportCount} complaint(s) exist'}.',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.5,
+                        color: AppColors.textPrimary,
+                        height: 1.55,
+                      ),
+                    ),
+                  ),
+
                 // Verification status card
                 Container(
                   margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -365,7 +438,18 @@ class _SellerProfileScreenState
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
+                      _checkRow('Phone verified',
+                          s.phone.isNotEmpty && s.isVerified),
+                      _checkRow('Identity verified', s.isKycVerified),
+                      _checkRow('Location verified',
+                          s.verificationDistrict.isNotEmpty),
+                      _checkRow(
+                          'Social media linked',
+                          (s.tiktokHandle?.isNotEmpty ?? false) ||
+                              (s.instagramHandle?.isNotEmpty ?? false) ||
+                              (s.facebookHandle?.isNotEmpty ?? false)),
+                      const SizedBox(height: 6),
                       _kv('Registered',
                           DateFormat('dd MMM yyyy').format(s.accountCreatedAt)),
                       if (s.verificationExpiry != null)
@@ -533,8 +617,8 @@ class _SellerProfileScreenState
       );
     }
     if (_reports!.isEmpty) {
-      return _empty(
-          '✅ No fraud reports on record', 'This seller has a clean record.');
+      return _empty('✅ No fraud complaints on record',
+          'This seller has a clean history.');
     }
     return Column(children: _reports!.map((r) => _ReportCard(r)).toList());
   }
@@ -618,6 +702,35 @@ class _SellerProfileScreenState
             fontWeight: FontWeight.w600,
             color: AppColors.textSecondary,
           )),
+    );
+  }
+
+  Widget _checkRow(String label, bool done) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Icon(
+            done ? Icons.check_circle_rounded : Icons.cancel_outlined,
+            size: 16,
+            color: done ? AppColors.trusted : AppColors.textMuted,
+          ),
+          const SizedBox(width: 8),
+          Text(label,
+              style: GoogleFonts.inter(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              )),
+          const Spacer(),
+          Text(done ? 'Done' : 'Not verified',
+              style: GoogleFonts.inter(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: done ? AppColors.trusted : AppColors.textMuted,
+              )),
+        ],
+      ),
     );
   }
 
@@ -983,7 +1096,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
       BuildContext context, double shrinkOffset, bool overlaps) {
     final labels = [
       'Reviews (${counts.$1})',
-      'Reports (${counts.$2})',
+      'Complaints (${counts.$2})',
       'About',
     ];
     return Container(
