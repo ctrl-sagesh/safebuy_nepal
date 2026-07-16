@@ -13,7 +13,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
+import '../../../../core/widgets/dhaka_pattern.dart';
 import '../../../../core/widgets/loyalty_badge.dart';
+import '../../../../core/widgets/pulse_glow.dart';
 import '../../../../core/widgets/verification_card.dart';
 import '../../../../models/report_model.dart';
 import '../../../../models/review_model.dart';
@@ -47,6 +49,12 @@ class _SellerProfileScreenState
     duration: const Duration(milliseconds: 800),
   );
 
+  /// Small 1→1.05→1 pulse once the score arc finishes counting up.
+  late final AnimationController _settle = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 400),
+  );
+
   bool get _isGuest => FirebaseAuth.instance.currentUser == null;
 
   /// The signed-in user's own report against this seller, if any —
@@ -69,6 +77,7 @@ class _SellerProfileScreenState
   @override
   void dispose() {
     _arc.dispose();
+    _settle.dispose();
     super.dispose();
   }
 
@@ -84,7 +93,9 @@ class _SellerProfileScreenState
         return;
       }
       setState(() => _seller = seller);
-      _arc.forward();
+      _arc.forward().whenComplete(() {
+        if (mounted) _settle.forward(from: 0);
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() => _failed = true);
@@ -159,6 +170,28 @@ class _SellerProfileScreenState
     PopupHelper.showSuccess(context, 'Warning text copied to clipboard');
   }
 
+  Widget _verdictChip(SellerModel s) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.trustScoreSurface(s.trustScore),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        s.trustVerdict == 'trusted'
+            ? '✓ TRUSTED'
+            : s.trustVerdict == 'high_risk'
+                ? '✕ HIGH RISK'
+                : '? UNVERIFIED',
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: AppColors.trustScoreColor(s.trustScore),
+        ),
+      ),
+    );
+  }
+
   LinearGradient get _verdictGradient {
     switch (_seller?.trustVerdict) {
       case 'trusted':
@@ -226,8 +259,12 @@ class _SellerProfileScreenState
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(gradient: _verdictGradient),
-                child: SafeArea(
-                  child: Column(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    const AnimatedDhakaPattern(opacity: 0.04),
+                    SafeArea(
+                      child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 28),
@@ -277,6 +314,8 @@ class _SellerProfileScreenState
                       ),
                     ],
                   ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -303,11 +342,16 @@ class _SellerProfileScreenState
                   child: Row(
                     children: [
                       AnimatedBuilder(
-                        animation: _arc,
+                        animation: Listenable.merge([_arc, _settle]),
                         builder: (context, _) {
                           final t = Curves.easeOutCubic
                               .transform(_arc.value);
-                          return SizedBox(
+                          final settleScale = 1 +
+                              0.05 *
+                                  math.sin(math.pi * _settle.value);
+                          return Transform.scale(
+                            scale: settleScale,
+                            child: SizedBox(
                             width: 110,
                             height: 110,
                             child: CustomPaint(
@@ -342,6 +386,7 @@ class _SellerProfileScreenState
                                 ),
                               ),
                             ),
+                          ),
                           );
                         },
                       ),
@@ -350,27 +395,25 @@ class _SellerProfileScreenState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: AppColors.trustScoreSurface(
-                                    s.trustScore),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                s.trustVerdict == 'trusted'
-                                    ? '✓ TRUSTED'
-                                    : s.trustVerdict == 'high_risk'
-                                        ? '✕ HIGH RISK'
-                                        : '? UNVERIFIED',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.trustScoreColor(
-                                      s.trustScore),
-                                ),
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                s.trustVerdict == 'high_risk'
+                                    ? PulseGlow.danger(
+                                        color: AppColors.highRisk,
+                                        child: _verdictChip(s),
+                                      )
+                                    : PulseGlow(
+                                        color: AppColors.trustScoreColor(
+                                            s.trustScore),
+                                        duration: Duration(
+                                            milliseconds:
+                                                s.trustVerdict == 'trusted'
+                                                    ? 2000
+                                                    : 3000),
+                                        child: _verdictChip(s),
+                                      ),
+                              ],
                             ),
                             const SizedBox(height: 8),
                             Text(

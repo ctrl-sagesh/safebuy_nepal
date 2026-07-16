@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/widgets/dhaka_pattern.dart';
 
 /// SafeBuy Nepal splash — a 3-second sequence that tells a stranger what
 /// the app is before the first screen even loads. Driven by a single
@@ -105,8 +106,21 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
 
+              // Dhaka fabric motif, barely visible over the gradient
+              const AnimatedDhakaPattern(opacity: 0.08),
+
               // Floating particles (20 circles drifting upward)
               CustomPaint(painter: _ParticlePainter(_c.value)),
+
+              // Tiny Nepal flag accent in the corner
+              Positioned(
+                right: 20,
+                top: MediaQuery.paddingOf(context).top + 14,
+                child: const Opacity(
+                  opacity: 0.85,
+                  child: Text('🇳🇵', style: TextStyle(fontSize: 18)),
+                ),
+              ),
 
               // Center column
               Center(

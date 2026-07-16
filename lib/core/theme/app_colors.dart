@@ -80,9 +80,9 @@ abstract final class AppColors {
   static const grey700 = Color(0xFF374151);
   static const grey900 = Color(0xFF111827);
 
-  // ── Shimmer ───────────────────────────────────────────────────────────────────
-  static const shimmerBase      = Color(0xFFE2E8F0);
-  static const shimmerHighlight = Color(0xFFF5F7FA);
+  // ── Shimmer (blue-tinted skeletons) ──────────────────────────────────────────
+  static const shimmerBase      = Color(0xFFEFF6FF);
+  static const shimmerHighlight = Color(0xFFDBEAFE);
 
   // ── Gradients ─────────────────────────────────────────────────────────────────
   static const primaryGradient = LinearGradient(

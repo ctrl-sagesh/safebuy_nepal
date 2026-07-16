@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +11,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/services/festival_alert_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/dhaka_pattern.dart';
 import '../../../../core/utils/popup_helper.dart';
 import '../../../../core/widgets/verification_card.dart';
 import '../../../../models/leaderboard_model.dart';
@@ -40,10 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>>? _alerts;
   bool _alertsFailed = false;
 
-  final _tipsController = PageController(viewportFraction: 0.92);
-  int _tipIndex = 0;
-  Timer? _tipsTimer;
-
   static const _tips = [
     ('💡', 'Never pay 100% advance to a seller you have not verified.'),
     ('🔍', 'Search the seller on SafeBuy before every purchase.'),
@@ -63,22 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadFeatured();
     _loadAlerts();
-    _tipsTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (!mounted || !_tipsController.hasClients) return;
-      _tipIndex = (_tipIndex + 1) % _tips.length;
-      _tipsController.animateToPage(
-        _tipIndex,
-        duration: const Duration(milliseconds: 450),
-        curve: Curves.easeOutCubic,
-      );
-    });
-  }
-
-  @override
-  void dispose() {
-    _tipsTimer?.cancel();
-    _tipsController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadFeatured() async {
@@ -113,6 +95,111 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     }
+  }
+
+  /// Body of the hero search card (title, search bar, example chips).
+  Widget _heroContent(String firstName) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          !_isGuest && firstName.isNotEmpty
+              ? 'Namaste, $firstName'
+              : 'Verify Before You Pay',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontSize: 19,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text('Search any seller before sending eSewa payment',
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.9),
+              fontSize: 13,
+            )),
+        const SizedBox(height: 16),
+
+        // Search bar → jumps to Search tab with keyboard open
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            widget.onSearchTap?.call();
+          },
+          child: Container(
+            height: 50,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.search_rounded, color: AppColors.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Phone number, @handle, or eSewa ID...',
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      color: AppColors.textMuted,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                Text('Search',
+                    style: GoogleFonts.inter(
+                      color: AppColors.primary,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                    )),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Tappable example searches
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: _exampleSearches.map((q) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    widget.onSearchTap?.call(q);
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text('Try: $q',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                        )),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
   }
 
   void _guarded(String route) {
@@ -176,7 +263,6 @@ class _HomeScreenState extends State<HomeScreen> {
             // ── Hero search card ──────────────────────────────────────────
             Container(
               margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF1565C0), Color(0xFF1976D2)],
@@ -192,109 +278,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    !_isGuest && firstName.isNotEmpty
-                        ? 'Namaste, $firstName'
-                        : 'Verify Before You Pay',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 19,
-                      fontWeight: FontWeight.w600,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
+                  children: [
+                    const Positioned.fill(
+                        child: AnimatedDhakaPattern(opacity: 0.06)),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: _heroContent(firstName),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text('Search any seller before sending eSewa payment',
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 13,
-                      )),
-                  const SizedBox(height: 16),
-
-                  // Search bar → jumps to Search tab with keyboard open
-                  GestureDetector(
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      widget.onSearchTap?.call();
-                    },
-                    child: Container(
-                      height: 50,
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.12),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.search_rounded,
-                              color: AppColors.primary),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Phone number, @handle, or eSewa ID...',
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                color: AppColors.textMuted,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                          Text('Search',
-                              style: GoogleFonts.inter(
-                                color: AppColors.primary,
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w700,
-                              )),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Tappable example searches
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: _exampleSearches.map((q) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: InkWell(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              widget.onSearchTap?.call(q);
-                            },
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color:
-                                    Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text('Try: $q',
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w500,
-                                  )),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
 
@@ -550,41 +545,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: AppColors.textPrimary,
                   )),
             ),
-            SizedBox(
+            const SizedBox(
               height: 86,
-              child: PageView.builder(
-                controller: _tipsController,
-                itemCount: _tips.length,
-                onPageChanged: (i) => _tipIndex = i,
-                itemBuilder: (context, i) {
-                  final (emoji, text) = _tips[i];
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(emoji, style: const TextStyle(fontSize: 26)),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Text(
-                            text,
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+              child: _TipsTicker(tips: _HomeScreenState._tips),
             ),
 
             // ── Learn more ────────────────────────────────────────────────
@@ -999,5 +962,93 @@ class _FestivalBanner extends StatelessWidget {
         ],
       ),
     ).animate().fadeIn(duration: 350.ms).slideY(begin: -0.15);
+  }
+}
+
+// ── Continuously scrolling safety-tips ticker ─────────────────────────────────
+
+/// Endless left-scrolling row of tip cards. Touching the row pauses the
+/// scroll; releasing resumes it.
+class _TipsTicker extends StatefulWidget {
+  const _TipsTicker({required this.tips});
+
+  final List<(String, String)> tips;
+
+  @override
+  State<_TipsTicker> createState() => _TipsTickerState();
+}
+
+class _TipsTickerState extends State<_TipsTicker>
+    with SingleTickerProviderStateMixin {
+  static const _pxPerSecond = 32.0;
+
+  final _scroll = ScrollController();
+  late final Ticker _ticker = createTicker(_onTick);
+  Duration _last = Duration.zero;
+  bool _paused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker.start();
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _onTick(Duration elapsed) {
+    final dt = (elapsed - _last).inMicroseconds / 1e6;
+    _last = elapsed;
+    if (_paused || !_scroll.hasClients || dt <= 0 || dt > 0.5) return;
+    _scroll.jumpTo(_scroll.offset + _pxPerSecond * dt);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _paused = true,
+      onPointerUp: (_) => _paused = false,
+      onPointerCancel: (_) => _paused = false,
+      child: ListView.builder(
+        controller: _scroll,
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        itemBuilder: (context, i) {
+          final (emoji, text) = widget.tips[i % widget.tips.length];
+          return Container(
+            width: MediaQuery.sizeOf(context).width * 0.78,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Row(
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 26)),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    text,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 }

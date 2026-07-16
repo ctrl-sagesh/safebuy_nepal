@@ -84,7 +84,8 @@ abstract final class TierStyle {
 
 /// The physical-looking SafeBuy Verification Card (340x200 aspect).
 /// Used on the card screen, seller profile preview, and onboarding.
-class SafebuyVerificationCard extends StatelessWidget {
+/// A white shine sweeps across the face every 5 seconds.
+class SafebuyVerificationCard extends StatefulWidget {
   const SafebuyVerificationCard({
     super.key,
     required this.seller,
@@ -95,7 +96,27 @@ class SafebuyVerificationCard extends StatelessWidget {
   final double width;
 
   @override
+  State<SafebuyVerificationCard> createState() =>
+      _SafebuyVerificationCardState();
+}
+
+class _SafebuyVerificationCardState extends State<SafebuyVerificationCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shine = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 5),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _shine.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final seller = widget.seller;
+    final width = widget.width;
     final tier = seller.verificationTier;
     final height = width * 200 / 340;
     final scale = width / 340;
@@ -116,8 +137,51 @@ class SafebuyVerificationCard extends StatelessWidget {
           ),
         ],
       ),
-      padding: EdgeInsets.all(14 * scale),
-      child: Column(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16 * scale),
+        child: Stack(
+          children: [
+            // Shine: sweeps within the first fifth of each 5s cycle.
+            Positioned.fill(
+              child: AnimatedBuilder(
+                animation: _shine,
+                builder: (context, _) {
+                  final t = (_shine.value / 0.2).clamp(0.0, 1.0);
+                  return IgnorePointer(
+                    child: Transform.translate(
+                      offset: Offset((t * 2 - 1) * width * 1.4, 0),
+                      child: Transform.rotate(
+                        angle: 0.35,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withValues(alpha: 0),
+                                Colors.white.withValues(alpha: 0.18),
+                                Colors.white.withValues(alpha: 0),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(14 * scale),
+              child: _cardBody(seller, tier, scale, expiry),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _cardBody(
+      SellerModel seller, String tier, double scale, DateTime? expiry) {
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Top bar
@@ -284,8 +348,7 @@ class SafebuyVerificationCard extends StatelessWidget {
               ),
             ],
           ),
-        ],
-      ),
+      ],
     );
   }
 }

@@ -110,7 +110,7 @@ class SafeBuyApp extends StatelessWidget {
     return PageRouteBuilder(
       settings: settings,
       transitionDuration: const Duration(milliseconds: 250),
-      reverseTransitionDuration: const Duration(milliseconds: 220),
+      reverseTransitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (_, _, _) => page,
       transitionsBuilder: (_, animation, _, child) {
         final offset = Tween<Offset>(
@@ -355,31 +355,76 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined, size: 24),
-              selectedIcon: Icon(Icons.home_rounded,
-                  color: AppColors.primary, size: 24),
+              selectedIcon: _BounceIn(
+                  child: Icon(Icons.home_rounded,
+                      color: AppColors.primary, size: 24)),
               label: 'Home',
             ),
             NavigationDestination(
               icon: Icon(Icons.verified_user_outlined, size: 24),
-              selectedIcon: Icon(Icons.verified_user_rounded,
-                  color: AppColors.primary, size: 24),
+              selectedIcon: _BounceIn(
+                  child: Icon(Icons.verified_user_rounded,
+                      color: AppColors.primary, size: 24)),
               label: 'Verify',
             ),
             NavigationDestination(
               icon: Icon(Icons.notifications_none_rounded, size: 24),
-              selectedIcon: Icon(Icons.notifications_rounded,
-                  color: AppColors.primary, size: 24),
+              selectedIcon: _BounceIn(
+                  child: Icon(Icons.notifications_rounded,
+                      color: AppColors.primary, size: 24)),
               label: 'Alerts',
             ),
             NavigationDestination(
               icon: Icon(Icons.person_outline_rounded, size: 24),
-              selectedIcon: Icon(Icons.person_rounded,
-                  color: AppColors.primary, size: 24),
+              selectedIcon: _BounceIn(
+                  child: Icon(Icons.person_rounded,
+                      color: AppColors.primary, size: 24)),
               label: 'Profile',
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Springs the active nav icon up 4px when its tab is selected.
+/// NavigationBar mounts the selectedIcon fresh on each selection, so the
+/// bounce plays exactly once per tab switch.
+class _BounceIn extends StatefulWidget {
+  const _BounceIn({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_BounceIn> createState() => _BounceInState();
+}
+
+class _BounceInState extends State<_BounceIn>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  )..forward();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (context, child) {
+        final t = Curves.elasticOut.transform(_c.value);
+        return Transform.translate(
+          offset: Offset(0, -4 * (1 - t)),
+          child: Transform.scale(scale: 0.85 + 0.15 * t, child: child),
+        );
+      },
+      child: widget.child,
     );
   }
 }

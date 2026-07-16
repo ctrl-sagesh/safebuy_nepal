@@ -12,6 +12,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
 import '../../../../core/widgets/loyalty_badge.dart';
+import '../../../../core/widgets/pulse_glow.dart';
 import '../../../../core/widgets/verification_card.dart';
 import '../../../../models/seller_model.dart';
 import '../../../../services/firestore_service.dart';
@@ -284,9 +285,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               sellerId: e.value.sellerId),
                       ],
                     )
-                        .animate(delay: (e.key * 70).ms)
-                        .fadeIn()
-                        .slideY(begin: 0.05),
+                        .animate(delay: (e.key * 100).ms)
+                        .fadeIn(duration: 350.ms)
+                        .moveY(
+                          begin: 40,
+                          end: 0,
+                          duration: 600.ms,
+                          curve: Curves.easeOutBack,
+                        ),
                   ),
                 )
           else
@@ -511,7 +517,15 @@ class _SellerResultCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(vIcon, color: vColor, size: 24),
+                    seller.trustVerdict == 'high_risk'
+                        ? PulseGlow.danger(
+                            color: vColor,
+                            child: Icon(vIcon, color: vColor, size: 24),
+                          )
+                        : PulseGlow(
+                            color: vColor,
+                            child: Icon(vIcon, color: vColor, size: 24),
+                          ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(vTitle,
