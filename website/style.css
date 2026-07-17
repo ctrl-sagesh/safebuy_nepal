@@ -1372,3 +1372,149 @@ img { max-width: 100%; display: block; }
   .sb-modal-close { top: 10px; right: 10px; }
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   SafeBuy Nepal + Nepal Police section (dark navy)
+   ═══════════════════════════════════════════════════════════════ */
+.police-section {
+  background: #0D2137;
+  padding: 96px 0;
+  color: #E7EEF7;
+}
+.police-section .section-header h2 { color: #FFFFFF; }
+.police-section .section-header p { color: #9FB3C8; }
+.police-section .section-tag.police-tag {
+  background: rgba(21, 101, 192, 0.25);
+  color: #7EB6FF;
+  border: 1px solid rgba(126, 182, 255, 0.35);
+}
+
+.police-flow {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  margin: 48px 0 40px;
+}
+.pflow-step {
+  flex: 1;
+  background: #143152;
+  border: 1px solid rgba(126, 182, 255, 0.18);
+  border-radius: 16px;
+  padding: 22px 18px;
+  position: relative;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+.pflow-step:hover {
+  transform: translateY(-4px);
+  border-color: rgba(126, 182, 255, 0.45);
+}
+.pflow-num {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #3D5F86;
+}
+.pflow-ico { font-size: 1.7rem; margin-bottom: 10px; }
+.pflow-step h4 { color: #FFFFFF; font-size: 1rem; margin-bottom: 6px; }
+.pflow-step p { color: #9FB3C8; font-size: 0.86rem; line-height: 1.55; }
+.pflow-arrow {
+  align-self: center;
+  color: #3D5F86;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.police-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+}
+.police-contact {
+  background: #143152;
+  border: 1px solid rgba(126, 182, 255, 0.18);
+  border-radius: 16px;
+  padding: 24px;
+}
+.police-contact h4 { color: #FFFFFF; margin-bottom: 12px; font-size: 1.02rem; }
+.police-contact p { color: #C7D6E8; font-size: 0.92rem; margin: 6px 0; }
+.police-contact a { color: #7EB6FF; text-decoration: none; }
+.police-contact a:hover { text-decoration: underline; }
+
+.police-quote {
+  background: rgba(21, 101, 192, 0.16);
+  border-left: 4px solid #1565C0;
+  border-radius: 12px;
+  padding: 24px 26px;
+  margin: 0;
+}
+.police-quote p {
+  color: #E7EEF7;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.police-quote cite {
+  color: #7EB6FF;
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Nepal fraud-by-numbers section
+   ═══════════════════════════════════════════════════════════════ */
+.fraudnum-section {
+  background: var(--bg-alt);
+  padding: 96px 0;
+}
+.fraudnum-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin: 44px 0 26px;
+}
+.fraudnum-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(21, 101, 192, 0.14);
+  border-radius: 16px;
+  padding: 26px 20px;
+  text-align: center;
+  box-shadow: 0 6px 22px rgba(13, 71, 161, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.fraudnum-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(13, 71, 161, 0.12);
+}
+.fraudnum-value {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #C62828;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.fraudnum-card p {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.fraudnum-source {
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 0.88rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .police-flow { flex-direction: column; }
+  .pflow-arrow { transform: rotate(90deg); align-self: center; }
+  .police-bottom { grid-template-columns: 1fr; }
+  .fraudnum-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .fraudnum-grid { grid-template-columns: 1fr; }
+}

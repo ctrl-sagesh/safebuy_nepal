@@ -222,6 +222,10 @@
         if (entry.target.classList.contains('algo-weights')) {
           animateAlgoBars();
         }
+        // Trigger Nepal Police fraud-by-numbers counters
+        if (entry.target.closest('.fraudnum-section') || entry.target.classList.contains('fraudnum-section')) {
+          animateFraudCounters();
+        }
       }
     });
   }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
@@ -238,6 +242,32 @@
   addStagger('.scam-grid .scam-card', 100);
   addStagger('.coldstart-grid .feature-card', 100);
   addStagger('.stats-grid .stat-card', 80);
+  addStagger('.police-flow .pflow-step', 120);
+  addStagger('.fraudnum-grid .fraudnum-card', 100);
+
+  // Fraud-by-numbers counters (same easing as the main stats counters)
+  let fraudCountersAnimated = false;
+  function animateFraudCounters() {
+    if (fraudCountersAnimated) return;
+    fraudCountersAnimated = true;
+
+    document.querySelectorAll('.fraud-counter').forEach(counter => {
+      const target = parseInt(counter.getAttribute('data-target'));
+      if (isNaN(target)) return;
+
+      const duration = 2200;
+      const start = performance.now();
+
+      function tick(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        counter.textContent = Math.floor(eased * target).toLocaleString();
+        if (progress < 1) requestAnimationFrame(tick);
+        else counter.textContent = target.toLocaleString();
+      }
+      requestAnimationFrame(tick);
+    });
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // Animation 7: Counter Animation
