@@ -28,7 +28,7 @@ class TermsScreen extends StatelessWidget {
             body: 'SafeBuy Nepal provides community information only. We '
                 'are not a transaction mediator, escrow service, or '
                 'payment provider. Trust verdicts are one factor in your '
-                'decision — not the only factor. A high score is not a '
+                'decision, not the only factor. A high score is not a '
                 'guarantee, and a missing record is not proof of safety.',
           ),
           _TermsSection(

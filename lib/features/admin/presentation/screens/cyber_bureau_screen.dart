@@ -303,7 +303,7 @@ class _LetterPreviewScreenState extends ConsumerState<_LetterPreviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('निवेदन — Cyber Bureau'),
+        title: const Text('निवेदन: Cyber Bureau'),
         backgroundColor: AppColors.primary700,
         foregroundColor: Colors.white,
         actions: [

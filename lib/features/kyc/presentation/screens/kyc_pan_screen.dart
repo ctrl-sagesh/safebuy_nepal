@@ -59,7 +59,7 @@ class _KycPanScreenState extends State<KycPanScreen> {
     final draft = KycDraft.instance;
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
-      appBar: AppBar(title: const Text('KYC — PAN Card')),
+      appBar: AppBar(title: const Text('KYC: PAN Card')),
       body: Column(
         children: [
           const KycStepHeader(step: 4),

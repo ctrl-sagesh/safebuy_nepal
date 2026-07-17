@@ -377,7 +377,7 @@ class _SubmissionCardState extends State<_SubmissionCard> {
           color: has ? AppColors.primary50 : AppColors.grey100,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Text('$label ${has ? '👁' : '—'}',
+        child: Text('$label ${has ? '👁' : '-'}',
             style: GoogleFonts.inter(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -400,7 +400,7 @@ class _SubmissionCardState extends State<_SubmissionCard> {
                     fontSize: 11.5, color: AppColors.textMuted)),
           ),
           Expanded(
-            child: Text(v.isEmpty ? '—' : v,
+            child: Text(v.isEmpty ? '-' : v,
                 style: GoogleFonts.inter(
                     fontSize: 11.5, fontWeight: FontWeight.w600)),
           ),

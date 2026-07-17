@@ -38,7 +38,7 @@ class _KycQrScreenState extends State<KycQrScreen> {
     final draft = KycDraft.instance;
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
-      appBar: AppBar(title: const Text('KYC — Payment QR')),
+      appBar: AppBar(title: const Text('KYC: Payment QR')),
       body: Column(
         children: [
           const KycStepHeader(step: 2),

@@ -360,7 +360,7 @@ class _SellerResultCard extends StatelessWidget {
       case 'high_risk':
         return (
           Icons.cancel_rounded,
-          'HIGH RISK — DO NOT PAY',
+          'HIGH RISK: DO NOT PAY',
           'WARNING: ${seller.scamReportCount} fraud '
               'complaint${seller.scamReportCount == 1 ? ' has' : 's have'} '
               'been filed against this seller. We strongly recommend '
@@ -373,7 +373,7 @@ class _SellerResultCard extends StatelessWidget {
           Icons.help_rounded,
           'UNVERIFIED SELLER',
           'This seller has not been fully verified. Proceed with '
-              'caution — ask for video call proof before paying.',
+              'caution. Ask for video call proof before paying.',
           AppColors.unverified,
           AppColors.unverifiedBg,
         );
@@ -695,7 +695,7 @@ class _SellerResultCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text('🔒 This QR is locked by SafeBuy Nepal — safe to use',
+                  Text('🔒 This QR is locked by SafeBuy Nepal, safe to use',
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -915,7 +915,7 @@ class _NotFoundCard extends StatelessWidget {
                   },
                   style: OutlinedButton.styleFrom(
                       minimumSize: const Size(0, 46)),
-                  child: const Text('This is my business — register',
+                  child: const Text('This is my business? Register',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 12.5)),
                 ),
@@ -1035,7 +1035,7 @@ class _BeforeYouPayChecklistState extends State<_BeforeYouPayChecklist> {
                 child: Text(
                   allDone
                       ? 'You have completed all safety steps'
-                      : 'Unverified Seller — Check These Before Paying',
+                      : 'Unverified Seller: Check These Before Paying',
                   style: GoogleFonts.poppins(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,

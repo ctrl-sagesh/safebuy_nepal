@@ -202,8 +202,12 @@
     root = document.getElementById('sbModalRoot');
     if (!root) { root = document.createElement('div'); root.id = 'sbModalRoot'; document.body.appendChild(root); }
   }
+  var wipeTimer = null;
   function openModal(html, onMount) {
     ensureRoot();
+    // Cancel a pending close-wipe so a modal opened right after closeModal()
+    // (e.g. sign-in leading straight into report/escalation) is not erased.
+    if (wipeTimer) { clearTimeout(wipeTimer); wipeTimer = null; }
     root.innerHTML = '<div class="sb-modal-backdrop" id="sbBackdrop"><div class="sb-modal" role="dialog" aria-modal="true">' +
       '<button class="sb-modal-close" id="sbClose" aria-label="Close">×</button>' + html + '</div></div>';
     document.body.style.overflow = 'hidden';
@@ -218,7 +222,10 @@
     var b = root.querySelector('.sb-modal-backdrop');
     if (b) b.classList.remove('open');
     document.body.style.overflow = '';
-    setTimeout(function () { if (root) root.innerHTML = ''; }, 250);
+    wipeTimer = setTimeout(function () {
+      if (root) root.innerHTML = '';
+      wipeTimer = null;
+    }, 250);
   }
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
 
@@ -411,7 +418,7 @@
         '<button class="sb-lb-close" aria-label="Close">×</button>' +
         (list.length > 1 ? '<button class="sb-lb-nav prev" aria-label="Previous">‹</button><button class="sb-lb-nav next" aria-label="Next">›</button>' : '') +
         '<div class="sb-lb-stage">' + renderEvidenceFull(ev) + '</div>' +
-        '<div class="sb-lb-cap">' + esc(evLabel(ev)) + (ev.caption ? ' — ' + esc(ev.caption) : '') + ' · ' + (i + 1) + '/' + list.length + '</div></div>';
+        '<div class="sb-lb-cap">' + esc(evLabel(ev)) + (ev.caption ? ' · ' + esc(ev.caption) : '') + ' · ' + (i + 1) + '/' + list.length + '</div></div>';
       lb.querySelector('.sb-lb-close').onclick = close;
       var p = lb.querySelector('.prev'), n = lb.querySelector('.next');
       if (p) p.onclick = function () { i = (i - 1 + list.length) % list.length; render(i); };
@@ -421,6 +428,116 @@
     function close() { lb.classList.remove('open'); setTimeout(function () { lb.innerHTML = ''; }, 250); }
     render(idx || 0);
     setTimeout(function () { lb.classList.add('open'); }, 20);
+  }
+
+  // ── v1.1 feature parity: loyalty badges, checklist, WhatsApp, police ────
+  function loyaltyTier(s) {
+    if ((s.reports || []).length) return null;
+    var d = s.accountAgeDays || 0;
+    if (d >= 730) return { label: '2 Year Elite Seller', color: '#D4AF37' };
+    if (d >= 365) return { label: '1 Year Trusted', color: '#97A3B4' };
+    if (d >= 182) return { label: '6 Month Clean Record', color: '#CD7F32' };
+    return null;
+  }
+  function loyaltyPill(s, compact) {
+    var t = loyaltyTier(s);
+    if (!t) return '';
+    return '<span class="sb-loyalty' + (compact ? ' sm' : '') + '" style="border-color:' + t.color + '99;color:' + t.color + '">🎖 ' + t.label + '</span>';
+  }
+
+  function warningText(s, r, lost) {
+    return 'FRAUD WARNING (SafeBuy Nepal)\n' +
+      'Seller: ' + s.name + ' (' + s.phone + ')\n' +
+      'Platform: ' + s.platform + '\n' +
+      'Trust Rating: HIGH RISK, ' + r.score + '/100\n' +
+      'Fraud Reports: ' + s.reports.length + '\n' +
+      'Amount Reported Lost: NPR ' + Number(lost).toLocaleString('en-IN') + '\n\n' +
+      'Check any seller before paying:\nsafebuy-nepal.vercel.app\n\n' +
+      'Shared via SafeBuy Nepal';
+  }
+  function copyText(text, done) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, done);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+      document.body.removeChild(ta); done();
+    }
+  }
+
+  var CHECK_STEPS = [
+    'Ask for a video call showing the actual product',
+    'Check their Instagram/TikTok comments for complaints',
+    'Start with a small test order under NPR 500',
+    'Screenshot their profile and QR before paying',
+    'Never pay the full amount before dispatch'
+  ];
+  function chkState(id) {
+    try { return JSON.parse(sessionStorage.getItem('sb_chk_' + id)) || { done: [], hidden: false }; }
+    catch (e) { return { done: [], hidden: false }; }
+  }
+  function chkSave(id, st) {
+    try { sessionStorage.setItem('sb_chk_' + id, JSON.stringify(st)); } catch (e) { /* ignore */ }
+  }
+  function checklistHTML(s) {
+    var st = chkState(s.id);
+    if (st.hidden) return '';
+    var all = st.done.length === CHECK_STEPS.length;
+    return '<div class="sb-checklist' + (all ? ' done' : '') + '" id="sbChecklist">' +
+      '<div class="sb-chk-head"><b>' + (all ? '✅ You have completed all safety steps' : '🧾 Unverified Seller: Check These Before Paying') + '</b>' +
+      '<span>' + st.done.length + ' of ' + CHECK_STEPS.length + '</span></div>' +
+      '<div class="sb-chk-bar"><i style="width:' + (st.done.length / CHECK_STEPS.length * 100) + '%"></i></div>' +
+      (all ? '<p class="sb-chk-note">You are better protected now.</p>' :
+        CHECK_STEPS.map(function (step, i) {
+          var on = st.done.indexOf(i) !== -1;
+          return '<button class="sb-chk-item' + (on ? ' on' : '') + '" data-chk="' + i + '">' +
+            '<span>' + (on ? '✓' : '○') + '</span> ' + step + '</button>';
+        }).join('')) +
+      '<button class="sb-chk-dismiss" id="sbChkDismiss">I understand the risks</button></div>';
+  }
+
+  function openEscalation(id) {
+    requireSignIn(function (user) {
+      var s = getSeller(id); if (!s) return;
+      var r = computeScore(s);
+      var lost = totalLost(s);
+      var newest = s.reports[s.reports.length - 1];
+      var today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+      var body =
+        'CYBERCRIME COMPLAINT\n' +
+        'Date: ' + today + '\n\n' +
+        'To: Nepal Police Cybercrime Investigation Bureau\nNaxal, Kathmandu\n\n' +
+        'COMPLAINANT: ' + user.tag + ' (details filled in the app)\n\n' +
+        'INCIDENT DETAILS\n' +
+        'Seller: ' + s.name + ' | ' + s.handle + ' | ' + s.phone + '\n' +
+        'Platform: ' + s.platform + '\n' +
+        'Fraud reports on record: ' + s.reports.length + '\n' +
+        'Amount reported lost: NPR ' + Number(lost).toLocaleString('en-IN') + '\n\n' +
+        'DESCRIPTION\n' + (newest ? newest.desc : 'See attached SafeBuy Nepal report records.') + '\n\n' +
+        'APPLICABLE LAW\nElectronic Transactions Act 2063, Section 48 (Electronic Fraud: advance payment taken, goods never sent)\n\n' +
+        'All evidence is preserved on the SafeBuy Nepal platform and available on request.\n\n' +
+        'Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)';
+      openModal(
+        '<h3 class="sb-form-title">🏛️ Escalate to Nepal Police</h3>' +
+        '<div class="sb-bureau"><b>Nepal Police Cybercrime Investigation Bureau</b>' +
+        '<p>📍 Naxal, Kathmandu · 📞 <a href="tel:014412323">01-4412323</a> · 🕙 Sun to Fri, 10am to 5pm</p>' +
+        '<p>✉️ <a href="mailto:cybercrime@nepalpolice.gov.np">cybercrime@nepalpolice.gov.np</a></p></div>' +
+        '<label class="sb-esc-label">Complaint preview (auto-filled from the fraud record):</label>' +
+        '<pre class="sb-esc-preview">' + esc(body) + '</pre>' +
+        '<label class="sb-declare"><input type="checkbox" id="sbDeclare"> I declare this information is true. Filing a false complaint is an offence under the laws of Nepal.</label>' +
+        '<button class="btn btn-primary sb-submit" id="sbEmailPolice">✉️ Email Complaint to Nepal Police</button>' +
+        '<p class="sb-esc-note">The mobile app can also save this complaint as an official PDF to carry to the Naxal office in person.</p>',
+        function (card) {
+          card.querySelector('#sbEmailPolice').onclick = function () {
+            if (!card.querySelector('#sbDeclare').checked) { toast('⚠️ Please confirm the declaration first.'); return; }
+            var subject = 'Cybercrime Complaint - Social Commerce Fraud - SafeBuy Nepal (' + s.name + ')';
+            location.href = 'mailto:cybercrime@nepalpolice.gov.np?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+            toast('✓ Complaint draft opened in your email app.');
+          };
+        }
+      );
+    });
   }
 
   // ── Search & results ────────────────────────────────────────────────────
@@ -433,7 +550,8 @@
     return '<button class="sb-result" data-id="' + s.id + '">' +
       '<div class="sb-result-avatar" style="background:' + r.color + '">' + esc(s.name[0]) + '</div>' +
       '<div class="sb-result-info"><strong>' + esc(s.name) + '</strong>' +
-      '<small>' + esc(s.handle) + ' · ' + esc(s.platform) + '</small></div>' +
+      '<small>' + esc(s.handle) + ' · ' + esc(s.platform) + '</small>' +
+      loyaltyPill(s, true) + '</div>' +
       '<div class="sb-result-score"><span class="sb-badge" style="background:' + r.color + '22;color:' + r.color + '">' + r.score + '</span>' +
       '<em style="color:' + r.color + '">' + r.label + '</em></div></button>';
   }
@@ -441,7 +559,7 @@
     var box = document.getElementById('demoResults');
     if (!box) return;
     if (!list.length) {
-      box.innerHTML = '<div class="sb-empty">🔍 No seller found. This does not mean they are fraudulent — they may simply not be registered yet. Check the spelling, or <b>add this seller</b> so the community can start building their trust record.</div>';
+      box.innerHTML = '<div class="sb-empty">🔍 No seller found. This does not mean they are fraudulent. They may simply not be registered yet. Check the spelling, or <b>add this seller</b> so the community can start building their trust record.</div>';
       return;
     }
     box.innerHTML = list.map(resultCard).join('');
@@ -476,18 +594,44 @@
 
     var escalation = s.reports.length >= 4 || lost >= 25000;
 
+    // 48h response window on the newest complaint (mirrors the app rule).
+    var cdBlock = '';
+    if (s.reports.length) {
+      var newestAt = Math.max.apply(null, s.reports.map(function (x) { return x.date; }));
+      var hrsLeft = 48 - (Date.now() - newestAt) / 3600000;
+      cdBlock = hrsLeft > 0
+        ? '<div class="sb-countdown amber">⏳ Seller has <b>' + Math.floor(hrsLeft) + 'h ' +
+          Math.floor((hrsLeft % 1) * 60) + 'm</b> to respond to the newest complaint.' +
+          '<div class="sb-cd-bar"><i style="width:' + ((48 - hrsLeft) / 48 * 100) + '%"></i></div></div>'
+        : '<div class="sb-countdown red">⏱ Seller did not respond within 48 hours. This negatively affects their trust rating.</div>';
+    }
+
+    var waBlock = r.verdict === 'high_risk'
+      ? '<div class="sb-wa-row"><button class="btn sb-wa" id="sbWaShare">Share on WhatsApp</button>' +
+        '<button class="btn btn-outline sb-copywarn" id="sbWaCopy">Copy Warning Text</button></div>'
+      : '';
+    var checklistBlock = r.verdict === 'unverified' ? checklistHTML(s) : '';
+    var policeBtn = r.verdict === 'high_risk'
+      ? '<button class="btn sb-police" id="sbEscalate">🏛️ Escalate to Nepal Police</button>'
+      : '';
+
     openModal(
       '<div class="sb-profile-head">' + ring(r.score, r.color) +
       '<div class="sb-profile-id"><h3>' + esc(s.name) + '</h3>' +
       '<p>' + esc(s.handle) + ' · ' + esc(s.phone) + '</p>' +
       '<span class="sb-verdict" style="background:' + r.color + '22;color:' + r.color + '">' + (r.verdict === 'trusted' ? '✓ ' : r.verdict === 'high_risk' ? '✕ ' : '? ') + r.label + '</span>' +
       (s.verified ? '<span class="sb-verified">✓ Verified business</span>' : '') +
+      loyaltyPill(s, false) +
       '</div></div>' +
       '<div class="sb-stats"><div><b>' + s.reports.length + '</b><span>Reports</span></div>' +
       '<div><b>' + s.reviews.length + '</b><span>Reviews</span></div>' +
       '<div><b>' + npr(lost) + '</b><span>Reported loss</span></div>' +
       '<div><b>' + esc(s.platform) + '</b><span>Platform</span></div></div>' +
+      waBlock +
+      checklistBlock +
+      cdBlock +
       (escalation ? '<div class="sb-escalate">⚖️ This seller has crossed the fraud threshold. In the app, an official <b>Cyber Bureau निवेदन</b> letter is auto-drafted for admin approval.</div>' : '') +
+      policeBtn +
       '<div class="sb-actions"><button class="btn btn-primary" id="sbReportBtn">🚩 Report Fraud</button>' +
       '<button class="btn btn-outline" id="sbReviewBtn">⭐ Write Review</button></div>' +
       '<div class="sb-tabs"><button class="sb-tab active" data-tab="reports">Reports (' + s.reports.length + ')</button>' +
@@ -499,6 +643,38 @@
         wireEvidence(card);
         card.querySelector('#sbReportBtn').onclick = function () { openReportForm(s.id); };
         card.querySelector('#sbReviewBtn').onclick = function () { openReviewForm(s.id); };
+
+        // v1.1 parity wiring
+        var wa = card.querySelector('#sbWaShare');
+        if (wa) wa.onclick = function () {
+          window.open('https://wa.me/?text=' + encodeURIComponent(warningText(s, r, lost)), '_blank');
+        };
+        var cp = card.querySelector('#sbWaCopy');
+        if (cp) cp.onclick = function () {
+          copyText(warningText(s, r, lost), function () {
+            toast('✓ Warning text copied to clipboard');
+          });
+        };
+        var escBtn = card.querySelector('#sbEscalate');
+        if (escBtn) escBtn.onclick = function () { openEscalation(s.id); };
+        var chk = card.querySelector('#sbChecklist');
+        if (chk) {
+          chk.querySelectorAll('.sb-chk-item').forEach(function (b) {
+            b.onclick = function () {
+              var st = chkState(s.id);
+              var i = parseInt(b.getAttribute('data-chk'), 10);
+              var at = st.done.indexOf(i);
+              if (at === -1) st.done.push(i); else st.done.splice(at, 1);
+              chkSave(s.id, st);
+              openSeller(s.id);
+            };
+          });
+          var dis = chk.querySelector('#sbChkDismiss');
+          if (dis) dis.onclick = function () {
+            var st = chkState(s.id); st.hidden = true; chkSave(s.id, st);
+            openSeller(s.id);
+          };
+        }
         card.querySelectorAll('.sb-tab').forEach(function (t) {
           t.onclick = function () {
             card.querySelectorAll('.sb-tab').forEach(function (x) { x.classList.remove('active'); });
@@ -517,7 +693,7 @@
     requireSignIn(function (user) {
       var s = getSeller(id); if (!s) return;
       openModal(
-        '<h3 class="sb-form-title">🚩 Report Fraud</h3><p class="sb-form-sub">Reporting <b>' + esc(s.name) + '</b>. You stay anonymous — only "' + esc(user.tag) + '" is shown.</p>' +
+        '<h3 class="sb-form-title">🚩 Report Fraud</h3><p class="sb-form-sub">Reporting <b>' + esc(s.name) + '</b>. You stay anonymous, only "' + esc(user.tag) + '" is shown.</p>' +
         '<form id="sbReportForm" class="sb-form">' +
         '<label>What happened?</label><select id="rpType" required>' +
         Object.keys(TYPE_LABEL).map(function (k) { return '<option value="' + k + '">' + TYPE_LABEL[k] + '</option>'; }).join('') + '</select>' +
@@ -526,9 +702,9 @@
         '<label>How much money was scammed? <b id="rpAmtLabel" class="sb-amt">NPR 5,000</b></label>' +
         '<input type="range" id="rpAmount" class="sb-slider" min="0" max="100000" step="500" value="5000"/>' +
         '<label>Describe what happened</label><textarea id="rpDesc" rows="3" minlength="20" placeholder="Explain the incident in at least 20 characters..." required></textarea>' +
-        '<label class="sb-file-label">📎 Evidence (required) — screenshot of chat / payment' +
+        '<label class="sb-file-label">📎 Evidence (required): screenshot of chat / payment' +
         '<input type="file" id="rpEvidence" accept="image/*" required></label>' +
-        '<div class="sb-anon">🔒 Your name & phone stay private. False reports hurt the community — only report real incidents. <button type="button" class="sb-inline-link" data-guide="report">Read the reporting rules ›</button></div>' +
+        '<div class="sb-anon">🔒 Your name & phone stay private. False reports hurt the community, so only report real incidents. <button type="button" class="sb-inline-link" data-guide="report">Read the reporting rules ›</button></div>' +
         '<button type="submit" class="btn btn-primary sb-submit">Submit Report</button></form>',
         function (card) {
           var slider = card.querySelector('#rpAmount'), lbl = card.querySelector('#rpAmtLabel');

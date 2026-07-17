@@ -26,7 +26,7 @@ class NepalScamNewsData {
           'bureau registered complaints but tracking the seller proved '
           'difficult due to the anonymous nature of the TikTok account. '
           'Most victims lost between NPR 1,500 and NPR 3,000 '
-          'individually — amounts too small to pursue legally but '
+          'individually, amounts too small to pursue legally but '
           'devastating collectively.',
       'source': 'Nepal Police Cybercrime Bureau Records',
       'lesson':
@@ -247,7 +247,7 @@ class NepalScamNewsData {
           'to run advance payment fraud at scale. Sellers advertised '
           'festival clothing, jewelry, and gifts with "limited stock" '
           'messaging and requested full payment via Khalti before '
-          'dispatch. The timing was deliberate — festival period '
+          'dispatch. The timing was deliberate: festival period '
           'creates urgency among buyers and increases willingness '
           'to pay in advance for popular items. 67 buyers were '
           'defrauded across the two-month festival period. Nepal '
@@ -378,14 +378,14 @@ class NepalScamNewsData {
   static const List<Map<String, String>> legalFramework = [
     {
       'law': 'Electronic Transactions Act 2063 (2008)',
-      'section': 'Section 47 — Computer Fraud',
+      'section': 'Section 47: Computer Fraud',
       'description': 'Criminalises unauthorised digital transactions '
           'and deception using electronic means.',
       'penalty': 'Up to 2 years imprisonment and NPR 2,00,000 fine',
     },
     {
       'law': 'Electronic Transactions Act 2063 (2008)',
-      'section': 'Section 48 — Electronic Fraud',
+      'section': 'Section 48: Electronic Fraud',
       'description': 'Covers receiving advance payment without '
           'delivering goods or services through electronic means. '
           'Directly applicable to social commerce fraud.',
@@ -393,7 +393,7 @@ class NepalScamNewsData {
     },
     {
       'law': 'Consumer Protection Act 2075 (2018)',
-      'section': 'Section 11 — Prohibition on Misleading Advertising',
+      'section': 'Section 11: Prohibition on Misleading Advertising',
       'description':
           'Prohibits false or misleading product advertisements '
           'and claims. Applicable to fake product listings on '
@@ -402,7 +402,7 @@ class NepalScamNewsData {
     },
     {
       'law': 'Consumer Protection Act 2075 (2018)',
-      'section': 'Section 21 — Right to Compensation',
+      'section': 'Section 21: Right to Compensation',
       'description':
           'Buyers have the right to compensation for financial '
           'loss caused by seller deception or non-delivery.',

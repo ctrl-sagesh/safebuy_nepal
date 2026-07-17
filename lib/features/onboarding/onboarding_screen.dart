@@ -295,7 +295,7 @@ class _ProblemSlide extends StatelessWidget {
       body: 'Every month, thousands of Nepali buyers lose money to '
           'TikTok and Instagram sellers who disappear after payment. '
           'There was no way to know who to trust.',
-      footnote: 'NPR 40 crore lost in 2023 alone — Nepal Police Report',
+      footnote: 'NPR 40 crore lost in 2023 alone (Nepal Police Report)',
     );
   }
 }
@@ -398,7 +398,7 @@ class _SolutionSlide extends StatelessWidget {
       headline: 'Check before you pay',
       body: 'Search any seller by their phone number, eSewa ID, or '
           'TikTok handle. See their trust rating, reviews, and fraud '
-          'complaints — before sending a single rupee.',
+          'complaints before sending a single rupee.',
     );
   }
 }

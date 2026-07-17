@@ -477,7 +477,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _emptyBox(_alertsFailed
                     ? 'Could not load alerts. Check your connection '
                         'and pull down to retry.'
-                    : 'No active alerts right now — the community '
+                    : 'No active alerts right now. The community '
                         'is safe today.'),
               )
             else

@@ -48,12 +48,12 @@ class _CybercrimeReportScreenState
     (
       id: 'eta47',
       title: 'Electronic Transactions Act 2063, Section 47',
-      subtitle: 'Computer Fraud — dishonest use of electronic systems',
+      subtitle: 'Computer Fraud: dishonest use of electronic systems',
     ),
     (
       id: 'eta48',
       title: 'Electronic Transactions Act 2063, Section 48',
-      subtitle: 'Electronic Fraud — advance payment taken, goods never sent',
+      subtitle: 'Electronic Fraud: advance payment taken, goods never sent',
     ),
     (
       id: 'cpa11',
@@ -345,7 +345,7 @@ Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
           ]),
           pw.SizedBox(height: 4),
           pw.Text(
-            'Filed via SafeBuy Nepal — community fraud protection for Nepali social commerce · Page ${ctx.pageNumber}/${ctx.pagesCount}',
+            'Filed via SafeBuy Nepal, community fraud protection for Nepali social commerce · Page ${ctx.pageNumber}/${ctx.pagesCount}',
             style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
           ),
         ]),
@@ -555,7 +555,7 @@ Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
           _bureauRow(Icons.mail_outline_rounded, _bureauEmail,
               () => _launch('mailto:$_bureauEmail')),
           _bureauRow(
-              Icons.schedule_rounded, 'Sun–Fri, 10:00 am – 5:00 pm', null),
+              Icons.schedule_rounded, 'Sun to Fri, 10:00 am to 5:00 pm', null),
         ],
       ),
     );
@@ -592,7 +592,7 @@ Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _kv('Full name', _me?.fullName ?? '—'),
+          _kv('Full name', _me?.fullName ?? '-'),
           _kv('Phone', _maskedPhone),
           const SizedBox(height: 10),
           TextField(
@@ -782,7 +782,7 @@ Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
       (
         '1',
         'Wait for acknowledgement',
-        'The Bureau usually acknowledges complaints within 3–5 working days.'
+        'The Bureau usually acknowledges complaints within 3 to 5 working days.'
       ),
       (
         '2',
@@ -793,8 +793,8 @@ Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
       (
         '3',
         'Keep your originals safe',
-        'Keep the original payment and chat screenshots on your phone — '
-            'investigators will ask for them.'
+        'Keep the original payment and chat screenshots on your phone. '
+            'Investigators will ask for them.'
       ),
     ];
 

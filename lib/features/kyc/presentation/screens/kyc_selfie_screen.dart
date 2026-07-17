@@ -46,7 +46,7 @@ class _KycSelfieScreenState extends State<KycSelfieScreen> {
     final draft = KycDraft.instance;
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
-      appBar: AppBar(title: const Text('KYC — Identity Selfie')),
+      appBar: AppBar(title: const Text('KYC: Identity Selfie')),
       body: Column(
         children: [
           const KycStepHeader(step: 3),

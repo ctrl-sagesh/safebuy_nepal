@@ -50,7 +50,7 @@ class _KycGmailScreenState extends State<KycGmailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
-      appBar: AppBar(title: const Text('KYC — Link Gmail')),
+      appBar: AppBar(title: const Text('KYC: Link Gmail')),
       body: Column(
         children: [
           const KycStepHeader(step: 1),
@@ -88,7 +88,7 @@ class _KycGmailScreenState extends State<KycGmailScreen> {
                         'TikTok, Instagram, and Facebook accounts are '
                         'registered with a Gmail address. Linking the same '
                         'Gmail proves you actually own the social accounts '
-                        'you sell from — a clone account cannot do this.',
+                        'you sell from. A clone account cannot do this.',
                         style: GoogleFonts.inter(
                           fontSize: 12.5,
                           color: AppColors.textPrimary,

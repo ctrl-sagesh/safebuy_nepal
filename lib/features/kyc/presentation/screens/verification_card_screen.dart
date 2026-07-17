@@ -76,7 +76,7 @@ class _VerificationCardScreenState
     await Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
       PopupHelper.showSuccess(
-          context, 'Card details copied — paste anywhere to share');
+          context, 'Card details copied. Paste anywhere to share.');
     }
   }
 

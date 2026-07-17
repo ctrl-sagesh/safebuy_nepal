@@ -126,7 +126,7 @@ class _WriteReviewScreenState
           // Photo failed but review can proceed — inform honestly.
           if (mounted) {
             PopupHelper.showWarning(context,
-                'Product photo upload failed — submitting review without it.');
+                'Product photo upload failed. Submitting review without it.');
           }
         }
       }

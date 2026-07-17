@@ -84,7 +84,7 @@ abstract final class CyberBureauService {
     // Report reference list
     final refList = valid
         .map((r) =>
-            '   • ${r.reportId} — ${_incidentNe(r.incidentType)} — रु ${_money(r.amountLost)} — ${dateFmt.format(r.incidentDate)}')
+            '   • ${r.reportId} | ${_incidentNe(r.incidentType)} | रु ${_money(r.amountLost)} | ${dateFmt.format(r.incidentDate)}')
         .join('\n');
 
     final buffer = StringBuffer();

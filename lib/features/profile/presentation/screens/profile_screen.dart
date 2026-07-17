@@ -457,7 +457,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   '🗓️',
                   me != null
                       ? DateFormat('MMM yyyy').format(me.createdAt)
-                      : '—',
+                      : '-',
                   'Member since'),
             ],
           ),
@@ -671,7 +671,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 border: Border.all(color: AppColors.borderLight),
               ),
               alignment: Alignment.center,
-              child: Text('✅ No reports on record — keep it up!',
+              child: Text('✅ No reports on record. Keep it up!',
                   style: GoogleFonts.inter(
                       fontSize: 13, color: AppColors.textSecondary)),
             )

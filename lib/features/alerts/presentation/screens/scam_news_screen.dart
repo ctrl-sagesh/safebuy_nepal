@@ -65,7 +65,7 @@ class _HeaderCard extends StatelessWidget {
               )),
           const SizedBox(height: 4),
           Text(
-            'Documented cases and official statistics — data from '
+            'Documented cases and official statistics. Data from '
             'Nepal Police and government sources',
             style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.88),
@@ -490,7 +490,7 @@ class _StatsTab extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '2023: +340% spike in registered complaints — '
+                '2023: +340% spike in registered complaints. '
                 'SafeBuy Nepal launched in response.',
                 style: GoogleFonts.inter(
                   fontSize: 11.5,
@@ -584,7 +584,7 @@ class _RightsTab extends StatelessWidget {
               _step('2', 'Submit a report on SafeBuy Nepal'),
               _step(
                   '3',
-                  'Visit Nepal Police Cybercrime Bureau — Kathmandu: '
+                  'Visit Nepal Police Cybercrime Bureau, Kathmandu: '
                   'Naxal, Phone: 01-4412323'),
               _step('4',
                   'File a complaint under ETA 2063 Section 47/48'),

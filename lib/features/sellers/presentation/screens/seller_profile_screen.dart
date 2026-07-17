@@ -136,15 +136,15 @@ class _SellerProfileScreenState
       if (s.facebookHandle?.isNotEmpty == true)
         'Facebook ${s.facebookHandle}',
     ];
-    return 'FRAUD WARNING — SafeBuy Nepal\n'
+    return 'FRAUD WARNING (SafeBuy Nepal)\n'
         'Seller: ${s.displayName}${s.phone.isNotEmpty ? ' (${s.phone})' : ''}\n'
         'Platform: ${platforms.isEmpty ? 'Social commerce' : platforms.join(', ')}\n'
-        'Trust Rating: HIGH RISK — ${s.trustScore.round()}/100\n'
+        'Trust Rating: HIGH RISK, ${s.trustScore.round()}/100\n'
         'Fraud Reports: ${s.scamReportCount}\n'
         'Amount Reported Lost: NPR ${NumberFormat('#,##0').format(total)}\n\n'
         'Check any seller before paying:\n'
         'safebuynepal.com\n\n'
-        '— Shared via SafeBuy Nepal';
+        'Shared via SafeBuy Nepal';
   }
 
   Future<void> _shareOnWhatsApp(SellerModel s) async {
@@ -159,7 +159,7 @@ class _SellerProfileScreenState
       await Clipboard.setData(ClipboardData(text: text));
       if (!mounted) return;
       PopupHelper.showSuccess(context,
-          'Warning text copied — WhatsApp is not installed. Paste it anywhere.');
+          'Warning text copied. WhatsApp is not installed, paste it anywhere.');
     }
   }
 
@@ -841,7 +841,7 @@ class _SellerProfileScreenState
                   : 'Not verified'),
           _kv('Member since',
               DateFormat('MMMM yyyy').format(s.accountCreatedAt)),
-          _kv('Phone', s.phone.isNotEmpty ? s.phone : '—'),
+          _kv('Phone', s.phone.isNotEmpty ? s.phone : '-'),
           if (s.esewaId?.isNotEmpty == true) _kv('eSewa ID', s.esewaId!),
           if (s.tiktokHandle?.isNotEmpty == true)
             _kv('TikTok', '@${s.tiktokHandle}'),

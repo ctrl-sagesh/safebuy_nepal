@@ -8,7 +8,7 @@
 /* ── CSS Variables ─────────────────────────────────────────────────────── */
 :root {
   --bg: #FFFFFF;
-  --bg-alt: #F4F7FB;
+  --bg-alt: #F5F7FA; /* matches the app's AppColors.bgSecondary */
   --bg-card: #FFFFFF;
 
   --text: #1E2A3D;
@@ -1518,3 +1518,135 @@ img { max-width: 100%; display: block; }
 @media (max-width: 520px) {
   .fraudnum-grid { grid-template-columns: 1fr; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   v1.1 demo parity: loyalty badges, checklist, WhatsApp, police
+   (styled with the mobile app design tokens: #1565C0 primary,
+   #00C853 trusted, #FF8F00 unverified, #D32F2F high risk)
+   ═══════════════════════════════════════════════════════════════ */
+.sb-loyalty {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border: 1px solid;
+  border-radius: 20px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.6);
+  width: fit-content;
+}
+.sb-loyalty.sm { font-size: 0.66rem; padding: 2px 8px; margin-top: 4px; }
+
+.sb-wa-row { display: flex; gap: 10px; margin: 12px 0 0; }
+.sb-wa-row .btn { flex: 1; font-size: 0.85rem; padding: 10px 12px; }
+.btn.sb-wa { background: #25D366; color: #fff; border: none; }
+.btn.sb-wa:hover { background: #1DA851; }
+.btn.sb-copywarn { color: #D32F2F; border-color: #D32F2F; }
+
+.btn.sb-police {
+  display: block;
+  width: 100%;
+  margin: 12px 0 0;
+  background: #0D47A1;
+  color: #fff;
+  border: none;
+  font-size: 0.9rem;
+}
+.btn.sb-police:hover { background: #1565C0; }
+
+.sb-countdown {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.sb-countdown.amber { background: #FFF8E1; border: 1px solid #FF8F0066; color: #6E4218; }
+.sb-countdown.red { background: #FFEBEE; border: 1px solid #D32F2F66; color: #B71C1C; }
+.sb-cd-bar { height: 6px; border-radius: 4px; background: #fff; margin-top: 8px; overflow: hidden; }
+.sb-cd-bar i { display: block; height: 100%; background: #FF8F00; border-radius: 4px; }
+
+.sb-checklist {
+  margin: 12px 0 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #FF8F0066;
+  text-align: left;
+}
+.sb-checklist.done { background: #E8F5E9; border-color: #00C85377; }
+.sb-chk-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; gap: 8px; }
+.sb-chk-head span { font-weight: 800; color: #FF8F00; white-space: nowrap; }
+.sb-checklist.done .sb-chk-head span { color: #00A344; }
+.sb-chk-bar { height: 5px; border-radius: 4px; background: #E2E8F0; margin: 8px 0; overflow: hidden; }
+.sb-chk-bar i { display: block; height: 100%; background: #FF8F00; border-radius: 4px; transition: width 0.3s ease; }
+.sb-checklist.done .sb-chk-bar i { background: #00C853; }
+.sb-chk-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.84rem;
+  color: var(--text);
+  border-radius: 8px;
+}
+.sb-chk-item:hover { background: #F5F7FA; }
+.sb-chk-item span { color: #9AA5B4; font-weight: 800; }
+.sb-chk-item.on { color: #9AA5B4; text-decoration: line-through; }
+.sb-chk-item.on span { color: #00C853; }
+.sb-chk-note { font-size: 0.82rem; color: #4A5568; margin: 4px 0 0; }
+.sb-chk-dismiss {
+  display: block;
+  margin: 6px 0 0 auto;
+  border: none;
+  background: none;
+  color: #9AA5B4;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sb-chk-dismiss:hover { color: #5B6B82; }
+
+.sb-bureau {
+  background: linear-gradient(135deg, #1565C0, #0D47A1);
+  color: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-align: left;
+  margin-bottom: 12px;
+}
+.sb-bureau p { color: #DCE9F7; font-size: 0.84rem; margin: 4px 0 0; }
+.sb-bureau a { color: #AFD3FF; }
+.sb-esc-label { display: block; text-align: left; font-size: 0.8rem; font-weight: 700; color: var(--text-dim); margin: 8px 0 4px; }
+.sb-esc-preview {
+  text-align: left;
+  background: #F5F7FA;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-family: 'Roboto Mono', Consolas, monospace;
+}
+.sb-declare {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--text);
+  margin: 10px 0;
+  line-height: 1.5;
+}
+.sb-declare input { margin-top: 3px; }
+.sb-esc-note { font-size: 0.76rem; color: var(--text-mute); margin-top: 8px; }

@@ -154,7 +154,7 @@ class _KycLocationScreenState
     final draft = KycDraft.instance;
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
-      appBar: AppBar(title: const Text('KYC — Location Photos')),
+      appBar: AppBar(title: const Text('KYC: Location Photos')),
       body: Column(
         children: [
           const KycStepHeader(step: 5),

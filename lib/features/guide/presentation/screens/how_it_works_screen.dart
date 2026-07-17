@@ -219,12 +219,12 @@ class _BuyersTab extends StatelessWidget {
           title: '🎖️ Badge Meanings',
           child: Column(children: [
             _Bullet('🏆',
-                'PREMIUM — full KYC: identity, PAN, and business location verified'),
+                'PREMIUM: full KYC with identity, PAN, and business location verified'),
             _Bullet('🟢',
-                'VERIFIED — identity verified with citizenship card, QR locked'),
-            _Bullet('🔵', 'BASIC — phone and business details confirmed'),
+                'VERIFIED: identity verified with citizenship card, QR locked'),
+            _Bullet('🔵', 'BASIC: phone and business details confirmed'),
             _Bullet('⚪',
-                'UNVERIFIED — no identity verification yet; extra caution advised'),
+                'UNVERIFIED: no identity verification yet; extra caution advised'),
           ]),
         ),
         const _Section(
@@ -236,7 +236,7 @@ class _BuyersTab extends StatelessWidget {
             _NumStep(
                 3, '📝', 'Describe the incident with date and amount'),
             _NumStep(4, '⚡',
-                'Submit — the seller\'s score updates within minutes'),
+                'Submit, and the seller\'s score updates within minutes'),
           ]),
         ),
         _Section(
@@ -277,7 +277,7 @@ class _SellersTab extends StatelessWidget {
           title: '🏪 Why Register',
           child: Column(children: [
             _Bullet('🤝',
-                'Buyers hesitate to pay unknown sellers — a SafeBuy record turns hesitation into sales'),
+                'Buyers hesitate to pay unknown sellers. A SafeBuy record turns hesitation into sales'),
             _Bullet('🛡️',
                 'Protects you from clone accounts impersonating your business'),
             _Bullet('🏆',
@@ -290,11 +290,11 @@ class _SellersTab extends StatelessWidget {
           title: '🪪 Verification Process',
           child: Column(children: [
             _NumStep(1, '🔵',
-                'BASIC — register your business with phone and email'),
+                'BASIC: register your business with phone and email'),
             _NumStep(2, '🟢',
-                'VERIFIED — selfie with citizenship card + locked eSewa QR + Gmail link'),
+                'VERIFIED: selfie with citizenship card + locked eSewa QR + Gmail link'),
             _NumStep(3, '🏆',
-                'PREMIUM — add PAN card and business location photos with GPS'),
+                'PREMIUM: add PAN card and business location photos with GPS'),
           ]),
         ),
         _Section(
@@ -312,7 +312,7 @@ class _SellersTab extends StatelessWidget {
           title: '🔒 QR Code Protection',
           child: Column(children: [
             _Bullet('🧷',
-                'Your official payment QR is locked to your card — buyers can spot fake QRs instantly'),
+                'Your official payment QR is locked to your card, so buyers can spot fake QRs instantly'),
             _Bullet('📋',
                 'Changing the QR requires an admin-reviewed request with explanation'),
             _Bullet('🚫',
@@ -353,7 +353,7 @@ class _AboutTab extends StatelessWidget {
             'losses are individually too small for police action but '
             'collectively devastating. SafeBuy Nepal gives buyers a '
             '30-second verification habit and gives honest sellers a '
-            'way to prove they are real — a community early-warning '
+            'way to prove they are real: a community early-warning '
             'system the authorities themselves have called for.',
             style: GoogleFonts.inter(
               fontSize: 13,

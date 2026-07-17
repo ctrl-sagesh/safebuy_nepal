@@ -156,7 +156,7 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
           // ── LIVE SafeBuy data ────────────────────────────────────────────
-          _sectionHeader('LIVE — SafeBuy Community Data', _blue),
+          _sectionHeader('LIVE: SafeBuy Community Data', _blue),
           const SizedBox(height: 10),
           Row(children: [
             Expanded(
@@ -186,7 +186,7 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
           // ── Official Nepal Police data ──────────────────────────────────
           _sectionHeader('Official Nepal Police Data', _red),
           const SizedBox(height: 4),
-          Text('Registered social commerce fraud complaints, 2020–2024',
+          Text('Registered social commerce fraud complaints, 2020 to 2024',
               style: GoogleFonts.inter(fontSize: 11.5, color: _textDim)),
           const SizedBox(height: 14),
           _chartCard(
@@ -270,7 +270,7 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
           ]),
           const SizedBox(height: 10),
           Row(children: [
-            Expanded(child: _statBox('560%', 'TikTok fraud growth 22–23')),
+            Expanded(child: _statBox('560%', 'TikTok fraud growth, 2022 to 2023')),
             const SizedBox(width: 10),
             Expanded(
                 child: _statBox('2,400+', 'registered complaints 2023')),
