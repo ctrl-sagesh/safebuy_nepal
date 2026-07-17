@@ -44,7 +44,8 @@ abstract final class AppColors {
   // ── Text Colors ──────────────────────────────────────────────────────────────
   static const textPrimary   = Color(0xFF0A1628);
   static const textSecondary = Color(0xFF4A5568);
-  static const textMuted     = Color(0xFF9AA5B4);
+  // 4.6:1 contrast on white (WCAG AA) — muted but always readable.
+  static const textMuted     = Color(0xFF757575);
   static const textWhite     = Color(0xFFFFFFFF);
   static const textBlue      = Color(0xFF1565C0);
   static const textDisabled  = textMuted;

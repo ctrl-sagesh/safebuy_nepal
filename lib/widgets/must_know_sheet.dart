@@ -88,7 +88,7 @@ class MustKnowSheet extends StatelessWidget {
                   // Section 1: Anti-Bot Protection
                   _sectionHeader(
                     icon: Icons.security_rounded,
-                    color: const Color(0xFFE91E63),
+                    color: const Color(0xFFD32F2F),
                     title: isNe
                         ? 'नक्कली समीक्षा कसरी रोकिन्छ?'
                         : 'How do we prevent fake reviews?',

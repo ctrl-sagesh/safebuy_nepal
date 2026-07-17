@@ -607,9 +607,25 @@ Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
           DropdownButtonFormField<String>(
             initialValue: _district,
             isExpanded: true,
+            menuMaxHeight: 300,
+            dropdownColor: Colors.white,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: const Color(0xFF1A1A1A),
+              fontWeight: FontWeight.w500,
+            ),
+            icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                color: Color(0xFF666666)),
             decoration: const InputDecoration(labelText: 'District'),
             items: NepalDistricts.all
-                .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                .map((d) => DropdownMenuItem(
+                      value: d,
+                      child: Text(d,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: const Color(0xFF1A1A1A),
+                          )),
+                    ))
                 .toList(),
             onChanged: (v) => setState(() => _district = v),
           ),

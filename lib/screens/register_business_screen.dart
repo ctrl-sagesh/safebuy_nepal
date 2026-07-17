@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 import '../core/constants/app_constants.dart' as core_const;
 import '../models/seller_model.dart';
@@ -486,14 +487,31 @@ class _RegisterBusinessScreenState
         const SizedBox(height: 14),
         DropdownButtonFormField<String>(
           initialValue: _businessType,
+          isExpanded: true,
+          menuMaxHeight: 300,
+          dropdownColor: Colors.white,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: const Color(0xFF1A1A1A),
+            fontWeight: FontWeight.w500,
+          ),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFF666666)),
           decoration: InputDecoration(
             labelText: lang == 'ne' ? 'व्यवसायको प्रकार' : 'Business Type',
             prefixIcon:
-                const Icon(Icons.category, color: Color(AppColors.primary)),
+                const Icon(Icons.category, color: Color(0xFF9E9E9E)),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
           ),
           items: BusinessTypes.list
-              .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+              .map((t) => DropdownMenuItem(
+                    value: t,
+                    child: Text(t,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: const Color(0xFF1A1A1A),
+                        )),
+                  ))
               .toList(),
           onChanged: (v) => setState(() => _businessType = v!),
         ),

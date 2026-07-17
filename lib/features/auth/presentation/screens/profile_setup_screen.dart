@@ -176,26 +176,58 @@ class _ProfileSetupScreenState
     }
   }
 
+  // Contrast tokens (match app_theme.dart's form styling).
+  static const _ink = Color(0xFF1A1A1A);
+  static const _inkLabel = Color(0xFF555555);
+  static const _inkSub = Color(0xFF666666);
+  static const _borderIdle = Color(0xFFE0E0E0);
+  static const _sellerGreen = Color(0xFF2E7D32);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text('Set Up Your Profile'),
         automaticallyImplyLeading: false,
+        title: const SizedBox.shrink(),
+        toolbarHeight: 24,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        padding: const EdgeInsets.fromLTRB(24, 4, 24, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Header
+            Text('Complete Your Profile',
+                style: GoogleFonts.poppins(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: _ink,
+                )),
+            const SizedBox(height: 4),
+            Text('Tell us a bit about yourself',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: _inkSub,
+                )),
+            const SizedBox(height: 22),
+
+            // Full name
+            _fieldLabel('Full Name'),
+            const SizedBox(height: 6),
             TextField(
               controller: _name,
               textCapitalization: TextCapitalization.words,
+              style: GoogleFonts.inter(
+                fontSize: 14.5,
+                color: _ink,
+                fontWeight: FontWeight.w500,
+              ),
               decoration: InputDecoration(
-                labelText: 'Full Name *',
-                prefixIcon: const Icon(Icons.person_outline_rounded),
+                hintText: 'Your full name',
+                prefixIcon: const Icon(Icons.person_outline_rounded,
+                    color: Color(0xFF9E9E9E)),
                 errorText: _nameError,
               ),
               onChanged: (v) {
@@ -204,53 +236,75 @@ class _ProfileSetupScreenState
                 }
               },
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 22),
 
+            // Role selection
             Text('I am a...',
-                style: GoogleFonts.poppins(
-                  fontSize: 14.5,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: _ink,
                 )),
             const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
-                  child: _roleCard('🛒', 'Buyer',
-                      'Verify sellers & stay safe', 'buyer'),
+                  child: _roleCard(
+                    icon: Icons.shopping_cart_outlined,
+                    title: 'Buyer',
+                    subtitle: 'Shop safely with trust ratings',
+                    value: 'buyer',
+                    accent: AppColors.primary,
+                    selectedBg: const Color(0xFFEFF6FF),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _roleCard('🏪', 'Seller',
-                      'Build my trust rating', 'seller'),
+                  child: _roleCard(
+                    icon: Icons.storefront_outlined,
+                    title: 'Seller',
+                    subtitle: 'Build my trust rating',
+                    value: 'seller',
+                    accent: _sellerGreen,
+                    selectedBg: const Color(0xFFF0FDF4),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 22),
 
+            // Language preference
             Text('Language / भाषा',
-                style: GoogleFonts.poppins(
-                  fontSize: 14.5,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: _ink,
                 )),
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: _langChip('🇬🇧  English', 'en')),
+                Expanded(child: _langCard('🇬🇧', 'English', 'en')),
                 const SizedBox(width: 12),
-                Expanded(child: _langChip('🇳🇵  नेपाली', 'ne')),
+                Expanded(child: _langCard('🇳🇵', 'नेपाली', 'ne')),
               ],
             ),
 
             if (_role == 'seller') ...[
-              const SizedBox(height: 18),
+              const SizedBox(height: 22),
+              _fieldLabel('Business Name'),
+              const SizedBox(height: 6),
               TextField(
                 controller: _businessName,
                 textCapitalization: TextCapitalization.words,
+                style: GoogleFonts.inter(
+                  fontSize: 14.5,
+                  color: _ink,
+                  fontWeight: FontWeight.w500,
+                ),
                 decoration: InputDecoration(
-                  labelText: 'Business Name *',
-                  prefixIcon: const Icon(Icons.storefront_outlined),
+                  hintText: 'e.g. Ramesh Clothing',
+                  prefixIcon: const Icon(Icons.storefront_outlined,
+                      color: Color(0xFF9E9E9E)),
                   errorText: _businessNameError,
                 ),
                 onChanged: (v) {
@@ -260,37 +314,86 @@ class _ProfileSetupScreenState
                   }
                 },
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
+              _fieldLabel('Business Category'),
+              const SizedBox(height: 6),
               DropdownButtonFormField<String>(
                 initialValue: _category,
+                isExpanded: true,
+                menuMaxHeight: 300,
+                dropdownColor: Colors.white,
+                icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                    color: Color(0xFF666666)),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: _ink,
+                  fontWeight: FontWeight.w500,
+                ),
                 decoration: const InputDecoration(
-                  labelText: 'Business Category *',
-                  prefixIcon: Icon(Icons.category_outlined),
+                  hintText: 'Select your category',
+                  prefixIcon: Icon(Icons.category_outlined,
+                      color: Color(0xFF9E9E9E)),
                 ),
                 items: _categories
-                    .map((c) =>
-                        DropdownMenuItem(value: c, child: Text(c)))
+                    .map((c) => DropdownMenuItem(
+                          value: c,
+                          child: Text(
+                            c,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: _ink,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ))
+                    .toList(),
+                selectedItemBuilder: (context) => _categories
+                    .map((c) => Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            c,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: _ink,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ))
                     .toList(),
                 onChanged: (v) => setState(() => _category = v),
               ),
             ],
 
             const SizedBox(height: 28),
-            SizedBox(
-              height: 54,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: ElevatedButton(
-                  onPressed: _saving ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
+
+            // Complete setup button
+            Container(
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
                   ),
-                  child: const Text('Complete Setup'),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: _saving ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  minimumSize: const Size(double.infinity, 52),
                 ),
+                child: Text('Complete Setup',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    )),
               ),
             ),
           ],
@@ -299,52 +402,87 @@ class _ProfileSetupScreenState
     );
   }
 
-  Widget _roleCard(
-      String emoji, String title, String subtitle, String value) {
+  Widget _fieldLabel(String text) {
+    return Text(text,
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: _inkLabel,
+        ));
+  }
+
+  Widget _roleCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String value,
+    required Color accent,
+    required Color selectedBg,
+  }) {
     final selected = _role == value;
     return InkWell(
       onTap: () {
         HapticFeedback.lightImpact();
         setState(() => _role = value);
       },
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.fromLTRB(12, 16, 12, 14),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary50 : Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          color: selected ? selectedBg : Colors.white,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color:
-                selected ? AppColors.primary : AppColors.borderLight,
-            width: selected ? 2 : 1.2,
+            color: selected ? accent : _borderIdle,
+            width: selected ? 2 : 1.5,
           ),
         ),
-        child: Column(
+        child: Stack(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 24)),
-            const SizedBox(height: 6),
-            Text(title,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: selected
-                      ? AppColors.primary
-                      : AppColors.textPrimary,
-                )),
-            Text(subtitle,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  color: AppColors.textMuted,
-                )),
+            Column(
+              children: [
+                Icon(icon,
+                    size: 32,
+                    color: selected ? accent : _inkSub),
+                const SizedBox(height: 8),
+                Text(title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: selected ? accent : _ink,
+                    )),
+                const SizedBox(height: 2),
+                Text(subtitle,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: _inkSub,
+                      height: 1.35,
+                    )),
+              ],
+            ),
+            if (selected)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: accent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check_rounded,
+                      size: 13, color: Colors.white),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _langChip(String label, String value) {
+  Widget _langCard(String flag, String label, String value) {
     final selected = _lang == value;
     return InkWell(
       onTap: () {
@@ -354,24 +492,29 @@ class _ProfileSetupScreenState
       borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 13),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary50 : Colors.white,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? AppColors.primary : AppColors.borderLight,
-            width: selected ? 2 : 1.2,
+            color: selected ? AppColors.primary : _borderIdle,
+            width: selected ? 2 : 1.5,
           ),
         ),
-        child: Text(label,
-            style: GoogleFonts.inter(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
-              color: selected
-                  ? AppColors.primary
-                  : AppColors.textSecondary,
-            )),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(flag, style: const TextStyle(fontSize: 22)),
+            const SizedBox(height: 4),
+            Text(label,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: selected ? AppColors.primary : _ink,
+                )),
+          ],
+        ),
       ),
     );
   }
