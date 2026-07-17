@@ -9,6 +9,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/services/festival_alert_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/dhaka_pattern.dart';
@@ -34,7 +35,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool get _isGuest => FirebaseAuth.instance.currentUser == null;
 
-  final String? _festival = FestivalAlertService.activeFestival();
+  /// Debug builds always show the Dashain banner so the feature can be
+  /// demonstrated year-round; release builds use the real calendar.
+  final String? _festival = FestivalAlertService.activeFestival() ??
+      (AppConfig.showDemoFeatures ? 'Dashain' : null);
 
   List<LeaderboardEntryModel>? _featured;
   bool _featuredFailed = false;

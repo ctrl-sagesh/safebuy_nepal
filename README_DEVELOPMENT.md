@@ -67,3 +67,19 @@ with `useFirestoreEmulator(...)` / `useAuthEmulator(...)` when needed.
   Functions (Node 20)
 - App ID: `com.sagesh.safebuy.safebuy_nepal`
 - Min SDK 21 · Target/compile SDK per Flutter · multiDex enabled
+
+## Release signing (v1.1)
+The release APK is signed with `android/upload-keystore.jks` using
+credentials from `android/key.properties`. Both files are gitignored.
+
+- **Back up both files somewhere safe** (password manager / encrypted
+  drive). Losing the keystore means future APKs cannot update over
+  installed ones.
+- On a machine without the keystore, `flutter build apk --release`
+  still works: the build falls back to debug signing automatically.
+- Release builds are minified (R8) with rules in
+  `android/app/proguard-rules.pro`.
+- The release certificate SHA-1/SHA-256 must be added in Firebase
+  Console (Project Settings > Android app > Add fingerprint) and
+  `google-services.json` re-downloaded afterwards, otherwise phone-OTP
+  and Google Sign-In fail in release builds.

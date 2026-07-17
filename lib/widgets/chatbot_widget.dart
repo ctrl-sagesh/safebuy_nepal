@@ -31,8 +31,8 @@ const _qas = [
   _QA(
     '⭐ What is a trust score?',
     '⭐ ट्रस्ट स्कोर के हो?',
-    'Trust Score (0–100) is calculated from: Verification status (25 pts), Report history (35 pts), Community ratings (25 pts), Account maturity (15 pts). Scores above 80 are Trusted, below 50 are High Risk.',
-    'ट्रस्ट स्कोर (०–१००) यसरी गणना गरिन्छ: प्रमाणीकरण स्थिति (२५ अंक), रिपोर्ट इतिहास (३५ अंक), समुदाय रेटिङ (२५ अंक), खाता परिपक्वता (१५ अंक)। ८० भन्दा माथि विश्वसनीय, ५० भन्दा तल उच्च जोखिम।',
+    'Trust Score (0 to 100) is calculated from: Verification status (25 pts), Report history (35 pts), Community ratings (25 pts), Account maturity (15 pts). Scores above 80 are Trusted, below 50 are High Risk.',
+    'ट्रस्ट स्कोर (० देखि १००) यसरी गणना गरिन्छ: प्रमाणीकरण स्थिति (२५ अंक), रिपोर्ट इतिहास (३५ अंक), समुदाय रेटिङ (२५ अंक), खाता परिपक्वता (१५ अंक)। ८० भन्दा माथि विश्वसनीय, ५० भन्दा तल उच्च जोखिम।',
   ),
   _QA(
     '🚨 How to report fraud?',

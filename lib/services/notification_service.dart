@@ -52,7 +52,7 @@ class NotificationService {
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         if (kDebugMode) {
           debugPrint(
-              'FCM [foreground]: ${message.notification?.title} — ${message.notification?.body}');
+              'FCM [foreground]: ${message.notification?.title} - ${message.notification?.body}');
         }
       });
 

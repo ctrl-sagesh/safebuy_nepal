@@ -33,6 +33,9 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
   int? _highRiskSellers;
   int? _verifiedSellers;
 
+  /// True when the amount-lost aggregate was denied (guest user).
+  bool _lostNeedsSignIn = false;
+
   // Registered complaints per year (Nepal Police Annual Report 2023;
   // 2024 projected). The 2023 value is the 340% spike.
   static const _complaintsByYear = [
@@ -65,10 +68,13 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
 
   Future<void> _loadLiveStats() async {
     final db = FirebaseFirestore.instance;
+
+    // Sellers collection is publicly readable, so these work for guests too.
+    // Total report count comes from the public scamReportCount field.
     try {
-      final reportsAgg = await db
-          .collection('reports')
-          .aggregate(count(), sum('amountLost'))
+      final sellersAgg = await db
+          .collection('sellers')
+          .aggregate(sum('scamReportCount'))
           .get();
       final highRisk = await db
           .collection('sellers')
@@ -82,8 +88,7 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
           .get();
       if (!mounted) return;
       setState(() {
-        _totalReports = reportsAgg.count;
-        _totalLost = reportsAgg.getSum('amountLost') ?? 0;
+        _totalReports = (sellersAgg.getSum('scamReportCount') ?? 0).round();
         _highRiskSellers = highRisk.count;
         _verifiedSellers = verified.count;
       });
@@ -91,10 +96,21 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
       if (!mounted) return;
       setState(() {
         _totalReports = 0;
-        _totalLost = 0;
         _highRiskSellers = 0;
         _verifiedSellers = 0;
       });
+    }
+
+    // Reports collection needs a signed-in user (security rules); guests
+    // see a sign-in hint on this one card instead of a fake zero.
+    try {
+      final lostAgg =
+          await db.collection('reports').aggregate(sum('amountLost')).get();
+      if (!mounted) return;
+      setState(() => _totalLost = lostAgg.getSum('amountLost') ?? 0);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _lostNeedsSignIn = true);
     }
   }
 
@@ -148,8 +164,10 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
                     _totalReports?.toDouble(), _red, isMoney: false)),
             const SizedBox(width: 10),
             Expanded(
-                child: _counterCard('NPR reported lost', _totalLost, _red,
-                    isMoney: true)),
+                child: _lostNeedsSignIn
+                    ? _signInCard('NPR reported lost')
+                    : _counterCard('NPR reported lost', _totalLost, _red,
+                        isMoney: true)),
           ]),
           const SizedBox(height: 10),
           Row(children: [
@@ -507,6 +525,35 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
         ],
       ),
     ).animate().fadeIn(duration: 350.ms);
+  }
+
+  /// Shown to guests where a stat needs an account to read.
+  Widget _signInCard(String label) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _blue.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.lock_outline_rounded,
+              size: 24, color: Color(0xFF7EB6FF)),
+          const SizedBox(height: 6),
+          Text('Sign in to view',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF7EB6FF),
+              )),
+          const SizedBox(height: 2),
+          Text(label,
+              style: GoogleFonts.inter(fontSize: 11.5, color: _textDim)),
+        ],
+      ),
+    );
   }
 
   Widget _statBox(String stat, String label) {

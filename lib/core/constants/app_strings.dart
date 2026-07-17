@@ -188,7 +188,7 @@ abstract final class AppStrings {
     'kyc_location_title'    : 'Business Location Photos',
     'kyc_submitted'         : 'KYC Submitted for Review',
     'kyc_review_time'       : 'Our team will review within 24-48 hours',
-    'kyc_qr_locked'         : 'Payment QR — Locked by SafeBuy Nepal',
+    'kyc_qr_locked'         : 'Payment QR: Locked by SafeBuy Nepal',
     'kyc_request_qr_change' : 'Request QR Change',
 
     // ── Leaderboard ───────────────────────────────────────────────────────────────
@@ -418,7 +418,7 @@ abstract final class AppStrings {
     'kyc_location_title'    : 'व्यवसाय स्थानका फोटोहरू',
     'kyc_submitted'         : 'KYC समीक्षाका लागि पेश गरियो',
     'kyc_review_time'       : 'हाम्रो टिमले २४-४८ घण्टाभित्र समीक्षा गर्नेछ',
-    'kyc_qr_locked'         : 'भुक्तानी QR — SafeBuy Nepal द्वारा लक गरिएको',
+    'kyc_qr_locked'         : 'भुक्तानी QR: SafeBuy Nepal द्वारा लक गरिएको',
     'kyc_request_qr_change' : 'QR परिवर्तन अनुरोध',
 
     // ── Leaderboard ───────────────────────────────────────────────────────────────

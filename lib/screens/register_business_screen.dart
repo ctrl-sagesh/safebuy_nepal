@@ -361,8 +361,8 @@ class _RegisterBusinessScreenState
                   backgroundColor: const Color(AppColors.trusted),
                 ),
                 child: Text(ne
-                    ? 'दर्ता सुरु गर्नुहोस् — निःशुल्क'
-                    : 'Start Registration — Free'),
+                    ? 'निःशुल्क दर्ता सुरु गर्नुहोस्'
+                    : 'Start Your Free Registration'),
               ),
             ),
             const SizedBox(height: 10),
