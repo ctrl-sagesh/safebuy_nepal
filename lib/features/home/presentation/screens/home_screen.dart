@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/config/app_config.dart';
@@ -46,6 +47,10 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>>? _alerts;
   bool _alertsFailed = false;
 
+  /// One-time hint teaching the Android share-to-verify shortcut.
+  bool _showShareTip = false;
+  static const _prefShareTipDismissed = 'share_tip_dismissed_v1';
+
   static const _tips = [
     ('💡', 'Never pay 100% advance to a seller you have not verified.'),
     ('🔍', 'Search the seller on SafeBuy before every purchase.'),
@@ -65,6 +70,23 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadFeatured();
     _loadAlerts();
+    _maybeShowShareTip();
+  }
+
+  Future<void> _maybeShowShareTip() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dismissed = prefs.getBool(_prefShareTipDismissed) ?? false;
+      if (!dismissed && mounted) setState(() => _showShareTip = true);
+    } catch (_) {}
+  }
+
+  Future<void> _dismissShareTip() async {
+    setState(() => _showShareTip = false);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_prefShareTipDismissed, true);
+    } catch (_) {}
   }
 
   Future<void> _loadFeatured() async {
@@ -296,6 +318,46 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
+
+            // ── One-time share-to-verify tip ──────────────────────────────
+            if (_showShareTip)
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary50,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.primary100),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.ios_share_rounded,
+                        size: 18, color: AppColors.primary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Tip: Select any phone number in WhatsApp or TikTok, '
+                        'tap Share, and choose SafeBuy Nepal to verify instantly.',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          height: 1.45,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: _dismissShareTip,
+                      borderRadius: BorderRadius.circular(14),
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(Icons.close_rounded,
+                            size: 16, color: AppColors.textMuted),
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(duration: 350.ms).slideY(begin: -0.1),
 
             // ── Festival fraud-alert banner ───────────────────────────────
             if (_festival != null &&

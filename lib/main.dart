@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'firebase_options.dart';
 
 // Core
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/phone_extractor.dart';
 import 'core/utils/popup_helper.dart';
 
 // Screens
@@ -45,6 +47,7 @@ import 'features/legal/presentation/screens/cybercrime_report_screen.dart';
 import 'features/profile/presentation/screens/about_screen.dart';
 import 'features/notifications/notifications_screen.dart';
 import 'features/stats/presentation/screens/nepal_fraud_stats_screen.dart';
+import 'features/search/presentation/screens/share_result_screen.dart';
 import 'features/admin/presentation/screens/admin_dashboard_screen.dart';
 import 'features/admin/presentation/screens/admin_kyc_screen.dart';
 import 'screens/register_business_screen.dart';
@@ -79,7 +82,33 @@ void main() async {
         .setSettings(appVerificationDisabledForTesting: true);
   }
 
-  runApp(const ProviderScope(child: SafeBuyApp()));
+  // Quick Verify: if the app was cold-launched from another app's share
+  // sheet (selected phone/handle), open straight into the result screen.
+  bool sharedLaunch = false;
+  String? initialShareQuery;
+  try {
+    final shared =
+        await ReceiveSharingIntent.instance.getInitialMedia();
+    for (final f in shared) {
+      if (f.type == SharedMediaType.text || f.type == SharedMediaType.url) {
+        sharedLaunch = true;
+        initialShareQuery = PhoneExtractor.extract(f.path);
+        break;
+      }
+    }
+    if (sharedLaunch) {
+      await ReceiveSharingIntent.instance.reset();
+    }
+  } catch (_) {
+    sharedLaunch = false;
+  }
+
+  runApp(ProviderScope(
+    child: SafeBuyApp(
+      sharedLaunch: sharedLaunch,
+      initialShareQuery: initialShareQuery,
+    ),
+  ));
 
   // Defer non-critical startup work so it never competes with the first
   // frames / splash navigation. Agents run in the background (no hub tab).
@@ -91,8 +120,51 @@ void main() async {
   });
 }
 
-class SafeBuyApp extends StatelessWidget {
-  const SafeBuyApp({super.key});
+class SafeBuyApp extends StatefulWidget {
+  const SafeBuyApp({
+    super.key,
+    this.sharedLaunch = false,
+    this.initialShareQuery,
+  });
+
+  /// True when the process was started by an incoming SEND (share) intent.
+  final bool sharedLaunch;
+
+  /// The extracted identifier from that share, if any.
+  final String? initialShareQuery;
+
+  @override
+  State<SafeBuyApp> createState() => _SafeBuyAppState();
+}
+
+class _SafeBuyAppState extends State<SafeBuyApp> {
+  final GlobalKey<NavigatorState> _navKey = GlobalKey<NavigatorState>();
+  StreamSubscription<List<SharedMediaFile>>? _shareSub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Handle shares that arrive while the app is already running: push a
+    // Quick Verify screen on top of whatever the user was looking at.
+    _shareSub =
+        ReceiveSharingIntent.instance.getMediaStream().listen((files) {
+      for (final f in files) {
+        if (f.type == SharedMediaType.text || f.type == SharedMediaType.url) {
+          final query = PhoneExtractor.extract(f.path);
+          _navKey.currentState?.push(MaterialPageRoute(
+            builder: (_) => ShareResultScreen(initialQuery: query),
+          ));
+          break;
+        }
+      }
+    }, onError: (_) {});
+  }
+
+  @override
+  void dispose() {
+    _shareSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +172,11 @@ class SafeBuyApp extends StatelessWidget {
       title: 'SafeBuy Nepal',
       debugShowCheckedModeBanner: false,
       theme: appTheme,
-      initialRoute: '/splash',
+      navigatorKey: _navKey,
+      home: widget.sharedLaunch
+          ? ShareResultScreen(initialQuery: widget.initialShareQuery)
+          : null,
+      initialRoute: widget.sharedLaunch ? null : '/splash',
       onGenerateRoute: _onGenerateRoute,
     );
   }

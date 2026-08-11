@@ -12,6 +12,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
 import '../../../../core/widgets/verification_card.dart';
+import '../widgets/seller_share_sheet.dart';
 import '../../../../models/report_model.dart';
 import '../../../../models/seller_model.dart';
 import '../../../../models/user_model.dart';
@@ -655,6 +656,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   : 'Complete KYC to earn your verification card',
               onTap: () => Navigator.pushNamed(context, '/kyc'),
             ),
+          const SizedBox(height: 12),
+
+          // Share my SafeBuy profile so buyers can verify me instantly
+          SizedBox(
+            height: 48,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                showSellerShareSheet(context, s);
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                side: const BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+              icon: const Icon(Icons.ios_share_rounded, size: 18),
+              label: const Text('Share My SafeBuy Profile'),
+            ),
+          ),
           const SizedBox(height: 12),
 
           // Reports against me

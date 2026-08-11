@@ -1,0 +1,362 @@
+- generic [ref=f1e3]:
+  - navigation [ref=f1e7]:
+    - link [ref=f1e9] [cursor=pointer]:
+      - /url: /
+      - img "Logo" [ref=f1e10]
+    - generic:
+      - list [ref=f1e11]:
+        - listitem
+        - listitem [ref=f1e12]:
+          - link "Routine" [ref=f1e13] [cursor=pointer]:
+            - /url: /routine
+        - listitem [ref=f1e14]:
+          - link "Notices 1011" [ref=f1e337] [cursor=pointer]:
+            - /url: /news-and-announcements
+            - text: Notices
+            - superscript [ref=f1e338]:
+              - generic [ref=f1e339]: "1011"
+          - text:    
+        - listitem [ref=f1e18]:
+          - link "Opportunities 2" [ref=f1e19] [cursor=pointer]:
+            - /url: /opportunities
+            - text: Opportunities
+            - superscript [ref=f1e22]:
+              - generic [ref=f1e23]: "2"
+          - text: 
+        - listitem [ref=f1e24]:
+          - link [ref=f1e25] [cursor=pointer]:
+            - /url: /events
+        - listitem [ref=f1e28]:
+          - link "Requests" [ref=f1e29] [cursor=pointer]:
+            - /url: /all-requests
+        - listitem [ref=f1e30]:
+          - link "Key Dates" [ref=f1e31] [cursor=pointer]:
+            - /url: /key-dates
+        - listitem [ref=f1e32]:
+          - link "Survey" [ref=f1e33] [cursor=pointer]:
+            - /url: /survey
+        - listitem [ref=f1e34]:
+          - link "IOA" [ref=f1e35] [cursor=pointer]:
+            - /url: https://ioaglobal.org/
+        - listitem [ref=f1e36]:
+          - link "Webinars" [ref=f1e37] [cursor=pointer]:
+            - /url: https://ioaglobal.org/member-dashboard/webinars/
+      - list [ref=f1e38]:
+        - listitem [ref=f1e39]:
+          - link "" [ref=f1e40] [cursor=pointer]:
+            - /url: /academic-calender/view
+        - listitem [ref=f1e42]:
+          - link "" [ref=f1e43] [cursor=pointer]:
+            - /url: /users/quick-messages
+        - listitem [ref=f1e45]:
+          - link "" [ref=f1e46] [cursor=pointer]:
+            - /url: /modules/st6047cem-cyber-security-project-oUWi45782-softwarica
+        - listitem [ref=f1e50]:
+          - img "Sagesh Adhikari" [ref=f1e52]
+          - link [ref=f1e53] [cursor=pointer]:
+            - /url: /users/profile
+          - text:                 
+  - text: 
+  - generic [ref=f1e56]:
+    - generic [ref=f1e344]:
+      - list [ref=f1e345]:
+        - listitem [ref=f1e346]
+      - heading "ST6047CEM Cyber Security Project" [level=3] [ref=f1e348]
+      - generic "4.49 Stars" [ref=f1e349]
+      - list [ref=f1e366]:
+        - listitem [ref=f1e367]:
+          - paragraph [ref=f1e370]: Year Three
+        - listitem [ref=f1e371]:
+          - generic [ref=f1e372]: 
+          - paragraph [ref=f1e374]: 14 weeks
+        - listitem [ref=f1e375]:
+          - paragraph [ref=f1e378]: 3 Hours
+        - listitem [ref=f1e379]:
+          - generic [ref=f1e380]: 
+          - paragraph [ref=f1e382]: 6 Lessons
+    - generic [ref=f1e385]:
+      - generic [ref=f1e390]:
+        - navigation "breadcrumb" [ref=f1e392]:
+          - list [ref=f1e393]:
+            - listitem [ref=f1e394]:
+              - link "Dashboard" [ref=f1e395] [cursor=pointer]:
+                - /url: /
+              - generic [ref=f1e396]: /
+            - listitem [ref=f1e397]:
+              - link "ST6047CEM Cyber Security Project" [ref=f1e398] [cursor=pointer]:
+                - /url: /modules/st6047cem-cyber-security-project-oUWi45782-softwarica
+              - generic [ref=f1e399]: /
+            - listitem [ref=f1e400]:
+              - generic "Overview" [ref=f1e401]
+        - list [ref=f1e402]:
+          - generic [ref=f1e404]:
+            - button "" [ref=f1e405]
+            - generic [ref=f1e408]:
+              - listitem [ref=f1e411]:
+                - tab "Overview" [selected] [ref=f1e412] [cursor=pointer]
+              - listitem [ref=f1e415]:
+                - tab "Resources" [ref=f1e416] [cursor=pointer]
+              - listitem [ref=f1e419]:
+                - tab "Study Materials" [ref=f1e420] [cursor=pointer]
+              - listitem [ref=f1e423]:
+                - tab "Tasks" [ref=f1e424] [cursor=pointer]
+              - listitem [ref=f1e427]:
+                - tab "Quiz" [ref=f1e428] [cursor=pointer]
+              - listitem [ref=f1e431]:
+                - tab [ref=f1e432] [cursor=pointer]: Challenges
+              - listitem [ref=f1e435]:
+                - tab [ref=f1e436] [cursor=pointer]: Assignment
+              - listitem [ref=f1e439]:
+                - tab [ref=f1e440] [cursor=pointer]: Collaborate
+              - listitem [ref=f1e443]:
+                - tab [ref=f1e444] [cursor=pointer]: Progress
+              - listitem [ref=f1e447]:
+                - tab [ref=f1e448] [cursor=pointer]: My Survey
+              - listitem [ref=f1e451]:
+                - tab [ref=f1e452] [cursor=pointer]: Support
+              - listitem [ref=f1e455]:
+                - tab [ref=f1e456] [cursor=pointer]: Extension Form
+            - button "" [ref=f1e457]
+        - tabpanel [ref=f1e460]:
+          - generic [ref=f1e461]:
+            - heading "Module/Subject Overview" [level=4] [ref=f1e462]
+            - paragraph [ref=f1e465]: N/A
+          - generic [ref=f1e466]:
+            - heading "Learning Outcome" [level=4] [ref=f1e467]
+            - paragraph [ref=f1e468]: By the end of the module/subject, you will be able to ...
+            - paragraph [ref=f1e470]: N/A
+      - generic [ref=f1e472]:
+        - generic [ref=f1e474]:
+          - generic [ref=f1e475]: Lecturer
+          - generic [ref=f1e476]:
+            - img "Manoj Shrestha" [ref=f1e478]
+            - generic [ref=f1e479]:
+              - generic [ref=f1e480]: Manoj Shrestha
+              - generic [ref=f1e481]:
+                - generic [ref=f1e482]: 
+                - generic [ref=f1e483]: Module/Subject Leader
+              - generic [ref=f1e484]:
+                - generic [ref=f1e485]: 
+                - generic [ref=f1e486]: stw0002@softwarica.edu.np
+              - generic [ref=f1e487]:
+                - generic [ref=f1e488]: 
+                - generic [ref=f1e489]: Exp. 8 Years
+        - generic [ref=f1e491]:
+          - generic [ref=f1e492]: Overall Progress
+          - generic [ref=f1e493]:
+            - generic [ref=f1e494]:
+              - img [ref=f1e496]:
+                - generic [ref=f1e499]: 100%
+              - paragraph [ref=f1e500]: Lessons Completed
+            - generic [ref=f1e501]:
+              - img [ref=f1e503]:
+                - generic [ref=f1e506]: 0%
+              - paragraph [ref=f1e507]: Assignments Completed
+            - generic [ref=f1e508]:
+              - img [ref=f1e510]:
+                - generic [ref=f1e513]: 100%
+              - paragraph [ref=f1e514]: Attendance
+          - generic [ref=f1e515]:
+            - generic [ref=f1e516]:
+              - paragraph [ref=f1e517]: "6"
+              - paragraph [ref=f1e518]: Lessons Completed
+            - generic [ref=f1e519]:
+              - paragraph [ref=f1e520]: "0"
+              - paragraph [ref=f1e521]: Assignments Completed
+            - generic [ref=f1e522]:
+              - paragraph [ref=f1e523]: "8"
+              - paragraph [ref=f1e524]: Classes Attended
+        - generic [ref=f1e526]:
+          - heading "Upcoming Submissions" [level=3] [ref=f1e529]
+          - list [ref=f1e531]:
+            - listitem [ref=f1e532]:
+              - button "ST6047CEM Cyber Security Project March Intake 2026 Coursework CW2 (Regular)" [ref=f1e534] [cursor=pointer]
+              - generic [ref=f1e535]:
+                - text: "Due Date:"
+                - generic [ref=f1e536]:
+                  - generic [ref=f1e537]:
+                    - generic [ref=f1e538]:
+                      - generic [ref=f1e539]: 
+                      - generic [ref=f1e540]: Thu, Aug 20, 2026
+                    - generic [ref=f1e541]: "|"
+                    - generic [ref=f1e542]:
+                      - generic [ref=f1e543]: 
+                      - generic [ref=f1e544]: 11:55 PM
+                  - button "Submit Now" [ref=f1e546] [cursor=pointer]
+                - generic [ref=f1e547]: in a month
+            - listitem [ref=f1e549]:
+              - button "ST6047CEM Cyber Security Project March Intake 2026 Coursework CW1 (Regular)" [ref=f1e551] [cursor=pointer]
+              - generic [ref=f1e552]:
+                - text: "Due Date:"
+                - generic [ref=f1e553]:
+                  - generic [ref=f1e554]:
+                    - generic [ref=f1e555]:
+                      - generic [ref=f1e556]: 
+                      - generic [ref=f1e557]: Thu, Aug 20, 2026
+                    - generic [ref=f1e558]: "|"
+                    - generic [ref=f1e559]:
+                      - generic [ref=f1e560]: 
+                      - generic [ref=f1e561]: 11:55 PM
+                  - button "Submit Now" [ref=f1e563] [cursor=pointer]
+                - generic [ref=f1e564]: in a month
+        - generic [ref=f1e568]:
+          - heading "Rate This Module/Subject" [level=4] [ref=f1e571]
+          - generic "0 Stars" [ref=f1e574]
+  - contentinfo [ref=f1e591]:
+    - generic [ref=f1e593]:
+      - generic [ref=f1e595]:
+        - heading " Pages" [level=4] [ref=f1e596]:
+          - generic [ref=f1e597]: 
+          - text: Pages
+        - list [ref=f1e598]:
+          - listitem [ref=f1e599]:
+            - link "Clubs" [ref=f1e600] [cursor=pointer]:
+              - /url: /clubs
+          - listitem [ref=f1e601]:
+            - link "Survey" [ref=f1e602] [cursor=pointer]:
+              - /url: /survey
+          - listitem [ref=f1e603]:
+            - link "Weekly" [ref=f1e604] [cursor=pointer]:
+              - /url: /journal
+          - listitem [ref=f1e605]:
+            - link "Code Editor" [ref=f1e606] [cursor=pointer]:
+              - /url: /code-editor
+          - listitem [ref=f1e607]:
+            - link "Extension Form" [ref=f1e608] [cursor=pointer]:
+              - /url: /extension-request
+      - generic [ref=f1e610]:
+        - heading " Useful Social Sites" [level=4] [ref=f1e611]:
+          - generic [ref=f1e612]: 
+          - text: Useful Social Sites
+        - list [ref=f1e613]:
+          - listitem [ref=f1e614]:
+            - link "Freepik" [ref=f1e615] [cursor=pointer]:
+              - /url: https://www.freepik.com/
+          - listitem [ref=f1e616]:
+            - link "Pinterest" [ref=f1e617] [cursor=pointer]:
+              - /url: https://www.pinterest.com/
+          - listitem [ref=f1e618]:
+            - link "Miro" [ref=f1e619] [cursor=pointer]:
+              - /url: https://miro.com/
+          - listitem [ref=f1e620]:
+            - link "Asana" [ref=f1e621] [cursor=pointer]:
+              - /url: https://asana.com/
+          - listitem [ref=f1e622]:
+            - link "Powtoon" [ref=f1e623] [cursor=pointer]:
+              - /url: https://www.powtoon.com/
+          - listitem [ref=f1e624]:
+            - link "Undraw" [ref=f1e625] [cursor=pointer]:
+              - /url: https://undraw.co/illustrations
+          - listitem [ref=f1e626]:
+            - link "Google Keep" [ref=f1e627] [cursor=pointer]:
+              - /url: https://keep.google.com
+      - generic [ref=f1e629]:
+        - heading " News & Conferences" [level=4] [ref=f1e630]:
+          - generic [ref=f1e631]: 
+          - text: News & Conferences
+        - list [ref=f1e633]:
+          - listitem [ref=f1e634]:
+            - link "FOX News" [ref=f1e635] [cursor=pointer]:
+              - /url: https://www.foxnews.com/
+          - listitem [ref=f1e636]:
+            - link "BBC News" [ref=f1e637] [cursor=pointer]:
+              - /url: https://www.bbc.com/
+          - listitem [ref=f1e638]:
+            - link "The Guardian" [ref=f1e639] [cursor=pointer]:
+              - /url: https://www.theguardian.com/international
+          - listitem [ref=f1e640]:
+            - link "The Sun UK" [ref=f1e641] [cursor=pointer]:
+              - /url: https://www.thesun.co.uk/
+          - listitem [ref=f1e642]:
+            - link "Daily Mail" [ref=f1e643] [cursor=pointer]:
+              - /url: https://www.dailymail.co.uk/home/index.html
+          - listitem [ref=f1e644]:
+            - link "TED" [ref=f1e645] [cursor=pointer]:
+              - /url: https://www.ted.com
+      - generic [ref=f1e647]:
+        - heading " Magazines" [level=4] [ref=f1e648]:
+          - generic [ref=f1e649]: 
+          - text: Magazines
+        - list [ref=f1e650]:
+          - listitem [ref=f1e651]:
+            - link "Harvard Business Review" [ref=f1e652] [cursor=pointer]:
+              - /url: https://hbr.org/
+          - listitem [ref=f1e653]:
+            - link "Forbes" [ref=f1e654] [cursor=pointer]:
+              - /url: https://www.forbes.com/
+          - listitem [ref=f1e655]:
+            - link "National Geographic" [ref=f1e656] [cursor=pointer]:
+              - /url: https://www.nationalgeographic.com/magazine/
+          - listitem [ref=f1e657]:
+            - link "The Rolling Stone" [ref=f1e658] [cursor=pointer]:
+              - /url: https://www.rollingstone.com/
+          - listitem [ref=f1e659]:
+            - link "The Economist" [ref=f1e660] [cursor=pointer]:
+              - /url: https://www.economist.com/
+          - listitem [ref=f1e661]:
+            - link "Nepal Traveller" [ref=f1e662] [cursor=pointer]:
+              - /url: https://nepaltraveller.com/
+      - generic [ref=f1e664]:
+        - heading " Tech Related" [level=4] [ref=f1e665]:
+          - generic [ref=f1e666]: 
+          - text: Tech Related
+        - list [ref=f1e667]:
+          - listitem [ref=f1e668]:
+            - link "Life Hacker" [ref=f1e669] [cursor=pointer]:
+              - /url: https://lifehacker.com/
+          - listitem [ref=f1e670]:
+            - link "How stuff works ?" [ref=f1e671] [cursor=pointer]:
+              - /url: https://www.howstuffworks.com/
+          - listitem [ref=f1e672]:
+            - link "CNET" [ref=f1e673] [cursor=pointer]:
+              - /url: https://www.cnet.com/
+      - generic [ref=f1e675]:
+        - heading " Sports" [level=4] [ref=f1e676]:
+          - generic [ref=f1e677]: 
+          - text: Sports
+        - list [ref=f1e678]:
+          - listitem [ref=f1e679]:
+            - link "Sporting News" [ref=f1e680] [cursor=pointer]:
+              - /url: https://www.sportingnews.com/
+          - listitem [ref=f1e681]:
+            - link "Sky Sports" [ref=f1e682] [cursor=pointer]:
+              - /url: https://www.skysports.com/
+          - listitem [ref=f1e683]:
+            - link "ESPN" [ref=f1e684] [cursor=pointer]:
+              - /url: https://www.espn.in/
+          - listitem [ref=f1e685]:
+            - link "The Score" [ref=f1e686] [cursor=pointer]:
+              - /url: https://www.thescore.com
+          - listitem [ref=f1e687]:
+            - link "Fantasy Premier League" [ref=f1e688] [cursor=pointer]:
+              - /url: https://fantasy.premierleague.com/
+          - listitem [ref=f1e689]:
+            - link "Fantasy IPL" [ref=f1e690] [cursor=pointer]:
+              - /url: https://fantasy.iplt20.com/#!/leagues
+      - generic [ref=f1e692]:
+        - heading "Download our app on" [level=4] [ref=f1e693]
+        - heading "Play Store/App Store" [level=4] [ref=f1e694]
+        - list [ref=f1e695]:
+          - listitem [ref=f1e696]:
+            - img "App QR" [ref=f1e697]
+    - generic [ref=f1e700]:
+      - img "Institution Logo" [ref=f1e702]
+      - paragraph [ref=f1e704]:
+        - text: © 2020 - 2026 Designed and Developed for
+        - link "Softwarica College of IT & E-Commerce" [ref=f1e706] [cursor=pointer]:
+          - /url: https://softwarica.edu.np/
+      - list [ref=f1e708]:
+        - listitem [ref=f1e709]:
+          - link "" [ref=f1e710] [cursor=pointer]:
+            - /url: https://softwarica.edu.np/
+        - listitem [ref=f1e712]:
+          - link "" [ref=f1e713] [cursor=pointer]:
+            - /url: https://www.facebook.com/softwarica.nepal
+        - listitem [ref=f1e715]:
+          - link "" [ref=f1e716] [cursor=pointer]:
+            - /url: https://www.instagram.com/softwarica.college/
+        - listitem [ref=f1e718]:
+          - link "" [ref=f1e719] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/softwarica-college-of-it-and-e-commerce
+  - button [ref=f1e335] [cursor=pointer]:
+    - img "Chat" [ref=f1e336]

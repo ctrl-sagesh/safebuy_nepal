@@ -1,0 +1,90 @@
+- generic [ref=e3]:
+  - navigation [ref=e7]:
+    - link [ref=e9] [cursor=pointer]:
+      - /url: /
+      - img "Logo" [ref=e10]
+    - generic:
+      - list [ref=e11]:
+        - listitem [ref=e12]:
+          - link [ref=e13] [cursor=pointer]:
+            - /url: /how-does-it-work
+          - text:   
+        - listitem [ref=e16]:
+          - link "Our Partners" [ref=e17] [cursor=pointer]:
+            - /url: /ourpartners
+            - text: Our
+            - generic [ref=e18]: Partners
+        - listitem [ref=e19]:
+          - link "Features" [ref=e20] [cursor=pointer]:
+            - /url: /#features
+      - list [ref=e21]:
+        - listitem [ref=e22]:
+          - link "Sign in" [active] [ref=e23] [cursor=pointer]:
+            - /url: /sign-in
+  - text: 
+  - generic [ref=e170]:
+    - link [ref=e172] [cursor=pointer]:
+      - /url: /
+      - img "Header" [ref=e173]
+    - generic [ref=e178]:
+      - img "Sign In Background" [ref=e181]
+      - generic [ref=e182]:
+        - heading "Sign In" [level=4] [ref=e183]
+        - generic [ref=e184]:
+          - generic [ref=e185]:
+            - generic [ref=e186]:
+              - generic [ref=e187]: Username
+              - 'textbox "e.g: 160052" [ref=e188]'
+            - generic [ref=e189]:
+              - generic [ref=e190]: Password
+              - textbox "********" [ref=e191]
+            - button "Sign In" [ref=e193] [cursor=pointer]
+          - list [ref=e195]:
+            - listitem [ref=e196]:
+              - link "Forgot your password?" [ref=e197] [cursor=pointer]:
+                - /url: /forgot-password
+  - contentinfo [ref=e124]:
+    - generic [ref=e126]:
+      - generic [ref=e128]:
+        - heading "Address" [level=4] [ref=e129]
+        - list [ref=e130]:
+          - listitem [ref=e131]:
+            - generic [ref=e132]:
+              - generic [ref=e133]: 
+              - text: Dillibazar, Kathmandu
+          - listitem [ref=e134]:
+            - generic [ref=e135]:
+              - generic [ref=e136]: 
+              - link "9801986453" [ref=e137] [cursor=pointer]:
+                - /url: tel:9801986453
+              - text: ","
+              - link "9801224528" [ref=e138] [cursor=pointer]:
+                - /url: tel:9801224528
+      - generic [ref=e140]:
+        - heading "About c4mpus4.0" [level=4] [ref=e141]
+        - list [ref=e142]:
+          - listitem [ref=e143]:
+            - link "Our Policies" [ref=e144] [cursor=pointer]:
+              - /url: /policies
+      - generic [ref=e146]:
+        - heading "Using c4mpus4.0" [level=4] [ref=e147]
+        - list [ref=e148]:
+          - listitem [ref=e149]:
+            - link "How does it work" [ref=e150] [cursor=pointer]:
+              - /url: /how-does-it-work
+          - listitem [ref=e151]:
+            - link "Why use c4mpus4.0" [ref=e152] [cursor=pointer]:
+              - /url: /why-use
+      - generic [ref=e154]:
+        - heading "Download our app on Play Store/App Store" [level=4] [ref=e155]
+        - list [ref=e156]:
+          - listitem [ref=e157]:
+            - img "App QR" [ref=e158]
+    - generic [ref=e161]:
+      - img "campus" [ref=e163]
+      - paragraph [ref=e165]:
+        - text: © 2020 - 2026 Designed and Developed for
+        - link "Softwarica College of IT & E-Commerce" [ref=e167] [cursor=pointer]:
+          - /url: https://softwarica.edu.np/
+      - generic [ref=e168]:
+        - list

@@ -31,6 +31,13 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Quick Verify: receive shared text (a phone number or handle)
+                 from WhatsApp / TikTok / Instagram / SMS via the share sheet. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
         </activity>
         <!-- uCrop activity required by image_cropper -->
         <activity

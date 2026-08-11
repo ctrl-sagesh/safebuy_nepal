@@ -1,0 +1,114 @@
+- generic [ref=e3]:
+  - navigation [ref=e7]:
+    - link [ref=e9] [cursor=pointer]:
+      - /url: /
+      - img "Logo" [ref=e10]
+    - generic:
+      - list [ref=e11]:
+        - listitem [ref=e12]:
+          - link [ref=e13] [cursor=pointer]:
+            - /url: /how-does-it-work
+          - text:   
+        - listitem [ref=e16]:
+          - link "Our Partners" [ref=e17] [cursor=pointer]:
+            - /url: /ourpartners
+            - text: Our
+            - generic [ref=e18]: Partners
+        - listitem [ref=e19]:
+          - link "Features" [ref=e20] [cursor=pointer]:
+            - /url: /#features
+      - list [ref=e21]:
+        - listitem [ref=e22]:
+          - link "Sign in" [ref=e23] [cursor=pointer]:
+            - /url: /sign-in
+  - text: 
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - generic [ref=e27]:
+        - paragraph [ref=e28]: Technology Driving Student Success.
+        - paragraph [ref=e29]: Building a culture of data use in schools
+      - generic [ref=e34]:
+        - textbox "Search for Institution/Courses/Classes..." [ref=e35]
+        - button "Search" [ref=e37] [cursor=pointer]
+    - generic [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]: 
+        - paragraph [ref=e42]: Who We Are
+        - paragraph [ref=e43]: We are a team revolutionizing school administration through tailored, user-friendly solutions. Committed to student success and collaboration, we strive to be a trusted partner in education.
+      - generic [ref=e44]:
+        - paragraph [ref=e46]: Our Mission
+        - paragraph [ref=e47]: Our mission is to simplify administration and enhance the learning experience through a comprehensive and innovative school management system. We aim to provide accessible, tailored solutions for schools to increase efficiency, transparency, and collaboration.
+      - generic [ref=e48]:
+        - paragraph [ref=e50]: Our Vision
+        - paragraph [ref=e51]: Our vision is to provide a seamless, user-friendly platform that streamlines administration and empowers all stakeholders. The system will be accessible, customizable, and promote transparency, collaboration, and data-driven decision-making.
+    - generic [ref=e53]:
+      - paragraph [ref=e54]: Why SchoolworksPro?
+      - paragraph [ref=e55]
+      - generic [ref=e56]:
+        - generic [ref=e57]: Web Based
+        - generic [ref=e63]: Affordable
+        - generic [ref=e69]: Data Security
+        - generic [ref=e75]: User Friendly
+        - generic [ref=e81]: 24x7 support
+        - generic [ref=e87]: Automations
+    - generic [ref=e96]:
+      - paragraph [ref=e97]: Our Features
+      - paragraph [ref=e98]
+      - generic [ref=e99]:
+        - generic [ref=e103]:
+          - heading "Learning Management System" [level=3] [ref=e104]
+          - paragraph [ref=e105]: The LMS feature on the SchoolWorksPro revolutionizes the teaching experience, enabling educators to effortlessly create, manage, and deliver online courses while closely monitoring student progress, making online education engaging and effective.
+        - generic [ref=e108]:
+          - heading "School Management System" [level=3] [ref=e109]
+          - paragraph [ref=e110]: The School Management System (SMS) in SchoolWorksPro streamlines administrative tasks for schools, offering a centralized platform to efficiently manage student records, attendance, timetables, and financial matters, simplifying the daily operations of educational institutions.
+        - generic [ref=e115]:
+          - heading "Anti-Plagiarism System" [level=3] [ref=e116]
+          - paragraph [ref=e117]: SchoolWorksPro's advanced Anti-Plagiarism system safeguards academic integrity by scanning and analyzing student submissions, allowing educators to identify and prevent plagiarism, ensuring the authenticity and quality of academic work.
+        - generic [ref=e120]:
+          - heading "Accounting Management System" [level=3] [ref=e121]
+          - paragraph [ref=e122]: SchoolWorksPro's comprehensive Accounting feature simplifies financial management for educational institutions, offering tools for tracking budgets, expenses, and revenue, ensuring transparent and efficient financial operations within the school or college.
+  - contentinfo [ref=e124]:
+    - generic [ref=e126]:
+      - generic [ref=e128]:
+        - heading "Address" [level=4] [ref=e129]
+        - list [ref=e130]:
+          - listitem [ref=e131]:
+            - generic [ref=e132]:
+              - generic [ref=e133]: 
+              - text: Dillibazar, Kathmandu
+          - listitem [ref=e134]:
+            - generic [ref=e135]:
+              - generic [ref=e136]: 
+              - link "9801986453" [ref=e137] [cursor=pointer]:
+                - /url: tel:9801986453
+              - text: ","
+              - link "9801224528" [ref=e138] [cursor=pointer]:
+                - /url: tel:9801224528
+      - generic [ref=e140]:
+        - heading "About School Works Pro" [level=4] [ref=e141]
+        - list [ref=e142]:
+          - listitem [ref=e143]:
+            - link "Our Policies" [ref=e144] [cursor=pointer]:
+              - /url: /policies
+      - generic [ref=e146]:
+        - heading "Using School Works Pro" [level=4] [ref=e147]
+        - list [ref=e148]:
+          - listitem [ref=e149]:
+            - link "How does it work" [ref=e150] [cursor=pointer]:
+              - /url: /how-does-it-work
+          - listitem [ref=e151]:
+            - link "Why use School Works Pro" [ref=e152] [cursor=pointer]:
+              - /url: /why-use
+      - generic [ref=e154]:
+        - heading "Download our app on Play Store/App Store" [level=4] [ref=e155]
+        - list [ref=e156]:
+          - listitem [ref=e157]:
+            - img "App QR" [ref=e158]
+    - generic [ref=e161]:
+      - img "School Works Pro" [ref=e163]
+      - paragraph [ref=e165]:
+        - text: © 2020 - 2026 Designed and Developed by
+        - link "Digi Technology" [ref=e167] [cursor=pointer]:
+          - /url: https://digitechnologynepal.com/
+      - generic [ref=e168]:
+        - list

@@ -1650,3 +1650,39 @@ img { max-width: 100%; display: block; }
 }
 .sb-declare input { margin-top: 3px; }
 .sb-esc-note { font-size: 0.76rem; color: var(--text-mute); margin-top: 8px; }
+
+/* ── Hero inline verify form (verify.html launcher) ─────────────────────────── */
+.hero-verify { margin: 8px 0 18px; max-width: 460px; }
+.hero-verify label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.hero-verify-row {
+  display: flex;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid rgba(21, 101, 192, 0.18);
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: 0 6px 20px rgba(13, 71, 161, 0.08);
+}
+.hero-verify-row input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 10px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #1A1A1A;
+  background: transparent;
+}
+.hero-verify-row input::placeholder { color: #9E9E9E; }
+.hero-verify-row .btn { white-space: nowrap; padding: 10px 18px; }
+
+@media (max-width: 520px) {
+  .hero-verify-row { flex-direction: column; }
+  .hero-verify-row .btn { width: 100%; }
+}

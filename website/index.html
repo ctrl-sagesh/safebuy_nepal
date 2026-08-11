@@ -54,7 +54,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
   <!-- Scroll progress bar -->
@@ -192,10 +192,32 @@
         <div class="hero-badge reveal"><span class="pulse-dot"></span><span data-en="NPR 40 crore lost to social-media fraud in 2023 — Nepal Police" data-ne="२०२३ मा सामाजिक सञ्जाल ठगीमा रु ४० करोड गुम्यो — नेपाल प्रहरी">NPR 40 crore lost to social-media fraud in 2023 — Nepal Police</span></div>
         <h1 class="reveal" data-en="Check if a TikTok seller is <span class='grad-text'>real</span> before you pay." data-ne="पैसा तिर्नु अघि TikTok विक्रेता <span class='grad-text'>वास्तविक</span> हो कि होइन जाँच्नुहोस्।">Check if a TikTok seller is <span class="grad-text">real</span> before you pay.</h1>
         <p class="hero-subtitle reveal" data-en="SafeBuy Nepal shows you trust ratings, fraud reports, and verified reviews for social media sellers in Nepal." data-ne="SafeBuy Nepal ले नेपालका सामाजिक सञ्जाल विक्रेताहरूको विश्वास रेटिङ, ठगी रिपोर्ट र प्रमाणित समीक्षाहरू देखाउँछ।">SafeBuy Nepal shows you trust ratings, fraud reports, and verified reviews for social media sellers in Nepal.</p>
+        <form class="hero-verify reveal" id="heroVerifyForm" onsubmit="return heroVerify(event)">
+          <label data-en="Verify any seller right now" data-ne="अहिले नै कुनै पनि विक्रेता जाँच्नुहोस्">Verify any seller right now</label>
+          <div class="hero-verify-row">
+            <input id="heroVerifyInput" type="text" autocomplete="off" placeholder="Enter phone number or @handle" data-en-ph="Enter phone number or @handle" data-ne-ph="फोन नम्बर वा @ह्यान्डल लेख्नुहोस्" />
+            <button type="submit" class="btn btn-primary" data-en="Check Now" data-ne="अहिले जाँच्नुहोस्">Check Now</button>
+          </div>
+        </form>
         <div class="hero-cta reveal">
           <a href="#trydemo" class="btn btn-primary magnetic" data-en="Search a Seller" data-ne="विक्रेता खोज्नुहोस्">Search a Seller</a>
           <a href="#how-it-works" class="btn btn-outline magnetic" data-en="Learn How It Works" data-ne="कसरी काम गर्छ जान्नुहोस्">Learn How It Works</a>
         </div>
+        <script>
+          function heroVerify(e) {
+            e.preventDefault();
+            var raw = document.getElementById('heroVerifyInput').value.trim();
+            if (!raw) return false;
+            if (raw.charAt(0) === '@') {
+              window.location.href = 'verify.html?handle=' + encodeURIComponent(raw.replace(/^@/, ''));
+            } else {
+              var digits = raw.replace(/\D/g, '');
+              if (digits.length === 13 && digits.indexOf('977') === 0) digits = digits.slice(3);
+              window.location.href = 'verify.html?phone=' + encodeURIComponent(digits);
+            }
+            return false;
+          }
+        </script>
         <div class="hero-trust reveal">
           <span>1️⃣ <span data-en="Search" data-ne="खोज्नुहोस्">Search</span></span>
           <span>→</span>
