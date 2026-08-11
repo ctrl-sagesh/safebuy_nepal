@@ -79,3 +79,6 @@ session.json
 .DS_Store
 *.local
 %APPDATA%/
+
+# Browser-tooling scratch artifacts
+.playwright-mcp/
