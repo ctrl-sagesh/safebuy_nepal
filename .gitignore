@@ -82,3 +82,7 @@ session.json
 
 # Browser-tooling scratch artifacts
 .playwright-mcp/
+
+# Firebase Admin service-account key (used by tool/seed_demo_data.js)
+firebase.json
+serviceAccount*.json
