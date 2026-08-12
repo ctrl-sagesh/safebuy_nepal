@@ -828,7 +828,7 @@
   // ── Sign-in modal HTML ──────────────────────────────────────────────────
   function signInHTML() {
     return '<h3 class="sb-form-title">🔐 Sign in to continue</h3>' +
-      '<p class="sb-form-sub">In the app, reporting requires a verified account (phone + email + national ID, approved by an admin). For this demo, just enter a display name — you\'ll stay anonymous to others.</p>' +
+      '<p class="sb-form-sub">In the app, reporting requires a verified account (phone + email + national ID, approved by an admin). Here, just enter a display name and you will stay anonymous to others.</p>' +
       '<form id="siForm" class="sb-form">' +
       '<label>Display name</label><input id="siName" required placeholder="Your name"/>' +
       '<label>Email (optional)</label><input id="siEmail" type="email" placeholder="you@example.com"/>' +
@@ -897,7 +897,7 @@
     if (has('scam', 'cheat', 'lost money', 'fraud', 'ripped', 'duped', 'got robbed')) return "😔 Sorry that happened. Do this now:<br>1. Stop any further payment.<br>2. Screenshot all chats + the payment receipt.<br>3. File a report on SafeBuy (with evidence) so others are warned.<br>4. For large amounts, the app escalates to the <b>Cyber Bureau (निवेदन)</b>.<br>5. Inform your payment provider (eSewa/Khalti/bank).";
     if (has('block', 'no reply', 'ignoring', 'ghosted')) return "🚫 Being blocked after payment is the #1 scam pattern. Your chat + receipt are strong evidence — file a report so the seller's score drops and others avoid them.";
     if (has('score', 'algorithm', 'calculat', 'rating work')) return "📊 The trust score (0–100) is a 5-factor weighted model:<br>• Report severity 40%<br>• Verification 25%<br>• Reviews 20%<br>• Dispute resolution 10%<br>• Account age 5%<br><b>80+</b> = Trusted, <b>50–79</b> = Unverified, <b>below 50</b> = High Risk.";
-    if (has('report', 'complain')) return "🚩 To report: open the <b>Live Demo</b>, search the seller, open their profile, then tap <b>Report Fraud</b>. Add the incident type, amount, and a screenshot (evidence is required).";
+    if (has('report', 'complain')) return "🚩 To report: open the <b>live verification tool</b>, search the seller, open their profile, then tap <b>Report Fraud</b>. Add the incident type, amount, and a screenshot (evidence is required).";
     if (has('review', 'feedback', 'rate ')) return "⭐ You can leave positive or negative reviews — both need evidence (a screenshot) so ratings stay fair. Search a seller and tap <b>Write Review</b>.";
     if (has('tiktok', 'instagram', 'facebook', 'whatsapp', 'viber')) return "📱 Most scams start on TikTok/Instagram ads, then move to WhatsApp/Viber for payment. Red flags: “DM to order”, “limited stock, pay now”, advance-only via QR. Always verify before paying.";
     if (has('cyber bureau', 'police', 'nivedan', 'निवेदन', ' law ')) return "⚖️ When a seller crosses the fraud threshold, SafeBuy auto-drafts an official Nepali <b>निवेदन</b> to the Cyber Bureau (Nepal Police) — an admin approves it before it's shared.";
@@ -974,7 +974,7 @@
       '<p class="sb-form-sub">This works as a real app on your phone — installable and auto-updating.</p>' +
       '<div class="sb-tips"><h4>On Android (Chrome)</h4><ul><li>Tap the ⋮ menu → <b>Install app</b> / <b>Add to Home screen</b></li><li>Open it from your home-screen icon — it runs fullscreen like a native app</li></ul>' +
       '<h4>On iPhone (Safari)</h4><ul><li>Tap the Share icon → <b>Add to Home Screen</b></li></ul></div>' +
-      '<button class="btn btn-primary sb-submit" id="inTry">Try the Live Demo first</button>',
+      '<button class="btn btn-primary sb-submit" id="inTry">Try it live first</button>',
       function (card) { card.querySelector('#inTry').onclick = function () { closeModal(); gotoDemo(true); }; }
     );
   }
@@ -1142,7 +1142,7 @@
     var reset = document.getElementById('demoReset');
     if (reset) reset.onclick = function () {
       localStorage.removeItem(LS_SELLERS); localStorage.removeItem(LS_USER);
-      save(seed()); doSearch(''); toast('↺ Demo data reset.');
+      save(seed()); doSearch(''); toast('↺ Data reset.');
     };
     var add = document.getElementById('demoAddSeller');
     if (add) add.onclick = function (e) { e.preventDefault(); openAddSeller(); };

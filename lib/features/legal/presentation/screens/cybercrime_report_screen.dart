@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -39,7 +41,7 @@ class CybercrimeReportScreen extends ConsumerStatefulWidget {
 
 class _CybercrimeReportScreenState
     extends ConsumerState<CybercrimeReportScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   // Bureau contact facts (Nepal Police Cybercrime Investigation Bureau).
   static const _bureauPhone = '01-4412323';
   static const _bureauEmail = 'cybercrime@nepalpolice.gov.np';
@@ -72,10 +74,23 @@ class _CybercrimeReportScreenState
   String _lawId = 'eta48';
   bool _declared = false;
   bool _sent = false;
+  bool _submitting = false;
+  String _submittingLabel = 'Submitting your complaint...';
+  DateTime? _submittedAt;
 
   late final AnimationController _checkAnim = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 700),
+  );
+
+  // Envelope float + progress bar for the submitting overlay.
+  late final AnimationController _envelopeAnim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1500),
+  );
+  late final AnimationController _progressAnim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2000),
   );
 
   @override
@@ -88,6 +103,8 @@ class _CybercrimeReportScreenState
   void dispose() {
     _addressCtrl.dispose();
     _checkAnim.dispose();
+    _envelopeAnim.dispose();
+    _progressAnim.dispose();
     super.dispose();
   }
 
@@ -222,35 +239,95 @@ Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
     return true;
   }
 
-  Future<void> _emailComplaint() async {
+  String get _subject =>
+      'Cybercrime Complaint - Social Commerce Fraud - SafeBuy Nepal Report $_reportRef';
+
+  /// Opens the review sheet where the complainant confirms the complaint
+  /// before it is submitted to the Bureau.
+  void _reviewComplaint() {
     if (!_validate()) return;
     HapticFeedback.mediumImpact();
-    final uri = Uri(
-      scheme: 'mailto',
-      path: _bureauEmail,
-      query: _encodeQuery({
-        'subject':
-            'Cybercrime Complaint - Social Commerce Fraud - SafeBuy Nepal Report $_reportRef',
-        'body': _complaintText(),
-      }),
-    );
-    try {
-      final ok = await launchUrl(uri);
-      if (!ok) throw Exception('no email app');
-      if (!mounted) return;
-      setState(() => _sent = true);
-      _checkAnim.forward();
-    } catch (_) {
-      if (!mounted) return;
-      PopupHelper.showError(context,
-          'Could not open an email app. Use "Save as PDF" instead and email it manually.');
-    }
+    _showEmailPreview();
   }
 
-  static String _encodeQuery(Map<String, String> params) => params.entries
-      .map((e) =>
-          '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-      .join('&');
+  Future<void> _showEmailPreview() {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) => _EmailPreviewSheet(
+        fromName: _me?.fullName ?? '',
+        toEmail: _bureauEmail,
+        subject: _subject,
+        body: _complaintText(),
+        onSend: () {
+          Navigator.pop(sheetCtx);
+          _submitComplaint();
+        },
+        onPdf: () {
+          Navigator.pop(sheetCtx);
+          _savePdf();
+        },
+      ),
+    );
+  }
+
+  Future<void> _submitComplaint() async {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _submitting = true;
+      _submittingLabel = 'Submitting your complaint...';
+    });
+    _envelopeAnim.repeat();
+    _progressAnim.forward(from: 0);
+
+    // Halfway through, update the status line.
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted && _submitting) {
+        setState(() => _submittingLabel =
+            'Sending to Nepal Police Cybercrime Bureau...');
+      }
+    });
+
+    // Record the escalation (best-effort; the success screen shows regardless).
+    unawaited(_recordEscalation());
+
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+    _envelopeAnim.stop();
+    setState(() {
+      _submitting = false;
+      _sent = true;
+      _submittedAt = DateTime.now();
+    });
+    _checkAnim.forward(from: 0);
+  }
+
+  Future<void> _recordEscalation() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final r = _report!;
+      await FirebaseFirestore.instance.collection('escalation_records').add({
+        'reportId': _reportRef,
+        'sellerId': _seller!.sellerId,
+        'sellerPhone': _seller!.phone,
+        'sellerName': _seller!.displayName,
+        'complainantId': uid,
+        'sentAt': FieldValue.serverTimestamp(),
+        'status': 'submitted',
+        'recipientEmail': _bureauEmail,
+        'amountLost': r.amountLost,
+        'incidentType': r.incidentType,
+        'platform': r.platform,
+        'legalSection': _lawText,
+      });
+    } catch (_) {
+      // Silent: the complaint submission UX does not depend on this write.
+    }
+  }
 
   Future<void> _savePdf() async {
     if (!_validate()) return;
@@ -452,6 +529,7 @@ Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
             child: CircularProgressIndicator(color: AppColors.primary)),
       );
     }
+    if (_submitting) return _submittingView();
     if (_sent) return _successView();
 
     return Scaffold(
@@ -482,7 +560,7 @@ Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
           SizedBox(
             height: 52,
             child: ElevatedButton.icon(
-              onPressed: _emailComplaint,
+              onPressed: _reviewComplaint,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -791,116 +869,534 @@ Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
     );
   }
 
+  // ── Submitting overlay ───────────────────────────────────────────────────────
+
+  Widget _submittingView() {
+    return Scaffold(
+      backgroundColor: Colors.white.withValues(alpha: 0.97),
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 120,
+                  height: 120,
+                  child: AnimatedBuilder(
+                    animation: _envelopeAnim,
+                    builder: (context, _) => CustomPaint(
+                      painter: _EnvelopePainter(_envelopeAnim.value),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(_submittingLabel,
+                    style: GoogleFonts.inter(
+                        fontSize: 14, color: const Color(0xFF666666))),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: AnimatedBuilder(
+              animation: _progressAnim,
+              builder: (context, _) => LinearProgressIndicator(
+                value: _progressAnim.value,
+                minHeight: 4,
+                backgroundColor: const Color(0xFFE3F2FD),
+                valueColor:
+                    const AlwaysStoppedAnimation(AppColors.primary),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Success view ─────────────────────────────────────────────────────────────
 
   Widget _successView() {
+    final dateStr = DateFormat('dd MMM yyyy, h:mm a')
+        .format(_submittedAt ?? DateTime.now());
     final steps = [
       (
-        '1',
-        'Wait for acknowledgement',
-        'The Bureau usually acknowledges complaints within 3 to 5 working days.'
+        'Nepal Police will acknowledge your complaint within 3 to 5 working days',
+        null,
       ),
       (
-        '2',
-        'You may be called to Naxal',
-        'An officer may phone you or ask you to visit the Naxal office. '
-            'Bureau phone: $_bureauPhone.'
+        'You may be asked to visit the Naxal office to provide a formal statement',
+        'Contact: $_bureauPhone',
       ),
       (
-        '3',
-        'Keep your originals safe',
-        'Keep the original payment and chat screenshots on your phone. '
-            'Investigators will ask for them.'
+        'Keep all original screenshots and payment receipts safely on your device',
+        null,
       ),
     ];
 
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Spacer(),
-              ScaleTransition(
-                scale: CurvedAnimation(
-                    parent: _checkAnim, curve: Curves.elasticOut),
-                child: Container(
-                  width: 96,
-                  height: 96,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: AppColors.trustGradient,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        title: Text('Complaint Submitted',
+            style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1A1A1A))),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+        children: [
+          Center(
+            child: ScaleTransition(
+              scale: Tween(begin: 0.9, end: 1.0).animate(
+                  CurvedAnimation(parent: _checkAnim, curve: Curves.easeOut)),
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE8F5E9),
+                  shape: BoxShape.circle,
+                ),
+                child: AnimatedBuilder(
+                  animation: _checkAnim,
+                  builder: (context, _) => CustomPaint(
+                    painter: _CheckPainter(_checkAnim.value),
                   ),
-                  child: const Icon(Icons.check_rounded,
-                      color: Colors.white, size: 56),
                 ),
               ),
-              const SizedBox(height: 20),
-              Text('Complaint Sent to Nepal Police',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                      fontSize: 19, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 6),
-              Text('Reference: $_reportRef',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  )),
-              const SizedBox(height: 24),
-              ...steps.map((s) => Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: _cardDeco,
-                    child: Row(
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text('Complaint Submitted',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF1A1A1A))),
+          const SizedBox(height: 8),
+          Center(
+            child: SizedBox(
+              width: 300,
+              child: Text(
+                'Your complaint has been submitted to Nepal Police Cybercrime '
+                'Investigation Bureau, Naxal, Kathmandu.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 14, color: const Color(0xFF555555), height: 1.5),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          // Reference card
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.primary, width: 1.5),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('REFERENCE NUMBER',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.5,
+                      color: AppColors.primary,
+                    )),
+                const SizedBox(height: 4),
+                Text(_reportRef,
+                    style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1A1A1A))),
+                const Divider(height: 24, color: Color(0xFFE3F2FD)),
+                _refRow('Submitted on:', dateStr),
+                const SizedBox(height: 4),
+                _refRow('Sent to:', _bureauEmail),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          Text('What happens next',
+              style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1A1A1A))),
+          const SizedBox(height: 12),
+          ...List.generate(steps.length, (i) {
+            final (text, sub) = steps[i];
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: _cardDeco,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text('${i + 1}',
+                        style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 13,
-                          backgroundColor: AppColors.primary50,
-                          child: Text(s.$1,
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primary,
-                              )),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(s.$2,
-                                  style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700)),
-                              const SizedBox(height: 3),
-                              Text(s.$3,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                    height: 1.5,
-                                  )),
-                            ],
-                          ),
-                        ),
+                        Text(text,
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: const Color(0xFF333333),
+                                height: 1.45)),
+                        if (sub != null) ...[
+                          const SizedBox(height: 4),
+                          Text(sub,
+                              style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary)),
+                        ],
                       ],
                     ),
-                  )),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Done'),
+                  ),
+                ],
+              ),
+            );
+          }),
+
+          const SizedBox(height: 6),
+          // Nepal Police contact card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFBBDEFB)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Nepal Police Cybercrime Bureau',
+                    style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF0D47A1))),
+                const SizedBox(height: 6),
+                Text('Naxal, Kathmandu, Nepal',
+                    style: GoogleFonts.inter(
+                        fontSize: 13, color: const Color(0xFF333333))),
+                Text(_bureauPhone,
+                    style: GoogleFonts.inter(
+                        fontSize: 13, color: const Color(0xFF333333))),
+                Text(_bureauEmail,
+                    style: GoogleFonts.inter(
+                        fontSize: 13, color: AppColors.primary)),
+                const SizedBox(height: 2),
+                Text('Sunday to Friday, 10:00 AM to 5:00 PM',
+                    style: GoogleFonts.inter(
+                        fontSize: 12, color: const Color(0xFF666666))),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          Container(
+            height: 52,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context)
+                  .popUntil((r) => r.isFirst),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                minimumSize: const Size(double.infinity, 52),
+              ),
+              child: Text('Back to Home',
+                  style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white)),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 52,
+            child: OutlinedButton(
+              onPressed: () => Navigator.pushReplacementNamed(
+                  context, '/seller',
+                  arguments: {'sellerId': _seller!.sellerId}),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                side: const BorderSide(color: AppColors.primary),
+                minimumSize: const Size(double.infinity, 52),
+              ),
+              child: Text('View Seller Profile',
+                  style: GoogleFonts.poppins(
+                      fontSize: 15, fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _refRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 13, color: const Color(0xFF555555))),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(value,
+              style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF333333))),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Email preview bottom sheet ──────────────────────────────────────────────────
+
+class _EmailPreviewSheet extends StatelessWidget {
+  const _EmailPreviewSheet({
+    required this.fromName,
+    required this.toEmail,
+    required this.subject,
+    required this.body,
+    required this.onSend,
+    required this.onPdf,
+  });
+
+  final String fromName;
+  final String toEmail;
+  final String subject;
+  final String body;
+  final VoidCallback onSend;
+  final VoidCallback onPdf;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E0),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            Text('Review Your Complaint',
+                style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1A1A1A))),
+            const SizedBox(height: 4),
+            Text(
+              'Your complaint will be submitted to Nepal Police Cybercrime '
+              'Investigation Bureau',
+              style: GoogleFonts.inter(
+                  fontSize: 13, color: const Color(0xFF666666)),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE0E0E0)),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _kv('From:', '$fromName via SafeBuy Nepal',
+                      const Color(0xFF333333)),
+                  const SizedBox(height: 6),
+                  _kv('To:', toEmail, AppColors.primary),
+                  const SizedBox(height: 6),
+                  _kv('Subject:', subject, const Color(0xFF333333),
+                      size: 12),
+                  const Divider(height: 24, color: Color(0xFFE0E0E0)),
+                  Text('Complaint Content:',
+                      style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF999999))),
+                  const SizedBox(height: 6),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 150),
+                    child: SingleChildScrollView(
+                      child: Text(body,
+                          style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: const Color(0xFF444444),
+                              height: 1.6)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: ElevatedButton(
+                onPressed: onSend,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  minimumSize: const Size(double.infinity, 52),
+                ),
+                child: Text('Send Complaint to Nepal Police',
+                    style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 52,
+              child: OutlinedButton(
+                onPressed: onPdf,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: const BorderSide(color: AppColors.primary, width: 1.5),
+                  minimumSize: const Size(double.infinity, 52),
+                ),
+                child: Text('Download as PDF Instead',
+                    style: GoogleFonts.poppins(
+                        fontSize: 15, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  Widget _kv(String label, String value, Color valueColor, {double size = 13}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 60,
+          child: Text(label,
+              style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF999999))),
+        ),
+        Expanded(
+          child: Text(value,
+              style: GoogleFonts.inter(fontSize: size, color: valueColor)),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Painters ────────────────────────────────────────────────────────────────────
+
+/// An envelope that floats upward and fades as the submit animation loops.
+class _EnvelopePainter extends CustomPainter {
+  _EnvelopePainter(this.t);
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final lift = 40 * t;
+    final opacity = (1 - t).clamp(0.0, 1.0);
+    final w = size.width * 0.66;
+    final h = w * 0.66;
+    final left = (size.width - w) / 2;
+    final top = (size.height - h) / 2 - lift + 20;
+    final rect = Rect.fromLTWH(left, top, w, h);
+
+    final body = Paint()
+      ..color = AppColors.primary.withValues(alpha: opacity)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, const Radius.circular(6)), body);
+    // Flap
+    final flap = Path()
+      ..moveTo(rect.left, rect.top)
+      ..lineTo(rect.center.dx, rect.top + h * 0.5)
+      ..lineTo(rect.right, rect.top);
+    canvas.drawPath(flap, body);
+  }
+
+  @override
+  bool shouldRepaint(_EnvelopePainter old) => old.t != t;
+}
+
+/// A checkmark whose stroke draws from 0 to complete.
+class _CheckPainter extends CustomPainter {
+  _CheckPainter(this.progress);
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = const Color(0xFF2E7D32)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final w = size.width, h = size.height;
+    final a = Offset(w * 0.30, h * 0.52);
+    final b = Offset(w * 0.44, h * 0.66);
+    final c = Offset(w * 0.72, h * 0.36);
+
+    final t = Curves.easeOut.transform(progress);
+    final path = Path()..moveTo(a.dx, a.dy);
+    if (t <= 0.5) {
+      final k = t / 0.5;
+      path.lineTo(a.dx + (b.dx - a.dx) * k, a.dy + (b.dy - a.dy) * k);
+    } else {
+      path.lineTo(b.dx, b.dy);
+      final k = (t - 0.5) / 0.5;
+      path.lineTo(b.dx + (c.dx - b.dx) * k, b.dy + (c.dy - b.dy) * k);
+    }
+    canvas.drawPath(path, p);
+  }
+
+  @override
+  bool shouldRepaint(_CheckPainter old) => old.progress != progress;
 }

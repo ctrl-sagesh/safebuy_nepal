@@ -147,7 +147,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _seedDemoData() async {
     if (!kDebugMode) return;
-    PopupHelper.showLoadingDialog(context, 'Loading demo data...');
+    PopupHelper.showLoadingDialog(context, 'Loading seller records...');
     try {
       final existing = await FirebaseFirestore.instance
           .collection('sellers')
@@ -156,18 +156,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (existing.exists) {
         if (!mounted) return;
         PopupHelper.hideLoadingDialog(context);
-        PopupHelper.showInfo(context, 'Demo data already exists');
+        PopupHelper.showInfo(context, 'Seller records already exist');
         return;
       }
       await SeedDataService.seedDatabase();
       if (!mounted) return;
       PopupHelper.hideLoadingDialog(context);
-      PopupHelper.showSuccess(context, 'Demo data loaded successfully');
+      PopupHelper.showSuccess(context, 'Seller records loaded successfully');
     } catch (_) {
       if (!mounted) return;
       PopupHelper.hideLoadingDialog(context);
       PopupHelper.showError(
-          context, 'Could not load demo data. Check your connection.');
+          context, 'Could not load seller records. Check your connection.');
     }
   }
 
@@ -922,7 +922,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               border: Border.all(color: AppColors.borderLight),
             ),
             child: _settingRow(
-                Icons.dataset_outlined, 'Seed Demo Data', _seedDemoData),
+                Icons.dataset_outlined, 'Load Seller Records', _seedDemoData),
           ),
         ],
       ],

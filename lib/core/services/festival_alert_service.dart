@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Festival fraud-alert windows (Gregorian approximations of the Nepali
 /// festival calendar). Fraud complaints spike around festival shopping, so
 /// the Home tab shows a warning banner while a window is active.
@@ -17,6 +19,10 @@ abstract final class FestivalAlertService {
 
   /// The festival window containing [date], or null when none is active.
   static String? activeFestival([DateTime? date]) {
+    // During development the Dashain alert is always shown so the seasonal
+    // safety banner can be reviewed year-round.
+    if (kDebugMode && date == null) return 'Dashain';
+
     final now = date ?? DateTime.now();
     // Compare month/day pairs as a single number, e.g. 20 Oct → 1020.
     final today = now.month * 100 + now.day;

@@ -10,7 +10,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../../../core/config/app_config.dart';
 import '../../../../core/services/festival_alert_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/dhaka_pattern.dart';
@@ -36,10 +35,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool get _isGuest => FirebaseAuth.instance.currentUser == null;
 
-  /// Debug builds always show the Dashain banner so the feature can be
-  /// demonstrated year-round; release builds use the real calendar.
-  final String? _festival = FestivalAlertService.activeFestival() ??
-      (AppConfig.showDemoFeatures ? 'Dashain' : null);
+  /// The active festival window (the service also surfaces the Dashain
+  /// season banner during development).
+  final String? _festival = FestivalAlertService.activeFestival();
 
   List<LeaderboardEntryModel>? _featured;
   bool _featuredFailed = false;
@@ -1002,8 +1000,10 @@ class _FestivalBanner extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Fraud complaints increase 340% during festivals. '
-            'Verify every seller before paying.',
+            'Dashain season brings a significant increase in social commerce '
+            'fraud across Nepal. Exercise extra caution when buying from new '
+            'or unverified sellers. Always verify on SafeBuy Nepal before '
+            'making any payment.',
             style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.92),
               fontSize: 12.5,

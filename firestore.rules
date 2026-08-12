@@ -117,6 +117,15 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ── Escalation records (buyer-submitted complaints to the Bureau) ────────────
+    // A signed-in complainant may file their own record; only admins read them.
+    match /escalation_records/{recordId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() &&
+        request.resource.data.complainantId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
     // ── Cyber Bureau escalations (admin-only) ────────────────────────────────────
     // Prepared/approved/submitted निवेदन letters for flagged sellers.
     // Only admins may read, create, or update; never client-deletable.

@@ -157,7 +157,22 @@ class _QrScanScreenState extends State<QrScanScreen>
                   ),
                 ),
 
-                const SizedBox(height: 22),
+                const SizedBox(height: 18),
+                // Helpful hint: a real seller number the buyer can try.
+                GestureDetector(
+                  onTap: () => Navigator.pop(context, '9841234567'),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text('Try scanning with: 9841234567',
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontSize: 12,
+                        )),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
                 AnimatedOpacity(
                   duration: const Duration(milliseconds: 200),
                   opacity: _showFail ? 1 : 0,

@@ -130,21 +130,20 @@ class _SellerProfileScreenState
     final total = (_reports ?? const <ReportModel>[])
         .fold<double>(0, (sum, r) => sum + r.amountLost);
     final platforms = <String>[
-      if (s.tiktokHandle?.isNotEmpty == true) 'TikTok @${s.tiktokHandle}',
-      if (s.instagramHandle?.isNotEmpty == true)
-        'Instagram @${s.instagramHandle}',
-      if (s.facebookHandle?.isNotEmpty == true)
-        'Facebook ${s.facebookHandle}',
+      if (s.tiktokHandle?.isNotEmpty == true) 'TikTok',
+      if (s.instagramHandle?.isNotEmpty == true) 'Instagram',
+      if (s.facebookHandle?.isNotEmpty == true) 'Facebook',
     ];
-    return 'FRAUD WARNING (SafeBuy Nepal)\n'
-        'Seller: ${s.displayName}${s.phone.isNotEmpty ? ' (${s.phone})' : ''}\n'
-        'Platform: ${platforms.isEmpty ? 'Social commerce' : platforms.join(', ')}\n'
-        'Trust Rating: HIGH RISK, ${s.trustScore.round()}/100\n'
-        'Fraud Reports: ${s.scamReportCount}\n'
-        'Amount Reported Lost: NPR ${NumberFormat('#,##0').format(total)}\n\n'
-        'Check any seller before paying:\n'
-        'safebuynepal.com\n\n'
-        'Shared via SafeBuy Nepal';
+    final verifyUrl = 'safebuy-nepal.vercel.app/verify?phone=${s.phone}';
+    return 'FRAUD WARNING - SafeBuy Nepal\n\n'
+        'Seller: ${s.displayName}\n'
+        'Platform: ${platforms.isEmpty ? 'Social commerce' : platforms.join(' / ')}\n'
+        'Trust Rating: HIGH RISK - ${s.trustScore.round()}/100\n'
+        'Fraud Reports: ${s.scamReportCount} verified complaints\n'
+        'Total Reported Lost: NPR ${NumberFormat('#,##0').format(total)}\n\n'
+        'Verify any seller before paying:\n'
+        '$verifyUrl\n\n'
+        '- Shared via SafeBuy Nepal';
   }
 
   Future<void> _shareOnWhatsApp(SellerModel s) async {
