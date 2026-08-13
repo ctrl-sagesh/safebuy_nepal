@@ -2,30 +2,38 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/language_toggle.dart';
+import '../../../../providers/language_provider.dart';
 
 /// Alerts tab — scam news entry card + live community alerts +
 /// trending scam types.
-class AlertsScreen extends StatefulWidget {
+class AlertsScreen extends ConsumerStatefulWidget {
   const AlertsScreen({super.key});
 
   @override
-  State<AlertsScreen> createState() => _AlertsScreenState();
+  ConsumerState<AlertsScreen> createState() => _AlertsScreenState();
 }
 
-class _AlertsScreenState extends State<AlertsScreen> {
+class _AlertsScreenState extends ConsumerState<AlertsScreen> {
   List<Map<String, dynamic>>? _alerts;
   bool _failed = false;
 
+  /// Current UI language ('en' | 'ne'); refreshed at the top of build().
+  String _lang = 'en';
+  String _t(String en, String ne) => _lang == 'ne' ? ne : en;
+
+  /// (emoji, English title, Nepali title, share of reports, color).
   static const _trendingTypes = [
-    ('📦', 'Non-Delivery', '35% of reports', AppColors.highRisk),
-    ('🏷️', 'Fake Products', '28% of reports', Color(0xFFFF6D00)),
-    ('💳', 'Payment Fraud', '20% of reports', AppColors.unverified),
-    ('🎭', 'Account Cloning', '12% of reports', Color(0xFF7C5CFC)),
+    ('📦', 'Non-Delivery', 'सामान नआउने', 35, AppColors.highRisk),
+    ('🏷️', 'Fake Products', 'नक्कली सामान', 28, Color(0xFFFF6D00)),
+    ('💳', 'Payment Fraud', 'भुक्तानी ठगी', 20, AppColors.unverified),
+    ('🎭', 'Account Cloning', 'खाता नक्कल', 12, Color(0xFF7C5CFC)),
   ];
 
   @override
@@ -59,20 +67,22 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _lang = ref.watch(languageProvider);
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
       appBar: AppBar(
-        title: const Text('Safety Alerts'),
+        title: Text(_t('Safety Alerts', 'सुरक्षा सतर्कता')),
         automaticallyImplyLeading: false,
         actions: [
+          const LanguageToggle(),
           TextButton.icon(
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.pushNamed(context, '/nepal-stats');
             },
             icon: const Icon(Icons.bar_chart_rounded, size: 18),
-            label: const Text('Nepal Fraud Data',
-                style: TextStyle(fontSize: 12.5)),
+            label: Text(_t('Nepal Fraud Data', 'नेपाल ठगी तथ्यांक'),
+                style: const TextStyle(fontSize: 12.5)),
           ),
           const SizedBox(width: 4),
         ],
@@ -87,7 +97,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
-                'Active fraud warnings from the SafeBuy Nepal community',
+                _t('Active fraud warnings from the SafeBuy Nepal community',
+                    'SafeBuy Nepal समुदायबाट सक्रिय ठगी चेतावनी'),
                 style: GoogleFonts.inter(
                   fontSize: 12.5,
                   color: AppColors.textSecondary,
@@ -115,15 +126,18 @@ class _AlertsScreenState extends State<AlertsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Scam Reports Nepal',
+                          Text(_t('Scam Reports Nepal', 'ठगी रिपोर्ट नेपाल'),
                               style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 15.5,
                                 fontWeight: FontWeight.w700,
                               )),
                           Text(
-                            '10 documented fraud cases, official statistics, '
-                            'and your legal rights',
+                            _t(
+                                '10 documented fraud cases, official statistics, '
+                                    'and your legal rights',
+                                '१० प्रलेखित ठगी घटना, आधिकारिक तथ्यांक, '
+                                    'र तपाईंका कानुनी अधिकार'),
                             style: GoogleFonts.inter(
                               color:
                                   Colors.white.withValues(alpha: 0.9),
@@ -143,7 +157,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
             const SizedBox(height: 18),
 
             // Trending scam types (consolidated from home)
-            Text('Trending Scam Types',
+            Text(_t('Trending Scam Types', 'बढ्दो ठगीका प्रकार'),
                 style: GoogleFonts.poppins(
                   fontSize: 15.5,
                   fontWeight: FontWeight.w600,
@@ -158,7 +172,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
               crossAxisSpacing: 10,
               childAspectRatio: 2.1,
               children: _trendingTypes.asMap().entries.map((e) {
-                final (emoji, title, sub, color) = e.value;
+                final (emoji, titleEn, titleNe, pct, color) = e.value;
+                final title = _t(titleEn, titleNe);
+                final sub = _t('$pct% of reports', 'उजुरीको $pct%');
                 return Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -199,7 +215,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
             ),
             const SizedBox(height: 20),
 
-            Text('Community Alerts',
+            Text(_t('Community Alerts', 'सामुदायिक सतर्कता'),
                 style: GoogleFonts.poppins(
                   fontSize: 15.5,
                   fontWeight: FontWeight.w600,
@@ -239,10 +255,16 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 alignment: Alignment.center,
                 child: Text(
                   _failed
-                      ? 'Could not load alerts. Check your connection '
-                          'and pull down to retry.'
-                      : 'No active alerts right now. Nepal\'s social '
-                          'commerce community is safe today.',
+                      ? _t(
+                          'Could not load alerts. Check your connection '
+                              'and pull down to retry.',
+                          'सतर्कता लोड गर्न सकिएन। इन्टरनेट जाँची तल '
+                              'तान्नुहोस्।')
+                      : _t(
+                          'No active alerts right now. Nepal\'s social '
+                              'commerce community is safe today.',
+                          'अहिले कुनै सक्रिय सतर्कता छैन। नेपालको सोशल '
+                              'कमर्स समुदाय आज सुरक्षित छ।'),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 13,
@@ -294,7 +316,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                 Expanded(
                                   child: Text(
                                     a['title'] as String? ??
-                                        'Community alert',
+                                        _t('Community alert',
+                                            'सामुदायिक सतर्कता'),
                                     style: GoogleFonts.inter(
                                       fontSize: 13.5,
                                       fontWeight: FontWeight.w600,

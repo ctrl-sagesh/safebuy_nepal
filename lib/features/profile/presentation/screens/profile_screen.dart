@@ -11,7 +11,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
+import '../../../../core/widgets/language_toggle.dart';
 import '../../../../core/widgets/verification_card.dart';
+import '../../../../providers/language_provider.dart';
 import '../widgets/seller_share_sheet.dart';
 import '../../../../models/report_model.dart';
 import '../../../../models/seller_model.dart';
@@ -34,6 +36,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   List<ReportModel> _myReports = const [];
   List<ReportModel> _myFiledReports = const [];
   bool _loading = true;
+
+  /// Current UI language ('en' | 'ne'); refreshed at the top of build().
+  String _lang = 'en';
+  String _t(String en, String ne) => _lang == 'ne' ? ne : en;
 
   @override
   void initState() {
@@ -72,7 +78,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (mounted) {
         setState(() => _loading = false);
         PopupHelper.showWarning(
-            context, 'Could not load your profile data');
+            context,
+            _t('Could not load your profile data',
+                'तपाईंको प्रोफाइल डाटा लोड गर्न सकिएन'));
       }
     }
   }
@@ -85,22 +93,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _signOut() async {
     await PopupHelper.showConfirmDialog(
       context,
-      title: 'Sign Out',
-      message: 'You can sign back in any time with your phone number.',
-      confirmLabel: 'Sign Out',
+      title: _t('Sign Out', 'साइन आउट'),
+      message: _t('You can sign back in any time with your phone number.',
+          'तपाईं फोन नम्बरले जहिले पनि फेरि साइन इन गर्न सक्नुहुन्छ।'),
+      confirmLabel: _t('Sign Out', 'साइन आउट'),
       onConfirm: () async {
         try {
           await GoogleAuthService().signOut();
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('is_guest', true);
           if (!mounted) return;
-          PopupHelper.showSuccess(context, 'Signed out successfully');
+          PopupHelper.showSuccess(
+              context, _t('Signed out successfully', 'सफलतापूर्वक साइन आउट भयो'));
           Navigator.of(context)
               .pushNamedAndRemoveUntil('/home', (r) => false);
         } catch (_) {
           if (mounted) {
             PopupHelper.showError(
-                context, 'Sign out failed. Please try again.');
+                context,
+                _t('Sign out failed. Please try again.',
+                    'साइन आउट असफल भयो। फेरि प्रयास गर्नुहोस्।'));
           }
         }
       },
@@ -110,13 +122,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _deleteAccount() async {
     await PopupHelper.showConfirmDialog(
       context,
-      title: 'Delete Your Account',
-      message: 'Your reports will be anonymized but retained for '
-          'fraud prevention. This cannot be undone.',
-      confirmLabel: 'Delete Forever',
+      title: _t('Delete Your Account', 'आफ्नो खाता मेट्नुहोस्'),
+      message: _t(
+          'Your reports will be anonymized but retained for '
+              'fraud prevention. This cannot be undone.',
+          'तपाईंका उजुरी बेनामी बनाइनेछन् तर ठगी रोकथामका लागि '
+              'राखिनेछन्। यो फिर्ता गर्न सकिँदैन।'),
+      confirmLabel: _t('Delete Forever', 'सधैंका लागि मेट्नुहोस्'),
       isDangerous: true,
       onConfirm: () async {
-        PopupHelper.showLoadingDialog(context, 'Deleting account...');
+        PopupHelper.showLoadingDialog(
+            context, _t('Deleting account...', 'खाता मेटिँदै...'));
         try {
           final user = FirebaseAuth.instance.currentUser;
           if (user != null) {
@@ -130,7 +146,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           }
           if (!mounted) return;
           PopupHelper.hideLoadingDialog(context);
-          PopupHelper.showSuccess(context, 'Account deleted');
+          PopupHelper.showSuccess(
+              context, _t('Account deleted', 'खाता मेटियो'));
           Navigator.of(context)
               .pushNamedAndRemoveUntil('/onboarding', (r) => false);
         } catch (_) {
@@ -138,8 +155,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           PopupHelper.hideLoadingDialog(context);
           PopupHelper.showError(
               context,
-              'Could not delete account. You may need to sign in '
-              'again first for security.');
+              _t(
+                  'Could not delete account. You may need to sign in '
+                      'again first for security.',
+                  'खाता मेट्न सकिएन। सुरक्षाका लागि पहिले फेरि साइन इन '
+                      'गर्नुपर्ने हुन सक्छ।'));
         }
       },
     );
@@ -181,7 +201,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Respond to Report',
+            Text(_t('Respond to Report', 'उजुरीको जवाफ दिनुहोस्'),
                 style: GoogleFonts.poppins(
                     fontSize: 16, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
@@ -194,8 +214,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             TextField(
               controller: controller,
               maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Explain your side of this incident...',
+              decoration: InputDecoration(
+                hintText: _t('Explain your side of this incident...',
+                    'यो घटनाबारे आफ्नो पक्ष बताउनुहोस्...'),
               ),
             ),
             const SizedBox(height: 14),
@@ -205,7 +226,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 onPressed: () async {
                   if (controller.text.trim().isEmpty) {
                     PopupHelper.showWarning(
-                        context, 'Please write your response');
+                        context,
+                        _t('Please write your response',
+                            'कृपया आफ्नो जवाफ लेख्नुहोस्'));
                     return;
                   }
                   try {
@@ -216,16 +239,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     if (!mounted) return;
                     Navigator.pop(context);
                     PopupHelper.showSuccess(
-                        context, 'Response submitted');
+                        context, _t('Response submitted', 'जवाफ पेस भयो'));
                     _load();
                   } catch (_) {
                     if (mounted) {
-                      PopupHelper.showError(context,
-                          'Could not submit response. Try again.');
+                      PopupHelper.showError(
+                          context,
+                          _t('Could not submit response. Try again.',
+                              'जवाफ पेस गर्न सकिएन। फेरि प्रयास गर्नुहोस्।'));
                     }
                   }
                 },
-                child: const Text('Submit Response'),
+                child: Text(_t('Submit Response', 'जवाफ पेस गर्नुहोस्')),
               ),
             ),
           ],
@@ -236,6 +261,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _lang = ref.watch(languageProvider);
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return _guestView();
     if (_loading) {
@@ -253,8 +279,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
       appBar: AppBar(
-          title: const Text('Profile'),
-          automaticallyImplyLeading: false),
+          title: Text(_t('Profile', 'प्रोफाइल')),
+          automaticallyImplyLeading: false,
+          actions: const [LanguageToggle()]),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(28),
@@ -272,12 +299,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     size: 46, color: AppColors.primary),
               ),
               const SizedBox(height: 18),
-              Text('You are browsing as a guest',
+              Text(_t('You are browsing as a guest', 'तपाईं अतिथिको रूपमा हेर्दै हुनुहुन्छ'),
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                       fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Text(
-                'Create a free account to:',
+                _t('Create a free account to:', 'निःशुल्क खाता बनाउनुहोस्:'),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 13,
@@ -288,19 +316,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ...[
                 (
                   Icons.flag_outlined,
-                  'Report fraudulent sellers and protect others'
+                  _t('Report fraudulent sellers and protect others',
+                      'ठग विक्रेता उजुरी गरी अरूलाई जोगाउनुहोस्')
                 ),
                 (
                   Icons.star_outline_rounded,
-                  'Leave reviews for sellers you have used'
+                  _t('Leave reviews for sellers you have used',
+                      'प्रयोग गरेका विक्रेतालाई समीक्षा दिनुहोस्')
                 ),
                 (
                   Icons.notifications_none_rounded,
-                  'Get notified when a seller you searched gets reported'
+                  _t(
+                      'Get notified when a seller you searched gets reported',
+                      'खोजेको विक्रेता उजुरी परे सूचना पाउनुहोस्')
                 ),
                 (
                   Icons.storefront_outlined,
-                  'Build your seller profile if you run a business'
+                  _t('Build your seller profile if you run a business',
+                      'व्यवसाय भए आफ्नो विक्रेता प्रोफाइल बनाउनुहोस्')
                 ),
               ].map((row) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5),
@@ -344,7 +377,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    child: const Text('Create Free Account'),
+                    child: Text(_t('Create Free Account', 'निःशुल्क खाता बनाउनुहोस्')),
                   ),
                 ),
               ),
@@ -355,7 +388,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: OutlinedButton(
                   onPressed: () =>
                       Navigator.pushNamed(context, '/auth'),
-                  child: const Text('Sign In'),
+                  child: Text(_t('Sign In', 'साइन इन')),
                 ),
               ),
             ],
@@ -372,8 +405,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
       appBar: AppBar(
-          title: const Text('My Profile'),
-          automaticallyImplyLeading: false),
+          title: Text(_t('My Profile', 'मेरो प्रोफाइल')),
+          automaticallyImplyLeading: false,
+          actions: const [LanguageToggle()]),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
         children: [
@@ -407,7 +441,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(me?.fullName ?? 'SafeBuy user',
+                      Text(me?.fullName ?? _t('SafeBuy user', 'SafeBuy प्रयोगकर्ता'),
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -421,7 +455,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               color: AppColors.primary50,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text('Buyer',
+                            child: Text(_t('Buyer', 'ग्राहक'),
                                 style: GoogleFonts.inter(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w700,
@@ -445,27 +479,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 12),
 
           // Impact stats
-          Text('Your contribution to SafeBuy Nepal',
+          Text(_t('Your contribution to SafeBuy Nepal',
+                  'SafeBuy Nepal मा तपाईंको योगदान'),
               style: GoogleFonts.poppins(
                   fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Row(
             children: [
               _statCard('📋', '${_myFiledReports.length}',
-                  'Reports filed'),
+                  _t('Reports filed', 'दर्ता उजुरी')),
               const SizedBox(width: 10),
               _statCard(
                   '🗓️',
                   me != null
                       ? DateFormat('MMM yyyy').format(me.createdAt)
                       : '-',
-                  'Member since'),
+                  _t('Member since', 'सदस्य भएदेखि')),
             ],
           ),
           const SizedBox(height: 18),
 
           // My reports
-          Text('My Reports',
+          Text(_t('My Reports', 'मेरा उजुरी'),
               style: GoogleFonts.poppins(
                   fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
@@ -479,8 +514,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               alignment: Alignment.center,
               child: Text(
-                'You have not filed any reports yet. If you have '
-                'been scammed, help the community by reporting it.',
+                _t(
+                    'You have not filed any reports yet. If you have '
+                        'been scammed, help the community by reporting it.',
+                    'तपाईंले अझै कुनै उजुरी गर्नुभएको छैन। ठगिनुभएको भए '
+                        'उजुरी गरी समुदायलाई मद्दत गर्नुहोस्।'),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                     fontSize: 12.5,
@@ -531,9 +569,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         child: Text(
                           r.status == 'verified'
-                              ? 'Verified'
+                              ? _t('Verified', 'प्रमाणित')
                               : r.status == 'pending'
-                                  ? 'Under review'
+                                  ? _t('Under review', 'समीक्षामा')
                                   : r.status,
                           style: GoogleFonts.inter(
                             fontSize: 10.5,
@@ -562,8 +600,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
       appBar: AppBar(
-          title: const Text('My Business'),
-          automaticallyImplyLeading: false),
+          title: Text(_t('My Business', 'मेरो व्यवसाय')),
+          automaticallyImplyLeading: false,
+          actions: const [LanguageToggle()]),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
         children: [
@@ -615,7 +654,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               color: Colors.white70),
                           const SizedBox(width: 4),
                           Text(
-                            '${TierStyle.label(s.verificationTier)} TIER',
+                            '${TierStyle.label(s.verificationTier)} ${_t('TIER', 'श्रेणी')}',
                             style: GoogleFonts.inter(
                               color: Colors.white70,
                               fontSize: 11,
@@ -649,11 +688,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               icon: Icons.verified_user_outlined,
               color: AppColors.trusted,
               title: s.isKycPending
-                  ? 'KYC under review (24-48 hrs)'
-                  : 'Get SafeBuy Verified',
+                  ? _t('KYC under review (24-48 hrs)',
+                      'KYC समीक्षामा (२४-४८ घण्टा)')
+                  : _t('Get SafeBuy Verified', 'SafeBuy प्रमाणित हुनुहोस्'),
               subtitle: s.isKycPending
-                  ? 'We will notify you once approved'
-                  : 'Complete KYC to earn your verification card',
+                  ? _t('We will notify you once approved',
+                      'स्वीकृत भएपछि हामी तपाईंलाई सूचित गर्नेछौं')
+                  : _t('Complete KYC to earn your verification card',
+                      'प्रमाणीकरण कार्ड पाउन KYC पूरा गर्नुहोस्'),
               onTap: () => Navigator.pushNamed(context, '/kyc'),
             ),
           const SizedBox(height: 12),
@@ -671,7 +713,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 side: const BorderSide(color: AppColors.primary, width: 1.5),
               ),
               icon: const Icon(Icons.ios_share_rounded, size: 18),
-              label: Text('Share My SafeBuy Profile',
+              label: Text(
+                  _t('Share My SafeBuy Profile',
+                      'मेरो SafeBuy प्रोफाइल सेयर गर्नुहोस्'),
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -682,7 +726,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 12),
 
           // Reports against me
-          Text('Reports Against You (${_myReports.length})',
+          Text(
+              '${_t('Reports Against You', 'तपाईंविरुद्ध उजुरी')} (${_myReports.length})',
               style: GoogleFonts.poppins(
                   fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
@@ -695,7 +740,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 border: Border.all(color: AppColors.borderLight),
               ),
               alignment: Alignment.center,
-              child: Text('✅ No reports on record. Keep it up!',
+              child: Text(
+                  _t('✅ No reports on record. Keep it up!',
+                      '✅ रेकर्डमा कुनै उजुरी छैन। यसैगरी अगाडि बढ्नुहोस्!'),
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                       fontSize: 13, color: AppColors.textSecondary)),
             )
@@ -735,10 +783,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10),
                                   minimumSize: const Size(0, 32)),
-                              child: const Text('Respond'),
+                              child: Text(_t('Respond', 'जवाफ')),
                             )
                           else
-                            Text('✓ Responded',
+                            Text(_t('✓ Responded', '✓ जवाफ दिइयो'),
                                 style: GoogleFonts.inter(
                                   fontSize: 11,
                                   color: AppColors.trusted,
@@ -754,8 +802,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _actionTile(
             icon: Icons.emoji_events_outlined,
             color: const Color(0xFFD4AF37),
-            title: 'Monthly Leaderboard',
-            subtitle: 'See where your business ranks',
+            title: _t('Monthly Leaderboard', 'मासिक लिडरबोर्ड'),
+            subtitle: _t('See where your business ranks',
+                'तपाईंको व्यवसाय कहाँ छ हेर्नुहोस्'),
             onTap: () => Navigator.pushNamed(context, '/leaderboard'),
           ),
           const SizedBox(height: 18),
@@ -855,7 +904,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Settings',
+        Text(_t('Settings', 'सेटिङ'),
             style: GoogleFonts.poppins(
                 fontSize: 15, fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
@@ -868,46 +917,47 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Column(
             children: [
               _settingRow(Icons.notifications_none_rounded,
-                  'Notifications', () {
+                  _t('Notifications', 'सूचना'), () {
                 Navigator.pushNamed(context, '/notifications');
               }),
               _divider(),
-              _settingRow(Icons.menu_book_outlined, 'How It Works', () {
+              _settingRow(Icons.menu_book_outlined,
+                  _t('How It Works', 'कसरी काम गर्छ'), () {
                 Navigator.pushNamed(context, '/guide');
               }),
               _divider(),
-              _settingRow(Icons.privacy_tip_outlined, 'Privacy Policy',
-                  () {
+              _settingRow(Icons.privacy_tip_outlined,
+                  _t('Privacy Policy', 'गोपनीयता नीति'), () {
                 Navigator.pushNamed(context, '/privacy');
               }),
               _divider(),
-              _settingRow(
-                  Icons.description_outlined, 'Terms of Service', () {
+              _settingRow(Icons.description_outlined,
+                  _t('Terms of Service', 'सेवाका सर्तहरू'), () {
                 Navigator.pushNamed(context, '/terms');
               }),
               _divider(),
-              _settingRow(
-                  Icons.info_outline_rounded, 'About SafeBuy Nepal', () {
+              _settingRow(Icons.info_outline_rounded,
+                  _t('About SafeBuy Nepal', 'SafeBuy Nepal बारे'), () {
                 Navigator.pushNamed(context, '/about');
               }),
               if (_me?.role == 'admin') ...[
                 _divider(),
-                _settingRow(
-                    Icons.admin_panel_settings_outlined, 'Admin: KYC Review',
-                    () {
+                _settingRow(Icons.admin_panel_settings_outlined,
+                    _t('Admin: KYC Review', 'एडमिन: KYC समीक्षा'), () {
                   Navigator.pushNamed(context, '/admin/kyc');
                 }),
                 _divider(),
                 _settingRow(Icons.dashboard_customize_outlined,
-                    'Admin: Dashboard', () {
+                    _t('Admin: Dashboard', 'एडमिन: ड्यासबोर्ड'), () {
                   Navigator.pushNamed(context, '/admin');
                 }),
               ],
               _divider(),
-              _settingRow(Icons.logout_rounded, 'Sign Out', _signOut),
+              _settingRow(
+                  Icons.logout_rounded, _t('Sign Out', 'साइन आउट'), _signOut),
               _divider(),
-              _settingRow(Icons.delete_outline_rounded, 'Delete Account',
-                  _deleteAccount,
+              _settingRow(Icons.delete_outline_rounded,
+                  _t('Delete Account', 'खाता मेट्नुहोस्'), _deleteAccount,
                   danger: true),
             ],
           ),
@@ -916,7 +966,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         // Developer Options — debug builds only.
         if (AppConfig.showDemoFeatures) ...[
           const SizedBox(height: 18),
-          Text('Developer Options',
+          Text(_t('Developer Options', 'डेभलपर विकल्प'),
               style: GoogleFonts.poppins(
                   fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
@@ -926,8 +976,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppColors.borderLight),
             ),
-            child: _settingRow(
-                Icons.dataset_outlined, 'Load Seller Records', _seedDemoData),
+            child: _settingRow(Icons.dataset_outlined,
+                _t('Load Seller Records', 'विक्रेता रेकर्ड लोड गर्नुहोस्'),
+                _seedDemoData),
           ),
         ],
       ],
