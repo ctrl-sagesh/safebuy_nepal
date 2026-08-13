@@ -14,13 +14,18 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
 import '../../../../core/widgets/dhaka_pattern.dart';
+import '../../../../core/widgets/language_toggle.dart';
 import '../../../../core/widgets/loyalty_badge.dart';
 import '../../../../core/widgets/pulse_glow.dart';
 import '../../../../core/widgets/verification_card.dart';
 import '../../../../models/report_model.dart';
 import '../../../../models/review_model.dart';
 import '../../../../models/seller_model.dart';
+import '../../../../providers/language_provider.dart';
 import '../../../../services/firestore_service.dart';
+
+/// Inline EN/NE picker used across this file's widgets.
+String _tr(String lang, String en, String ne) => lang == 'ne' ? ne : en;
 
 /// Full seller profile: trust arc, verification status, card preview,
 /// tabs for reviews / reports / about.
@@ -43,6 +48,10 @@ class _SellerProfileScreenState
   List<ReportModel>? _reports;
   int _tab = 0;
   int _reviewsShown = 5;
+
+  /// Current UI language ('en' | 'ne'); refreshed at the top of build().
+  String _lang = 'en';
+  String _t(String en, String ne) => _lang == 'ne' ? ne : en;
 
   late final AnimationController _arc = AnimationController(
     vsync: this,
@@ -178,10 +187,10 @@ class _SellerProfileScreenState
       ),
       child: Text(
         s.trustVerdict == 'trusted'
-            ? '✓ TRUSTED'
+            ? _t('✓ TRUSTED', '✓ भरपर्दो')
             : s.trustVerdict == 'high_risk'
-                ? '✕ HIGH RISK'
-                : '? UNVERIFIED',
+                ? _t('✕ HIGH RISK', '✕ उच्च जोखिम')
+                : _t('? UNVERIFIED', '? अप्रमाणित'),
         style: GoogleFonts.poppins(
           fontSize: 12,
           fontWeight: FontWeight.w800,
@@ -206,9 +215,13 @@ class _SellerProfileScreenState
 
   @override
   Widget build(BuildContext context) {
+    _lang = ref.watch(languageProvider);
     if (_failed) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Seller Profile')),
+        appBar: AppBar(
+          title: Text(_t('Seller Profile', 'विक्रेता प्रोफाइल')),
+          actions: const [LanguageToggle()],
+        ),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -216,7 +229,8 @@ class _SellerProfileScreenState
               const Icon(Icons.error_outline_rounded,
                   size: 56, color: AppColors.grey400),
               const SizedBox(height: 12),
-              Text('Could not load this seller',
+              Text(_t('Could not load this seller',
+                      'यो विक्रेता लोड गर्न सकिएन'),
                   style: GoogleFonts.poppins(
                       fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 16),
@@ -227,7 +241,7 @@ class _SellerProfileScreenState
                 },
                 style:
                     OutlinedButton.styleFrom(minimumSize: const Size(160, 46)),
-                child: const Text('Retry'),
+                child: Text(_t('Retry', 'पुनः प्रयास')),
               ),
             ],
           ),
@@ -255,6 +269,7 @@ class _SellerProfileScreenState
             pinned: true,
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
+            actions: const [LanguageToggle(onDark: true)],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(gradient: _verdictGradient),
@@ -417,8 +432,9 @@ class _SellerProfileScreenState
                             const SizedBox(height: 8),
                             Text(
                               s.verificationDate != null
-                                  ? 'Last verified: ${DateFormat('dd MMM yyyy').format(s.verificationDate!)}'
-                                  : 'Not yet KYC verified',
+                                  ? '${_t('Last verified', 'पछिल्लो प्रमाणित')}: ${DateFormat('dd MMM yyyy').format(s.verificationDate!)}'
+                                  : _t('Not yet KYC verified',
+                                      'अझै KYC प्रमाणित छैन'),
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 color: AppColors.textSecondary,
@@ -461,9 +477,12 @@ class _SellerProfileScreenState
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'This seller has received '
-                                '${s.scamReportCount} fraud '
-                                'complaint${s.scamReportCount == 1 ? '' : 's'}',
+                                _t(
+                                    'This seller has received '
+                                        '${s.scamReportCount} fraud '
+                                        'complaint${s.scamReportCount == 1 ? '' : 's'}',
+                                    'यो विक्रेताले ${s.scamReportCount} '
+                                        'ठगी उजुरी पाएको छ'),
                                 style: GoogleFonts.poppins(
                                   fontSize: 13.5,
                                   fontWeight: FontWeight.w700,
@@ -475,9 +494,13 @@ class _SellerProfileScreenState
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'We recommend NOT paying this seller. Read '
-                          'the complaints below before making any '
-                          'decision.',
+                          _t(
+                              'We recommend NOT paying this seller. Read '
+                                  'the complaints below before making any '
+                                  'decision.',
+                              'यो विक्रेतालाई भुक्तानी नगर्न हामी सिफारिस '
+                                  'गर्छौं। कुनै निर्णय गर्नुअघि तलका उजुरी '
+                                  'पढ्नुहोस्।'),
                           style: GoogleFonts.inter(
                             fontSize: 12.5,
                             color: AppColors.textPrimary,
@@ -501,8 +524,9 @@ class _SellerProfileScreenState
                               minimumSize: const Size(0, 44),
                             ),
                             icon: const Icon(Icons.share_rounded, size: 16),
-                            label: const Text('Share on WhatsApp',
-                                style: TextStyle(fontSize: 12.5)),
+                            label: Text(
+                                _t('Share on WhatsApp', 'WhatsApp मा सेयर'),
+                                style: const TextStyle(fontSize: 12.5)),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -516,8 +540,10 @@ class _SellerProfileScreenState
                               minimumSize: const Size(0, 44),
                             ),
                             icon: const Icon(Icons.copy_rounded, size: 16),
-                            label: const Text('Copy Warning Text',
-                                style: TextStyle(fontSize: 12.5)),
+                            label: Text(
+                                _t('Copy Warning Text',
+                                    'चेतावनी कपी गर्नुहोस्'),
+                                style: const TextStyle(fontSize: 12.5)),
                           ),
                         ),
                       ],
@@ -545,7 +571,8 @@ class _SellerProfileScreenState
                         foregroundColor: Colors.white,
                       ),
                       icon: const Icon(Icons.local_police_rounded, size: 18),
-                      label: const Text('Escalate to Nepal Police'),
+                      label: Text(_t('Escalate to Nepal Police',
+                          'नेपाल प्रहरीमा पठाउनुहोस्')),
                     ),
                   ),
                 if (s.trustVerdict == 'trusted')
@@ -560,11 +587,17 @@ class _SellerProfileScreenState
                               AppColors.trusted.withValues(alpha: 0.4)),
                     ),
                     child: Text(
-                      'This seller has been active for '
-                      '${(DateTime.now().difference(s.accountCreatedAt).inDays / 30).floor()} '
-                      'months. The community has left ${s.reviewCount} '
-                      'review${s.reviewCount == 1 ? '' : 's'}, and '
-                      '${s.scamReportCount == 0 ? 'there are zero fraud complaints on record' : 'only ${s.scamReportCount} complaint(s) exist'}.',
+                      _t(
+                          'This seller has been active for '
+                              '${(DateTime.now().difference(s.accountCreatedAt).inDays / 30).floor()} '
+                              'months. The community has left ${s.reviewCount} '
+                              'review${s.reviewCount == 1 ? '' : 's'}, and '
+                              '${s.scamReportCount == 0 ? 'there are zero fraud complaints on record' : 'only ${s.scamReportCount} complaint(s) exist'}.',
+                          'यो विक्रेता '
+                              '${(DateTime.now().difference(s.accountCreatedAt).inDays / 30).floor()} '
+                              'महिनादेखि सक्रिय छ। समुदायले ${s.reviewCount} '
+                              'समीक्षा दिएको छ, र '
+                              '${s.scamReportCount == 0 ? 'रेकर्डमा कुनै ठगी उजुरी छैन' : 'जम्मा ${s.scamReportCount} उजुरी छन्'}।'),
                       style: GoogleFonts.inter(
                         fontSize: 12.5,
                         color: AppColors.textPrimary,
@@ -592,7 +625,7 @@ class _SellerProfileScreenState
                               size: 20),
                           const SizedBox(width: 8),
                           Text(
-                            '${TierStyle.label(s.verificationTier)} TIER',
+                            '${TierStyle.label(s.verificationTier)} ${_t('TIER', 'श्रेणी')}',
                             style: GoogleFonts.poppins(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w700,
@@ -602,13 +635,15 @@ class _SellerProfileScreenState
                         ],
                       ),
                       const SizedBox(height: 10),
-                      _checkRow('Phone verified',
+                      _checkRow(_t('Phone verified', 'फोन प्रमाणित'),
                           s.phone.isNotEmpty && s.isVerified),
-                      _checkRow('Identity verified', s.isKycVerified),
-                      _checkRow('Location verified',
+                      _checkRow(
+                          _t('Identity verified', 'पहिचान प्रमाणित'),
+                          s.isKycVerified),
+                      _checkRow(_t('Location verified', 'स्थान प्रमाणित'),
                           s.verificationDistrict.isNotEmpty),
                       _checkRow(
-                          'Social media linked',
+                          _t('Social media linked', 'सोशल मिडिया जोडिएको'),
                           (s.tiktokHandle?.isNotEmpty ?? false) ||
                               (s.instagramHandle?.isNotEmpty ?? false) ||
                               (s.facebookHandle?.isNotEmpty ?? false)),
@@ -618,13 +653,14 @@ class _SellerProfileScreenState
                           child: Row(children: [LoyaltyBadge(seller: s)]),
                         ),
                       const SizedBox(height: 6),
-                      _kv('Registered',
+                      _kv(_t('Registered', 'दर्ता मिति'),
                           DateFormat('dd MMM yyyy').format(s.accountCreatedAt)),
                       if (s.verificationExpiry != null)
                         _kv(
                           s.isReverificationOverdue
-                              ? '⚠ Re-verification'
-                              : 'Re-verification due',
+                              ? _t('⚠ Re-verification', '⚠ पुन:प्रमाणीकरण')
+                              : _t('Re-verification due',
+                                  'पुन:प्रमाणीकरण बाँकी'),
                           DateFormat('dd MMM yyyy')
                               .format(s.verificationExpiry!),
                         ),
@@ -632,8 +668,11 @@ class _SellerProfileScreenState
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
-                            'This seller has not completed identity '
-                            'verification. Exercise caution with advance payments.',
+                            _t(
+                                'This seller has not completed identity '
+                                    'verification. Exercise caution with advance payments.',
+                                'यो विक्रेताले पहिचान प्रमाणीकरण पूरा गरेको '
+                                    'छैन। अग्रिम भुक्तानीमा सावधानी अपनाउनुहोस्।'),
                             style: GoogleFonts.inter(
                               fontSize: 11.5,
                               color: AppColors.textMuted,
@@ -675,6 +714,7 @@ class _SellerProfileScreenState
             pinned: true,
             delegate: _TabBarDelegate(
               selected: _tab,
+              lang: _lang,
               counts: (
                 _reviews?.length ?? 0,
                 _reports?.length ?? 0,
@@ -720,8 +760,9 @@ class _SellerProfileScreenState
                   ),
                   icon: const Icon(Icons.flag_rounded, size: 18),
                   label: Text(_isGuest
-                      ? 'Sign in to Report'
-                      : 'Report This Seller'),
+                      ? _t('Sign in to Report', 'उजुरीका लागि साइन इन')
+                      : _t('Report This Seller',
+                          'यो विक्रेता उजुरी गर्नुहोस्')),
                 ),
               ),
             ),
@@ -748,8 +789,10 @@ class _SellerProfileScreenState
       );
     }
     if (_reviews!.isEmpty) {
-      return _empty('No reviews yet',
-          'Be the first to review this seller after a purchase.');
+      return _empty(
+          _t('No reviews yet', 'अझै कुनै समीक्षा छैन'),
+          _t('Be the first to review this seller after a purchase.',
+              'खरिद पछि यो विक्रेतालाई समीक्षा गर्ने पहिलो बन्नुहोस्।'));
     }
     final sorted = [..._reviews!]
       ..sort((a, b) => b.rating.compareTo(a.rating));
@@ -760,6 +803,7 @@ class _SellerProfileScreenState
         ...shown.map((r) => _ReviewCard(
               review: r,
               isTop: r.reviewId == topId && r.rating >= 4,
+              lang: _lang,
             )),
         if (_reviews!.length > _reviewsShown)
           Padding(
@@ -769,7 +813,7 @@ class _SellerProfileScreenState
                   setState(() => _reviewsShown += 5),
               style: OutlinedButton.styleFrom(
                   minimumSize: const Size(180, 44)),
-              child: const Text('Load More'),
+              child: Text(_t('Load More', 'थप हेर्नुहोस्')),
             ),
           ),
       ],
@@ -785,8 +829,11 @@ class _SellerProfileScreenState
       );
     }
     if (_reports!.isEmpty) {
-      return _empty('✅ No fraud complaints on record',
-          'This seller has a clean history.');
+      return _empty(
+          _t('✅ No fraud complaints on record',
+              '✅ रेकर्डमा कुनै ठगी उजुरी छैन'),
+          _t('This seller has a clean history.',
+              'यो विक्रेताको सफा इतिहास छ।'));
     }
 
     // Verified sellers get 48 hours to answer their newest complaint.
@@ -802,8 +849,9 @@ class _SellerProfileScreenState
     }
 
     return Column(children: [
-      if (awaiting != null) _ResponseCountdownCard(report: awaiting),
-      ..._reports!.map((r) => _ReportCard(r)),
+      if (awaiting != null)
+        _ResponseCountdownCard(report: awaiting, lang: _lang),
+      ..._reports!.map((r) => _ReportCard(r, lang: _lang)),
     ]);
   }
 
@@ -820,7 +868,7 @@ class _SellerProfileScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (s.description?.isNotEmpty == true) ...[
-            Text('About',
+            Text(_t('About', 'बारेमा'),
                 style: GoogleFonts.poppins(
                     fontSize: 14.5, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
@@ -832,15 +880,16 @@ class _SellerProfileScreenState
                 )),
             const SizedBox(height: 14),
           ],
-          _kv('Category', s.businessCategory ?? 'Not specified'),
+          _kv(_t('Category', 'श्रेणी'),
+              s.businessCategory ?? _t('Not specified', 'उल्लेख छैन')),
           _kv(
-              'District',
+              _t('District', 'जिल्ला'),
               s.verificationDistrict.isNotEmpty
                   ? s.verificationDistrict
-                  : 'Not verified'),
-          _kv('Member since',
+                  : _t('Not verified', 'प्रमाणित छैन')),
+          _kv(_t('Member since', 'सदस्य भएदेखि'),
               DateFormat('MMMM yyyy').format(s.accountCreatedAt)),
-          _kv('Phone', s.phone.isNotEmpty ? s.phone : '-'),
+          _kv(_t('Phone', 'फोन'), s.phone.isNotEmpty ? s.phone : '-'),
           if (s.esewaId?.isNotEmpty == true) _kv('eSewa ID', s.esewaId!),
           if (s.tiktokHandle?.isNotEmpty == true)
             _kv('TikTok', '@${s.tiktokHandle}'),
@@ -907,7 +956,7 @@ class _SellerProfileScreenState
                 color: AppColors.textPrimary,
               )),
           const Spacer(),
-          Text(done ? 'Done' : 'Not verified',
+          Text(done ? _t('Done', 'भयो') : _t('Not verified', 'प्रमाणित छैन'),
               style: GoogleFonts.inter(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
@@ -947,13 +996,16 @@ class _SellerProfileScreenState
 // ── Review card ────────────────────────────────────────────────────────────────
 
 class _ReviewCard extends StatelessWidget {
-  const _ReviewCard({required this.review, required this.isTop});
+  const _ReviewCard(
+      {required this.review, required this.isTop, required this.lang});
 
   final ReviewModel review;
   final bool isTop;
+  final String lang;
 
   @override
   Widget build(BuildContext context) {
+    String t(String en, String ne) => _tr(lang, en, ne);
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
       padding: const EdgeInsets.all(14),
@@ -1018,7 +1070,7 @@ class _ReviewCard extends StatelessWidget {
                     color: const Color(0xFFFFF8E1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text('🏆 Top Review',
+                  child: Text(t('🏆 Top Review', '🏆 उत्कृष्ट समीक्षा'),
                       style: GoogleFonts.inter(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -1031,7 +1083,8 @@ class _ReviewCard extends StatelessWidget {
           if (review.productName.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 4),
-              child: Text('Purchased: ${review.productName}',
+              child: Text(
+                  '${t('Purchased', 'खरिद')}: ${review.productName}',
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
@@ -1085,7 +1138,7 @@ class _ReviewCard extends StatelessWidget {
                     color: AppColors.trustedBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text('Verified Purchase ✓',
+                  child: Text(t('Verified Purchase ✓', 'प्रमाणित खरिद ✓'),
                       style: GoogleFonts.inter(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -1109,9 +1162,10 @@ class _ReviewCard extends StatelessWidget {
 // ── Report card ────────────────────────────────────────────────────────────────
 
 class _ReportCard extends StatefulWidget {
-  const _ReportCard(this.report);
+  const _ReportCard(this.report, {required this.lang});
 
   final ReportModel report;
+  final String lang;
 
   @override
   State<_ReportCard> createState() => _ReportCardState();
@@ -1123,6 +1177,7 @@ class _ReportCardState extends State<_ReportCard> {
   @override
   Widget build(BuildContext context) {
     final r = widget.report;
+    String t(String en, String ne) => _tr(widget.lang, en, ne);
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
       padding: const EdgeInsets.all(14),
@@ -1183,7 +1238,7 @@ class _ReportCardState extends State<_ReportCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Seller response',
+                    Text(t('Seller response', 'विक्रेताको जवाफ'),
                         style: GoogleFonts.inter(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
@@ -1229,9 +1284,10 @@ class _ReportCardState extends State<_ReportCard> {
 /// Amber countdown while the seller's 48h response window is open;
 /// turns red once the window has expired without a response.
 class _ResponseCountdownCard extends StatefulWidget {
-  const _ResponseCountdownCard({required this.report});
+  const _ResponseCountdownCard({required this.report, required this.lang});
 
   final ReportModel report;
+  final String lang;
 
   @override
   State<_ResponseCountdownCard> createState() =>
@@ -1259,6 +1315,7 @@ class _ResponseCountdownCardState extends State<_ResponseCountdownCard> {
 
   @override
   Widget build(BuildContext context) {
+    String t(String en, String ne) => _tr(widget.lang, en, ne);
     final elapsed = DateTime.now().difference(widget.report.submittedAt);
     final expired = elapsed >= _window;
     final remaining = expired ? Duration.zero : _window - elapsed;
@@ -1289,9 +1346,13 @@ class _ResponseCountdownCardState extends State<_ResponseCountdownCard> {
               Expanded(
                 child: Text(
                   expired
-                      ? 'Seller did not respond within 48 hours'
-                      : 'Seller has ${remaining.inHours}h '
-                          '${remaining.inMinutes % 60}m to respond',
+                      ? t('Seller did not respond within 48 hours',
+                          'विक्रेताले ४८ घण्टामा जवाफ दिएनन्')
+                      : t(
+                          'Seller has ${remaining.inHours}h '
+                              '${remaining.inMinutes % 60}m to respond',
+                          'विक्रेतासँग जवाफ दिन ${remaining.inHours}घ '
+                              '${remaining.inMinutes % 60}मि बाँकी'),
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -1304,7 +1365,8 @@ class _ResponseCountdownCardState extends State<_ResponseCountdownCard> {
           const SizedBox(height: 8),
           if (expired)
             Text(
-              'This negatively affects their trust rating.',
+              t('This negatively affects their trust rating.',
+                  'यसले उनीहरूको ट्रस्ट रेटिङमा नकारात्मक असर गर्छ।'),
               style: GoogleFonts.inter(
                 fontSize: 12,
                 color: AppColors.textPrimary,
@@ -1324,8 +1386,11 @@ class _ResponseCountdownCardState extends State<_ResponseCountdownCard> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Verified sellers get 48 hours to publicly answer the '
-              'newest complaint before their trust rating is affected.',
+              t(
+                  'Verified sellers get 48 hours to publicly answer the '
+                      'newest complaint before their trust rating is affected.',
+                  'प्रमाणित विक्रेताले ट्रस्ट रेटिङमा असर पर्नुअघि नयाँ '
+                      'उजुरीको सार्वजनिक जवाफ दिन ४८ घण्टा पाउँछन्।'),
               style: GoogleFonts.inter(
                 fontSize: 11.5,
                 color: AppColors.textSecondary,
@@ -1377,11 +1442,13 @@ class _ArcPainter extends CustomPainter {
 class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   _TabBarDelegate({
     required this.selected,
+    required this.lang,
     required this.counts,
     required this.onChanged,
   });
 
   final int selected;
+  final String lang;
   final (int, int) counts;
   final ValueChanged<int> onChanged;
 
@@ -1394,9 +1461,9 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlaps) {
     final labels = [
-      'Reviews (${counts.$1})',
-      'Complaints (${counts.$2})',
-      'About',
+      '${_tr(lang, 'Reviews', 'समीक्षा')} (${counts.$1})',
+      '${_tr(lang, 'Complaints', 'उजुरी')} (${counts.$2})',
+      _tr(lang, 'About', 'बारेमा'),
     ];
     return Container(
       color: AppColors.bgSecondary,
@@ -1446,5 +1513,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(_TabBarDelegate old) =>
-      old.selected != selected || old.counts != counts;
+      old.selected != selected ||
+      old.counts != counts ||
+      old.lang != lang;
 }

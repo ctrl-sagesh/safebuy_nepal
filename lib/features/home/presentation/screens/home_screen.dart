@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
@@ -13,16 +14,18 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/services/festival_alert_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/dhaka_pattern.dart';
+import '../../../../core/widgets/language_toggle.dart';
 import '../../../../core/widgets/nepal_logo.dart';
 import '../../../../core/utils/popup_helper.dart';
 import '../../../../core/widgets/verification_card.dart';
 import '../../../../models/leaderboard_model.dart';
+import '../../../../providers/language_provider.dart';
 import '../../../../services/leaderboard_service.dart';
 
 /// Home tab — one job: get the user to search a seller before paying.
 /// Hero search card → alerts strip → two actions → trusted sellers →
 /// recent alerts → safety tips.
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key, this.onSearchTap});
 
   /// Switches the shell to the Search tab; when [query] is given the
@@ -30,11 +33,15 @@ class HomeScreen extends StatefulWidget {
   final void Function([String? query])? onSearchTap;
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool get _isGuest => FirebaseAuth.instance.currentUser == null;
+
+  /// Current UI language ('en' | 'ne'); refreshed at the top of build().
+  String _lang = 'en';
+  String _t(String en, String ne) => _lang == 'ne' ? ne : en;
 
   /// The active festival window (the service also surfaces the Dashain
   /// season banner during development).
@@ -129,8 +136,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Text(
           !_isGuest && firstName.isNotEmpty
-              ? 'Namaste, $firstName'
-              : 'Verify Before You Pay',
+              ? _t('Namaste, $firstName', 'नमस्ते, $firstName')
+              : _t('Verify Before You Pay', 'तिर्नु अघि जाँच्नुहोस्'),
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontSize: 19,
@@ -138,7 +145,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Text('Search any seller before sending eSewa payment',
+        Text(
+            _t('Search any seller before sending eSewa payment',
+                'eSewa भुक्तानी पठाउनु अघि विक्रेता खोज्नुहोस्'),
             style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.9),
               fontSize: 13,
@@ -171,7 +180,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Phone number, @handle, or eSewa ID...',
+                    _t('Phone number, @handle, or eSewa ID...',
+                        'फोन नम्बर, @ह्यान्डल, वा eSewa आईडी...'),
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
                       color: AppColors.textMuted,
@@ -179,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                Text('Search',
+                Text(_t('Search', 'खोज्नुहोस्'),
                     style: GoogleFonts.inter(
                       color: AppColors.primary,
                       fontSize: 12.5,
@@ -211,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text('Try: $q',
+                    child: Text(_t('Try: $q', 'हेर्नुहोस्: $q'),
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 11.5,
@@ -238,6 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _lang = ref.watch(languageProvider);
     final user = FirebaseAuth.instance.currentUser;
     final firstName = (user?.displayName ?? '').trim().split(' ').first;
 
@@ -247,17 +258,19 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
+        titleSpacing: 12,
         title: const SafeBuyWordmark(height: 30),
         actions: [
+          const LanguageToggle(),
           IconButton(
-            tooltip: 'Help',
+            tooltip: _t('Help', 'सहायता'),
             icon: const Icon(Icons.help_outline_rounded),
             onPressed: () => Navigator.pushNamed(context, '/safeguard'),
           ),
           if (_isGuest)
             TextButton(
               onPressed: () => Navigator.pushNamed(context, '/auth'),
-              child: const Text('Sign In'),
+              child: Text(_t('Sign In', 'साइन इन')),
             )
           else
             _NotificationBell(userId: user?.uid),
@@ -324,8 +337,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Tip: Select any phone number in WhatsApp or TikTok, '
-                        'tap Share, and choose SafeBuy Nepal to verify instantly.',
+                        _t(
+                          'Tip: Select any phone number in WhatsApp or TikTok, '
+                          'tap Share, and choose SafeBuy Nepal to verify instantly.',
+                          'सुझाव: WhatsApp वा TikTok मा फोन नम्बर छान्नुहोस्, '
+                          'Share थिच्नुहोस्, र तुरुन्तै जाँच्न SafeBuy Nepal रोज्नुहोस्।',
+                        ),
                         style: GoogleFonts.inter(
                           fontSize: 12.5,
                           height: 1.45,
@@ -385,8 +402,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            '${_alerts!.length} active fraud '
-                            'alert${_alerts!.length == 1 ? '' : 's'} in Nepal',
+                            _t(
+                              '${_alerts!.length} active fraud '
+                              'alert${_alerts!.length == 1 ? '' : 's'} in Nepal',
+                              'नेपालमा ${_alerts!.length} सक्रिय ठगी सतर्कता',
+                            ),
                             style: GoogleFonts.inter(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w600,
@@ -411,8 +431,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: _ActionCard(
                       icon: Icons.flag_rounded,
                       accent: AppColors.highRisk,
-                      title: 'Report a Fraud',
-                      subtitle: 'Were you scammed? Help protect others',
+                      title: _t('Report a Fraud', 'ठगी उजुरी गर्नुहोस्'),
+                      subtitle: _t('Were you scammed? Help protect others',
+                          'ठगिनुभयो? अरूलाई जोगाउन मद्दत गर्नुहोस्'),
                       onTap: () => _guarded('/report'),
                     ),
                   ),
@@ -421,8 +442,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: _ActionCard(
                       icon: Icons.storefront_rounded,
                       accent: AppColors.trusted,
-                      title: 'Register Business',
-                      subtitle: 'Get verified and build buyer trust',
+                      title: _t('Register Business', 'व्यवसाय दर्ता गर्नुहोस्'),
+                      subtitle: _t('Get verified and build buyer trust',
+                          'प्रमाणित हुनुहोस् र ग्राहकको विश्वास कमाउनुहोस्'),
                       onTap: () => _guarded('/register-business'),
                     ),
                   ),
@@ -436,7 +458,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text('Trusted Sellers This Month',
+                    child: Text(
+                        _t('Trusted Sellers This Month',
+                            'यस महिनाका भरपर्दो विक्रेता'),
                         style: GoogleFonts.poppins(
                           fontSize: 15.5,
                           fontWeight: FontWeight.w600,
@@ -446,14 +470,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   TextButton(
                     onPressed: () =>
                         Navigator.pushNamed(context, '/leaderboard'),
-                    child: const Text('See All'),
+                    child: Text(_t('See All', 'सबै हेर्नुहोस्')),
                   ),
                 ],
               ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              child: Text('Verified by the SafeBuy Nepal community',
+              child: Text(
+                  _t('Verified by the SafeBuy Nepal community',
+                      'SafeBuy Nepal समुदायद्वारा प्रमाणित'),
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
                     color: AppColors.textMuted,
@@ -465,10 +491,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? _horizontalShimmer()
                   : _featured!.isEmpty
                       ? _emptyBox(_featuredFailed
-                          ? 'Could not load sellers. Check your '
-                              'connection and pull down to retry.'
-                          : 'No verified sellers yet. Run a business? '
-                              'Register it and be the first.')
+                          ? _t(
+                              'Could not load sellers. Check your '
+                                  'connection and pull down to retry.',
+                              'विक्रेता लोड गर्न सकिएन। इन्टरनेट जाँची '
+                                  'तल तान्नुहोस्।')
+                          : _t(
+                              'No verified sellers yet. Run a business? '
+                                  'Register it and be the first.',
+                              'अहिलेसम्म प्रमाणित विक्रेता छैन। व्यवसाय '
+                                  'छ? दर्ता गरी पहिलो बन्नुहोस्।'))
                       : ListView.separated(
                           scrollDirection: Axis.horizontal,
                           padding:
@@ -492,7 +524,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text('Community Safety Alerts',
+                    child: Text(
+                        _t('Community Safety Alerts',
+                            'सामुदायिक सुरक्षा सतर्कता'),
                         style: GoogleFonts.poppins(
                           fontSize: 15.5,
                           fontWeight: FontWeight.w600,
@@ -502,7 +536,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   TextButton(
                     onPressed: () =>
                         Navigator.pushNamed(context, '/alerts'),
-                    child: const Text('View All'),
+                    child: Text(_t('View All', 'सबै हेर्नुहोस्')),
                   ),
                 ],
               ),
@@ -524,10 +558,16 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _emptyBox(_alertsFailed
-                    ? 'Could not load alerts. Check your connection '
-                        'and pull down to retry.'
-                    : 'No active alerts right now. The community '
-                        'is safe today.'),
+                    ? _t(
+                        'Could not load alerts. Check your connection '
+                            'and pull down to retry.',
+                        'सतर्कता लोड गर्न सकिएन। इन्टरनेट जाँची तल '
+                            'तान्नुहोस्।')
+                    : _t(
+                        'No active alerts right now. The community '
+                            'is safe today.',
+                        'अहिले कुनै सक्रिय सतर्कता छैन। समुदाय आज '
+                            'सुरक्षित छ।')),
               )
             else
               ..._alerts!.asMap().entries.map((entry) {
@@ -591,7 +631,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // ── Safety tips carousel ─────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-              child: Text('Safety Tips',
+              child: Text(_t('Safety Tips', 'सुरक्षा सुझाव'),
                   style: GoogleFonts.poppins(
                     fontSize: 15.5,
                     fontWeight: FontWeight.w600,
@@ -623,7 +663,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'New here? Learn how SafeBuy Nepal works',
+                          _t('New here? Learn how SafeBuy Nepal works',
+                              'नयाँ हुनुहुन्छ? SafeBuy Nepal कसरी काम गर्छ जान्नुहोस्'),
                           style: GoogleFonts.inter(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w600,

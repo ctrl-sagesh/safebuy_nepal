@@ -142,8 +142,11 @@ class _SafebuyVerificationCardState extends State<SafebuyVerificationCard>
         child: Stack(
           children: [
             // Shine: sweeps within the first fifth of each 5s cycle.
+            // RepaintBoundary isolates the per-frame sweep from the rest
+            // of the (static) card face.
             Positioned.fill(
-              child: AnimatedBuilder(
+              child: RepaintBoundary(
+                child: AnimatedBuilder(
                 animation: _shine,
                 builder: (context, _) {
                   final t = (_shine.value / 0.2).clamp(0.0, 1.0);
@@ -167,6 +170,7 @@ class _SafebuyVerificationCardState extends State<SafebuyVerificationCard>
                     ),
                   );
                 },
+                ),
               ),
             ),
             Padding(

@@ -11,12 +11,17 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/popup_helper.dart';
+import '../../../../core/widgets/language_toggle.dart';
 import '../../../../core/widgets/loyalty_badge.dart';
 import '../../../../core/widgets/pulse_glow.dart';
 import '../../../../core/widgets/verification_card.dart';
 import '../../../../models/seller_model.dart';
+import '../../../../providers/language_provider.dart';
 import '../../../../services/firestore_service.dart';
 import 'qr_scan_screen.dart';
+
+/// Inline EN/NE picker used across this file's widgets.
+String _tr(String lang, String en, String ne) => lang == 'ne' ? ne : en;
 
 /// Search tab — find sellers by phone, eSewa ID, or social handle and
 /// see their SafeBuy verification card.
@@ -46,12 +51,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   String get _hint {
     final q = _controller.text.trim();
     if (q.isEmpty) return '';
+    final lang = ref.read(languageProvider);
     if (q.startsWith('97') || q.startsWith('98')) {
-      return 'Searching by phone number';
+      return _tr(lang, 'Searching by phone number',
+          'फोन नम्बरबाट खोज्दै');
     }
-    if (q.startsWith('@')) return 'Searching by social handle';
+    if (q.startsWith('@')) {
+      return _tr(lang, 'Searching by social handle',
+          'सोशल ह्यान्डलबाट खोज्दै');
+    }
     if (RegExp(r'^[A-Za-z]').hasMatch(q)) {
-      return 'Searching by business name';
+      return _tr(lang, 'Searching by business name',
+          'व्यवसायको नामबाट खोज्दै');
     }
     return '';
   }
@@ -99,7 +110,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final q = _controller.text.trim();
     if (q.isEmpty) {
       PopupHelper.showWarning(
-          context, 'Please enter a phone number, eSewa ID, or handle');
+          context,
+          _tr(ref.read(languageProvider),
+              'Please enter a phone number, eSewa ID, or handle',
+              'कृपया फोन नम्बर, eSewa आईडी, वा ह्यान्डल हाल्नुहोस्'));
       return;
     }
     FocusScope.of(context).unfocus();
@@ -124,18 +138,24 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         _searched = true;
       });
       PopupHelper.showError(
-          context, 'Search failed. Please check your connection.');
+          context,
+          _tr(ref.read(languageProvider),
+              'Search failed. Please check your connection.',
+              'खोज असफल भयो। कृपया इन्टरनेट जाँच्नुहोस्।'));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final lang = ref.watch(languageProvider);
+    String t(String en, String ne) => _tr(lang, en, ne);
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text('Verify a Seller'),
+        title: Text(t('Verify a Seller', 'विक्रेता जाँच्नुहोस्')),
         automaticallyImplyLeading: false,
+        actions: const [LanguageToggle()],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
@@ -161,8 +181,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     textInputAction: TextInputAction.search,
                     onSubmitted: (_) => _search(),
                     onChanged: (_) => setState(() {}),
-                    decoration: const InputDecoration(
-                      hintText: 'Phone, eSewa ID, or @handle…',
+                    decoration: InputDecoration(
+                      hintText: t('Phone, eSewa ID, or @handle…',
+                          'फोन, eSewa आईडी, वा @ह्यान्डल…'),
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
@@ -186,12 +207,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             child: CircularProgressIndicator(
                                 color: Colors.white, strokeWidth: 2),
                           )
-                        : const Text('Search'),
+                        : Text(t('Search', 'खोज्नुहोस्')),
                   ),
                 ),
                 IconButton(
                   onPressed: _scanQr,
-                  tooltip: 'Scan seller QR',
+                  tooltip: t('Scan seller QR', 'विक्रेता QR स्क्यान गर्नुहोस्'),
                   icon: const Icon(Icons.qr_code_scanner_rounded,
                       color: AppColors.primary),
                 ),
@@ -269,7 +290,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
             )
           else if (_searched && _results.isEmpty)
-            _NotFoundCard(query: _controller.text.trim())
+            _NotFoundCard(query: _controller.text.trim(), lang: lang)
           else if (_results.isNotEmpty)
             ..._results.asMap().entries.map(
                   (e) => Padding(
@@ -279,10 +300,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         _SellerResultCard(
                           seller: e.value,
                           isGuest: _isGuest,
+                          lang: lang,
                         ),
                         if (e.value.trustVerdict == 'unverified')
                           _BeforeYouPayChecklist(
-                              sellerId: e.value.sellerId),
+                              sellerId: e.value.sellerId, lang: lang),
                       ],
                     )
                         .animate(delay: (e.key * 100).ms)
@@ -296,7 +318,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   ),
                 )
           else
-            _IdleHelp(),
+            _IdleHelp(lang: lang),
         ],
       ),
     );
@@ -333,10 +355,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 // ── Seller result: the SafeBuy verification-card style result ─────────────────
 
 class _SellerResultCard extends StatelessWidget {
-  const _SellerResultCard({required this.seller, required this.isGuest});
+  const _SellerResultCard(
+      {required this.seller, required this.isGuest, required this.lang});
 
   final SellerModel seller;
   final bool isGuest;
+  final String lang;
+
+  String t(String en, String ne) => _tr(lang, en, ne);
 
   int get _monthsActive {
     final days =
@@ -349,31 +375,46 @@ class _SellerResultCard extends StatelessWidget {
       case 'trusted':
         return (
           Icons.check_circle_rounded,
-          'TRUSTED SELLER',
-          'This seller has a strong track record. '
-              '${seller.reviewCount} community reviews, '
-              '$_monthsActive months active, '
-              '${seller.scamReportCount == 0 ? 'zero complaints' : 'only ${seller.scamReportCount} complaint(s)'}.',
+          t('TRUSTED SELLER', 'भरपर्दो विक्रेता'),
+          t(
+            'This seller has a strong track record. '
+                '${seller.reviewCount} community reviews, '
+                '$_monthsActive months active, '
+                '${seller.scamReportCount == 0 ? 'zero complaints' : 'only ${seller.scamReportCount} complaint(s)'}.',
+            'यो विक्रेताको राम्रो रेकर्ड छ। '
+                '${seller.reviewCount} समुदाय समीक्षा, '
+                '$_monthsActive महिना सक्रिय, '
+                '${seller.scamReportCount == 0 ? 'कुनै उजुरी छैन' : 'जम्मा ${seller.scamReportCount} उजुरी'}।',
+          ),
           AppColors.trusted,
           AppColors.trustedBg,
         );
       case 'high_risk':
         return (
           Icons.cancel_rounded,
-          'HIGH RISK: DO NOT PAY',
-          'WARNING: ${seller.scamReportCount} fraud '
-              'complaint${seller.scamReportCount == 1 ? ' has' : 's have'} '
-              'been filed against this seller. We strongly recommend '
-              'not paying this seller.',
+          t('HIGH RISK: DO NOT PAY', 'उच्च जोखिम: भुक्तानी नगर्नुहोस्'),
+          t(
+            'WARNING: ${seller.scamReportCount} fraud '
+                'complaint${seller.scamReportCount == 1 ? ' has' : 's have'} '
+                'been filed against this seller. We strongly recommend '
+                'not paying this seller.',
+            'चेतावनी: यो विक्रेताविरुद्ध ${seller.scamReportCount} ठगी '
+                'उजुरी दर्ता भएका छन्। यो विक्रेतालाई भुक्तानी नगर्न '
+                'हामी दृढतापूर्वक सिफारिस गर्छौं।',
+          ),
           AppColors.highRisk,
           AppColors.highRiskBg,
         );
       default:
         return (
           Icons.help_rounded,
-          'UNVERIFIED SELLER',
-          'This seller has not been fully verified. Proceed with '
-              'caution. Ask for video call proof before paying.',
+          t('UNVERIFIED SELLER', 'अप्रमाणित विक्रेता'),
+          t(
+            'This seller has not been fully verified. Proceed with '
+                'caution. Ask for video call proof before paying.',
+            'यो विक्रेता पूर्ण रूपमा प्रमाणित छैन। सावधानीका साथ '
+                'अगाडि बढ्नुहोस्। भुक्तानी अघि भिडियो कल प्रमाण माग्नुहोस्।',
+          ),
           AppColors.unverified,
           AppColors.unverifiedBg,
         );
@@ -489,10 +530,10 @@ class _SellerResultCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       seller.trustVerdict == 'trusted'
-                          ? 'TRUSTED'
+                          ? t('TRUSTED', 'भरपर्दो')
                           : seller.trustVerdict == 'high_risk'
-                              ? 'HIGH RISK'
-                              : 'UNVERIFIED',
+                              ? t('HIGH RISK', 'उच्च जोखिम')
+                              : t('UNVERIFIED', 'अप्रमाणित'),
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 8.5,
@@ -565,7 +606,7 @@ class _SellerResultCard extends StatelessWidget {
                   children: [
                     const Text('📅 ', style: TextStyle(fontSize: 13)),
                     Text(
-                      'Member since: ${DateFormat('MMMM yyyy').format(seller.accountCreatedAt)}',
+                      '${t('Member since', 'सदस्य भएदेखि')}: ${DateFormat('MMMM yyyy').format(seller.accountCreatedAt)}',
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -582,10 +623,11 @@ class _SellerResultCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         seller.verificationExpiry == null
-                            ? 'Not yet verified'
+                            ? t('Not yet verified', 'अझै प्रमाणित छैन')
                             : overdue
-                                ? 'Re-verification Overdue'
-                                : 'Verified until: ${DateFormat('dd MMM yyyy').format(seller.verificationExpiry!)}',
+                                ? t('Re-verification Overdue',
+                                    'पुन:प्रमाणीकरण बाँकी')
+                                : '${t('Verified until', 'सम्म प्रमाणित')}: ${DateFormat('dd MMM yyyy').format(seller.verificationExpiry!)}',
                         style: GoogleFonts.inter(
                           fontSize: 12.5,
                           fontWeight:
@@ -618,8 +660,8 @@ class _SellerResultCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         tier == 'none'
-                            ? 'Verification Pending'
-                            : '${TierStyle.label(tier)} Seller',
+                            ? t('Verification Pending', 'प्रमाणीकरण बाँकी')
+                            : '${TierStyle.label(tier)} ${t('Seller', 'विक्रेता')}',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -648,13 +690,13 @@ class _SellerResultCard extends StatelessWidget {
                     if (seller.facebookHandle?.isNotEmpty == true)
                       _social('👥 Facebook'),
                     const Spacer(),
-                    Text('⭐ ${seller.reviewCount} Reviews',
+                    Text('⭐ ${seller.reviewCount} ${t('Reviews', 'समीक्षा')}',
                         style: GoogleFonts.inter(
                             fontSize: 11.5,
                             color: AppColors.textSecondary)),
                     const SizedBox(width: 10),
                     Text(
-                      '📋 ${seller.scamReportCount} Complaints',
+                      '📋 ${seller.scamReportCount} ${t('Complaints', 'उजुरी')}',
                       style: GoogleFonts.inter(
                         fontSize: 11.5,
                         fontWeight: seller.scamReportCount > 0
@@ -695,7 +737,9 @@ class _SellerResultCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text('🔒 This QR is locked by SafeBuy Nepal, safe to use',
+                  Text(
+                      t('🔒 This QR is locked by SafeBuy Nepal, safe to use',
+                          '🔒 यो QR SafeBuy Nepal द्वारा लक गरिएको, प्रयोग गर्न सुरक्षित'),
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -722,7 +766,8 @@ class _SellerResultCard extends StatelessWidget {
                         },
                         style: OutlinedButton.styleFrom(
                             minimumSize: const Size(0, 46)),
-                        child: const Text('View Full Profile'),
+                        child: Text(
+                            t('View Full Profile', 'पूरा प्रोफाइल हेर्नुहोस्')),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -747,8 +792,9 @@ class _SellerResultCard extends StatelessWidget {
                               color: AppColors.highRisk, width: 1.5),
                         ),
                         child: Text(isGuest
-                            ? 'Sign in to Report'
-                            : 'Report This Seller'),
+                            ? t('Sign in to Report', 'उजुरीका लागि साइन इन')
+                            : t('Report This Seller',
+                                'यो विक्रेता उजुरी गर्नुहोस्')),
                       ),
                     ),
                   ],
@@ -774,9 +820,12 @@ class _SellerResultCard extends StatelessWidget {
 // ── Not-found card ─────────────────────────────────────────────────────────────
 
 class _NotFoundCard extends StatelessWidget {
-  const _NotFoundCard({required this.query});
+  const _NotFoundCard({required this.query, required this.lang});
 
   final String query;
+  final String lang;
+
+  String t(String en, String ne) => _tr(lang, en, ne);
 
   @override
   Widget build(BuildContext context) {
@@ -800,7 +849,10 @@ class _NotFoundCard extends StatelessWidget {
                 color: AppColors.unverified, size: 32),
           ),
           const SizedBox(height: 14),
-          Text('Seller not found on SafeBuy Nepal',
+          Text(
+              t('Seller not found on SafeBuy Nepal',
+                  'SafeBuy Nepal मा विक्रेता भेटिएन'),
+              textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 15.5,
                 fontWeight: FontWeight.w600,
@@ -819,8 +871,11 @@ class _NotFoundCard extends StatelessWidget {
                   color: AppColors.unverified.withValues(alpha: 0.35)),
             ),
             child: Text(
-              'This does not mean they are fraudulent. They may '
-              'simply not be registered yet.',
+              t(
+                  'This does not mean they are fraudulent. They may '
+                      'simply not be registered yet.',
+                  'यसको मतलब उनीहरू ठग हुन् भन्ने होइन। सायद उनीहरू '
+                      'अझै दर्ता भएका छैनन्।'),
               style: GoogleFonts.inter(
                 fontSize: 12.5,
                 color: AppColors.textPrimary,
@@ -841,7 +896,9 @@ class _NotFoundCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Safety tips when buying from unverified sellers:',
+                Text(
+                    t('Safety tips when buying from unverified sellers:',
+                        'अप्रमाणित विक्रेतासँग किन्दा सुरक्षा सुझाव:'),
                     style: GoogleFonts.poppins(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
@@ -849,11 +906,15 @@ class _NotFoundCard extends StatelessWidget {
                     )),
                 const SizedBox(height: 8),
                 ...[
-                  'Ask for a video call showing the real product',
-                  'Start with a small test order under NPR 500',
-                  'Never pay the full amount before seeing proof of dispatch',
-                  'Screenshot everything before and after payment',
-                ].map((t) => Padding(
+                  t('Ask for a video call showing the real product',
+                      'साँचो सामान देखाउने भिडियो कल माग्नुहोस्'),
+                  t('Start with a small test order under NPR 500',
+                      'NPR ५०० भन्दा कमको सानो अर्डरबाट सुरु गर्नुहोस्'),
+                  t('Never pay the full amount before seeing proof of dispatch',
+                      'पठाएको प्रमाण नदेखी पूरा रकम कहिल्यै नतिर्नुहोस्'),
+                  t('Screenshot everything before and after payment',
+                      'भुक्तानी अघि र पछि सबै कुराको स्क्रिनसट लिनुहोस्'),
+                ].map((tip) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -862,7 +923,7 @@ class _NotFoundCard extends StatelessWidget {
                               size: 14, color: AppColors.primary),
                           const SizedBox(width: 6),
                           Expanded(
-                            child: Text(t,
+                            child: Text(tip,
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   color: AppColors.textPrimary,
@@ -896,9 +957,11 @@ class _NotFoundCard extends StatelessWidget {
                     foregroundColor: AppColors.highRisk,
                     side: const BorderSide(color: AppColors.highRisk),
                   ),
-                  child: const Text('Report if you were scammed',
+                  child: Text(
+                      t('Report if you were scammed',
+                          'ठगिनुभएको भए उजुरी गर्नुहोस्'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12.5)),
+                      style: const TextStyle(fontSize: 12.5)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -915,9 +978,11 @@ class _NotFoundCard extends StatelessWidget {
                   },
                   style: OutlinedButton.styleFrom(
                       minimumSize: const Size(0, 46)),
-                  child: const Text('This is my business? Register',
+                  child: Text(
+                      t('This is my business? Register',
+                          'यो मेरो व्यवसाय हो? दर्ता गर्नुहोस्'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12.5)),
+                      style: const TextStyle(fontSize: 12.5)),
                 ),
               ),
             ],
@@ -931,8 +996,13 @@ class _NotFoundCard extends StatelessWidget {
 // ── Idle helper ────────────────────────────────────────────────────────────────
 
 class _IdleHelp extends StatelessWidget {
+  const _IdleHelp({required this.lang});
+
+  final String lang;
+
   @override
   Widget build(BuildContext context) {
+    String t(String en, String ne) => _tr(lang, en, ne);
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -945,7 +1015,10 @@ class _IdleHelp extends StatelessWidget {
           const Icon(Icons.travel_explore_rounded,
               size: 56, color: AppColors.primary200),
           const SizedBox(height: 14),
-          Text('Verify any seller before you pay',
+          Text(
+              t('Verify any seller before you pay',
+                  'भुक्तानी अघि जुनसुकै विक्रेता जाँच्नुहोस्'),
+              textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -953,9 +1026,13 @@ class _IdleHelp extends StatelessWidget {
               )),
           const SizedBox(height: 6),
           Text(
-            'Enter a phone number (98XXXXXXXX), eSewa ID, or a '
-            'social media handle like @seller_np to see their '
-            'trust score and verification card.',
+            t(
+                'Enter a phone number (98XXXXXXXX), eSewa ID, or a '
+                    'social media handle like @seller_np to see their '
+                    'trust score and verification card.',
+                'फोन नम्बर (98XXXXXXXX), eSewa आईडी, वा @seller_np '
+                    'जस्तो सोशल मिडिया ह्यान्डल हालेर उनीहरूको ट्रस्ट '
+                    'स्कोर र प्रमाणीकरण कार्ड हेर्नुहोस्।'),
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 12.5,
@@ -974,9 +1051,10 @@ class _IdleHelp extends StatelessWidget {
 /// Interactive 5-step safety checklist shown under unverified search
 /// results. Check state and dismissal live for the app session only.
 class _BeforeYouPayChecklist extends StatefulWidget {
-  const _BeforeYouPayChecklist({required this.sellerId});
+  const _BeforeYouPayChecklist({required this.sellerId, required this.lang});
 
   final String sellerId;
+  final String lang;
 
   /// Session-scoped state, keyed by sellerId.
   static final Set<String> _dismissed = {};
@@ -988,13 +1066,20 @@ class _BeforeYouPayChecklist extends StatefulWidget {
 }
 
 class _BeforeYouPayChecklistState extends State<_BeforeYouPayChecklist> {
-  static const _steps = [
-    'Ask for a video call showing the actual product',
-    'Check their Instagram/TikTok comments for complaints',
-    'Start with a small test order under NPR 500',
-    'Screenshot their profile and QR before paying',
-    'Never pay the full amount before dispatch',
-  ];
+  String t(String en, String ne) => _tr(widget.lang, en, ne);
+
+  List<String> get _steps => [
+        t('Ask for a video call showing the actual product',
+            'साँचो सामान देखाउने भिडियो कल माग्नुहोस्'),
+        t('Check their Instagram/TikTok comments for complaints',
+            'उनीहरूको Instagram/TikTok कमेन्टमा उजुरी जाँच्नुहोस्'),
+        t('Start with a small test order under NPR 500',
+            'NPR ५०० भन्दा कमको सानो अर्डरबाट सुरु गर्नुहोस्'),
+        t('Screenshot their profile and QR before paying',
+            'भुक्तानी अघि उनीहरूको प्रोफाइल र QR स्क्रिनसट लिनुहोस्'),
+        t('Never pay the full amount before dispatch',
+            'पठाउनु अघि पूरा रकम कहिल्यै नतिर्नुहोस्'),
+      ];
 
   Set<int> get _done =>
       _BeforeYouPayChecklist._checked.putIfAbsent(widget.sellerId, () => {});
@@ -1034,8 +1119,10 @@ class _BeforeYouPayChecklistState extends State<_BeforeYouPayChecklist> {
               Expanded(
                 child: Text(
                   allDone
-                      ? 'You have completed all safety steps'
-                      : 'Unverified Seller: Check These Before Paying',
+                      ? t('You have completed all safety steps',
+                          'तपाईंले सबै सुरक्षा चरण पूरा गर्नुभयो')
+                      : t('Unverified Seller: Check These Before Paying',
+                          'अप्रमाणित विक्रेता: भुक्तानी अघि यी जाँच्नुहोस्'),
                   style: GoogleFonts.poppins(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
@@ -1045,7 +1132,7 @@ class _BeforeYouPayChecklistState extends State<_BeforeYouPayChecklist> {
                   ),
                 ),
               ),
-              Text('${_done.length} of ${_steps.length}',
+              Text('${_done.length} ${t('of', '/')} ${_steps.length}',
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
@@ -1069,7 +1156,9 @@ class _BeforeYouPayChecklistState extends State<_BeforeYouPayChecklist> {
           if (allDone)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text('You are better protected now.',
+              child: Text(
+                  t('You are better protected now.',
+                      'अब तपाईं बढी सुरक्षित हुनुहुन्छ।'),
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -1128,7 +1217,8 @@ class _BeforeYouPayChecklistState extends State<_BeforeYouPayChecklist> {
                 setState(() => _BeforeYouPayChecklist._dismissed
                     .add(widget.sellerId));
               },
-              child: Text('I understand the risks',
+              child: Text(
+                  t('I understand the risks', 'मैले जोखिम बुझें'),
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,

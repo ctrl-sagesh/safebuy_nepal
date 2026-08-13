@@ -14,6 +14,7 @@ import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/phone_extractor.dart';
 import 'core/utils/popup_helper.dart';
+import 'providers/language_provider.dart';
 
 // Screens
 import 'features/splash/splash_screen.dart';
@@ -389,6 +390,8 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = ref.watch(languageProvider);
+    String t(String en, String ne) => lang == 'ne' ? ne : en;
     final screens = [
       HomeScreen(
         onSearchTap: ([String? query]) {
@@ -403,8 +406,22 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
       const ProfileScreen(),
     ];
 
+    // IndexedStack keeps all four tabs mounted so their scroll position and
+    // state survive tab switches. The downside is that a hidden tab's
+    // animations keep ticking; TickerMode freezes every tab except the
+    // visible one, and a RepaintBoundary keeps each tab's repaints from
+    // dirtying its neighbours. Together these remove the background frame
+    // cost that made tab switches and back-navigation feel laggy.
+    final wrappedScreens = [
+      for (var i = 0; i < screens.length; i++)
+        TickerMode(
+          enabled: i == _selectedIndex,
+          child: RepaintBoundary(child: screens[i]),
+        ),
+    ];
+
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: screens),
+      body: IndexedStack(index: _selectedIndex, children: wrappedScreens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -428,34 +445,34 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
           indicatorColor: AppColors.primary.withValues(alpha: 0.12),
           labelBehavior:
               NavigationDestinationLabelBehavior.onlyShowSelected,
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Icons.home_outlined, size: 24),
-              selectedIcon: _BounceIn(
+              icon: const Icon(Icons.home_outlined, size: 24),
+              selectedIcon: const _BounceIn(
                   child: Icon(Icons.home_rounded,
                       color: AppColors.primary, size: 24)),
-              label: 'Home',
+              label: t('Home', 'गृह'),
             ),
             NavigationDestination(
-              icon: Icon(Icons.verified_user_outlined, size: 24),
-              selectedIcon: _BounceIn(
+              icon: const Icon(Icons.verified_user_outlined, size: 24),
+              selectedIcon: const _BounceIn(
                   child: Icon(Icons.verified_user_rounded,
                       color: AppColors.primary, size: 24)),
-              label: 'Verify',
+              label: t('Verify', 'जाँच'),
             ),
             NavigationDestination(
-              icon: Icon(Icons.notifications_none_rounded, size: 24),
-              selectedIcon: _BounceIn(
+              icon: const Icon(Icons.notifications_none_rounded, size: 24),
+              selectedIcon: const _BounceIn(
                   child: Icon(Icons.notifications_rounded,
                       color: AppColors.primary, size: 24)),
-              label: 'Alerts',
+              label: t('Alerts', 'सतर्कता'),
             ),
             NavigationDestination(
-              icon: Icon(Icons.person_outline_rounded, size: 24),
-              selectedIcon: _BounceIn(
+              icon: const Icon(Icons.person_outline_rounded, size: 24),
+              selectedIcon: const _BounceIn(
                   child: Icon(Icons.person_rounded,
                       color: AppColors.primary, size: 24)),
-              label: 'Profile',
+              label: t('Profile', 'प्रोफाइल'),
             ),
           ],
         ),

@@ -69,7 +69,7 @@ out/
 .cache/
 logs/
 exports/
-reports/
+/reports/
 *.log
 *.db
 *.sqlite

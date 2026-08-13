@@ -49,31 +49,35 @@ class _PulseGlowState extends State<PulseGlow>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _pulse,
-      builder: (context, child) {
-        final t = Curves.easeInOut.transform(_pulse.value);
-        final opacity = widget.minOpacity +
-            (widget.maxOpacity - widget.minOpacity) * t;
-        final scale = 1 + (widget.maxScale - 1) * t;
-        return Transform.scale(
-          scale: scale,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: widget.color.withValues(alpha: opacity),
-                  blurRadius: 14,
-                  spreadRadius: 1,
-                ),
-              ],
+    // RepaintBoundary keeps this small badge's per-frame shadow repaint
+    // from invalidating the card it sits on.
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _pulse,
+        builder: (context, child) {
+          final t = Curves.easeInOut.transform(_pulse.value);
+          final opacity = widget.minOpacity +
+              (widget.maxOpacity - widget.minOpacity) * t;
+          final scale = 1 + (widget.maxScale - 1) * t;
+          return Transform.scale(
+            scale: scale,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.color.withValues(alpha: opacity),
+                    blurRadius: 14,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: child,
             ),
-            child: child,
-          ),
-        );
-      },
-      child: widget.child,
+          );
+        },
+        child: widget.child,
+      ),
     );
   }
 }

@@ -63,9 +63,20 @@ class DhakaPatternPainter extends CustomPainter {
       old.cell != cell;
 }
 
-/// Self-animating Dhaka overlay: position it inside a [Stack] with
-/// `Positioned.fill`. Drifts one pattern cell every [period].
-class AnimatedDhakaPattern extends StatefulWidget {
+/// Static Dhaka overlay: position it inside a [Stack] with
+/// `Positioned.fill`.
+///
+/// This used to drift one cell every few seconds via a repeating
+/// [AnimationController], which meant the (fairly expensive) diamond
+/// painter re-ran on *every* frame for as long as any screen showing it
+/// was alive — including the three background tabs kept alive by the
+/// home shell's [IndexedStack]. That constant repaint was a major source
+/// of navigation jank, so the pattern is now painted once and isolated
+/// in a [RepaintBoundary]; the drift is not worth the frame budget.
+///
+/// The [period] parameter is retained for call-site compatibility but no
+/// longer has any effect.
+class AnimatedDhakaPattern extends StatelessWidget {
   const AnimatedDhakaPattern({
     super.key,
     this.color = Colors.white,
@@ -78,32 +89,15 @@ class AnimatedDhakaPattern extends StatefulWidget {
   final Duration period;
 
   @override
-  State<AnimatedDhakaPattern> createState() => _AnimatedDhakaPatternState();
-}
-
-class _AnimatedDhakaPatternState extends State<AnimatedDhakaPattern>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _drift =
-      AnimationController(vsync: this, duration: widget.period)..repeat();
-
-  @override
-  void dispose() {
-    _drift.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: ClipRect(
-        child: AnimatedBuilder(
-          animation: _drift,
-          builder: (context, _) => CustomPaint(
+        child: RepaintBoundary(
+          child: CustomPaint(
             size: Size.infinite,
             painter: DhakaPatternPainter(
-              color: widget.color,
-              opacity: widget.opacity,
-              shift: _drift.value,
+              color: color,
+              opacity: opacity,
             ),
           ),
         ),
