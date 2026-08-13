@@ -20,15 +20,16 @@
  * (lib/models/*.dart, lib/features/*).
  */
 
-const admin = require('firebase-admin');
-const serviceAccount = require('../firebase.json');
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getFirestore, Timestamp } = require('firebase-admin/firestore');
+const serviceAccount = require('../firebasee.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+initializeApp({
+  credential: cert(serviceAccount),
 });
 
-const db = admin.firestore();
-const { Timestamp } = admin.firestore;
+const db = getFirestore();
+const admin = { firestore: { Timestamp } };
 
 // ── Time helpers ──────────────────────────────────────────────────────────────
 function monthsAgo(n) {
@@ -368,7 +369,7 @@ async function seedSellers() {
       id: 'sagesh_store',
       data: {
         sellerId: 'sagesh_store',
-        name: 'Sagesh Adhikari',
+        name: 'Everest Electronics',
         phone: '9828046299',
         phoneNumber: '9828046299',
         esewaId: '9828046299',
@@ -388,7 +389,7 @@ async function seedSellers() {
         lastActiveAt: daysAgo(1),
         updatedAt: daysAgo(1),
         disputeResponseRate: 1.0,
-        businessName: 'Sagesh Electronics',
+        businessName: 'Everest Electronics',
         businessCategory: 'Electronics & Gadgets',
         profileImageUrl: '',
         description:
@@ -886,6 +887,13 @@ async function linkAdminSeller() {
     await ref.set({ linkedSellerId: 'sagesh_store' }, { merge: true });
     console.log(`  update users/${uid} linkedSellerId = sagesh_store`);
     stats.created++;
+    // Refresh the business display name even if the seller doc already
+    // exists (idempotent seeding otherwise skips it).
+    await db.collection('sellers').doc('sagesh_store').set(
+      { name: 'Everest Electronics', businessName: 'Everest Electronics' },
+      { merge: true }
+    );
+    console.log('  update sellers/sagesh_store business name');
   } else {
     console.log(
       `  warn   users/${uid} does not exist yet — sign in once with the ` +

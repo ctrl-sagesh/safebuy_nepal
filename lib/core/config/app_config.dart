@@ -17,8 +17,8 @@ class AppConfig {
   /// Demo-only affordances (seed data, quick-search chips) — debug builds only.
   static const bool showDemoFeatures = kDebugMode;
 
-  static const String appVersion = '1.3.0';
-  static const String buildNumber = '5';
+  static const String appVersion = '1.3.1';
+  static const String buildNumber = '6';
 
   // Demo seller phone numbers for the thesis quick-search demo.
   static const String demoTrustedSeller = '9841234567'; // Priya Fashions (87)

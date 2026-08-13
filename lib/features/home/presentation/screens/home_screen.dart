@@ -13,6 +13,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/services/festival_alert_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/dhaka_pattern.dart';
+import '../../../../core/widgets/nepal_logo.dart';
 import '../../../../core/utils/popup_helper.dart';
 import '../../../../core/widgets/verification_card.dart';
 import '../../../../models/leaderboard_model.dart';
@@ -246,19 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
-        title: Row(
-          children: [
-            const Icon(Icons.shield_rounded,
-                color: AppColors.primary, size: 24),
-            const SizedBox(width: 8),
-            Text('SafeBuy Nepal',
-                style: GoogleFonts.poppins(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                )),
-          ],
-        ),
+        title: const SafeBuyWordmark(height: 30),
         actions: [
           IconButton(
             tooltip: 'Help',

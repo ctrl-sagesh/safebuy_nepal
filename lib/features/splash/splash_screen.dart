@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/dhaka_pattern.dart';
+import '../../core/widgets/nepal_logo.dart';
 
 /// SafeBuy Nepal splash — a 4-second branded sequence that tells a
 /// stranger what the app is before the first screen loads. Driven by a
@@ -92,8 +93,6 @@ class _SplashScreenState extends State<SplashScreen>
       body: AnimatedBuilder(
         animation: _c,
         builder: (context, _) {
-          final drawT = _seg(0.0, 0.6);
-          final fillT = Curves.easeOut.transform(_seg(0.6, 1.0));
           final pulseT = Curves.easeOutBack.transform(_seg(0.6, 1.0));
           final nameT = Curves.easeOutCubic.transform(_seg(1.0, 1.5));
           final tagT = Curves.easeOut.transform(_seg(1.5, 2.0));
@@ -138,35 +137,12 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // SafeBuy shield: outline draws, then fills with the
-                    // Nepal accent and its pennant, pulsing 0.9 -> 1.0.
+                    // SafeBuy Nepal brand logo, fading + scaling in.
                     Transform.scale(
                       scale: 0.9 + 0.1 * pulseT,
-                      child: SizedBox(
-                        width: 90,
-                        height: 90,
-                        child: CustomPaint(
-                          painter: _ShieldLogoPainter(
-                            drawProgress: drawT,
-                            fillProgress: fillT,
-                          ),
-                          child: Center(
-                            child: Opacity(
-                              opacity: fillT,
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  'SB',
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white,
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                      child: Opacity(
+                        opacity: Curves.easeOut.transform(_seg(0.0, 0.9)),
+                        child: const NepalLogo(size: 96),
                       ),
                     ),
                     const SizedBox(height: 26),
@@ -278,126 +254,6 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
   }
-}
-
-// ── SafeBuy shield logo ────────────────────────────────────────────────────────
-//
-// White shield outline that draws itself, then fills with a glass white.
-// Inside: a crimson-and-blue Nepal accent band. On the top right of the
-// shield, a small Nepal double-pennant flag on a pole.
-
-class _ShieldLogoPainter extends CustomPainter {
-  _ShieldLogoPainter({
-    required this.drawProgress,
-    required this.fillProgress,
-  });
-
-  final double drawProgress;
-  final double fillProgress;
-
-  static const _crimson = Color(0xFFDC143C);
-  static const _flagBlue = Color(0xFF003893);
-
-  Path _shieldPath(Size size) {
-    final w = size.width;
-    final h = size.height;
-    return Path()
-      ..moveTo(w * 0.5, h * 0.05)
-      ..cubicTo(w * 0.38, h * 0.12, w * 0.16, h * 0.15, w * 0.08, h * 0.16)
-      ..lineTo(w * 0.08, h * 0.52)
-      ..cubicTo(w * 0.08, h * 0.74, w * 0.30, h * 0.89, w * 0.5, h * 0.96)
-      ..cubicTo(w * 0.70, h * 0.89, w * 0.92, h * 0.74, w * 0.92, h * 0.52)
-      ..lineTo(w * 0.92, h * 0.16)
-      ..cubicTo(w * 0.84, h * 0.15, w * 0.62, h * 0.12, w * 0.5, h * 0.05)
-      ..close();
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final path = _shieldPath(size);
-
-    // Glass fill once the outline has drawn.
-    if (fillProgress > 0) {
-      canvas.drawPath(
-        path,
-        Paint()..color = Colors.white.withValues(alpha: 0.16 * fillProgress),
-      );
-
-      // Nepal accent: crimson band with a thin flag-blue edge, clipped
-      // to the shield, sitting under the "SB" monogram.
-      canvas.save();
-      canvas.clipPath(path);
-      final bandTop = h * 0.68;
-      canvas.drawRect(
-        Rect.fromLTRB(0, bandTop, w, bandTop + h * 0.09),
-        Paint()..color = _crimson.withValues(alpha: 0.9 * fillProgress),
-      );
-      canvas.drawRect(
-        Rect.fromLTRB(0, bandTop - h * 0.025, w, bandTop),
-        Paint()..color = _flagBlue.withValues(alpha: 0.9 * fillProgress),
-      );
-      canvas.restore();
-    }
-
-    // Outline draws itself stroke by stroke.
-    if (drawProgress > 0) {
-      final stroke = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5
-        ..strokeCap = StrokeCap.round;
-      if (drawProgress >= 1) {
-        canvas.drawPath(path, stroke);
-      } else {
-        for (final metric in path.computeMetrics()) {
-          canvas.drawPath(
-            metric.extractPath(0, metric.length * drawProgress),
-            stroke,
-          );
-        }
-      }
-    }
-
-    // Small Nepal double-pennant on a pole at the shield's top right.
-    if (fillProgress > 0) {
-      final alpha = fillProgress;
-      final poleX = w * 0.94;
-      final poleTop = h * 0.02;
-      final poleBottom = h * 0.20;
-      canvas.drawLine(
-        Offset(poleX, poleTop),
-        Offset(poleX, poleBottom),
-        Paint()
-          ..color = Colors.white.withValues(alpha: alpha)
-          ..strokeWidth = 1.6
-          ..strokeCap = StrokeCap.round,
-      );
-      final pennant = Path()
-        ..moveTo(poleX, poleTop)
-        ..lineTo(poleX + w * 0.14, h * 0.055)
-        ..lineTo(poleX, h * 0.085)
-        ..lineTo(poleX + w * 0.14, h * 0.125)
-        ..lineTo(poleX, h * 0.16)
-        ..close();
-      canvas.drawPath(
-        pennant,
-        Paint()..color = _crimson.withValues(alpha: alpha),
-      );
-      canvas.drawPath(
-        pennant,
-        Paint()
-          ..color = _flagBlue.withValues(alpha: alpha)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.1,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ShieldLogoPainter old) =>
-      old.drawProgress != drawProgress || old.fillProgress != fillProgress;
 }
 
 // ── Floating particles ─────────────────────────────────────────────────────────

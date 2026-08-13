@@ -660,7 +660,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
           // Share my SafeBuy profile so buyers can verify me instantly
           SizedBox(
-            height: 48,
+            height: 52,
             child: OutlinedButton.icon(
               onPressed: () {
                 HapticFeedback.lightImpact();
@@ -671,7 +671,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 side: const BorderSide(color: AppColors.primary, width: 1.5),
               ),
               icon: const Icon(Icons.ios_share_rounded, size: 18),
-              label: const Text('Share My SafeBuy Profile'),
+              label: Text('Share My SafeBuy Profile',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  )),
             ),
           ),
           const SizedBox(height: 12),

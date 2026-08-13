@@ -117,14 +117,16 @@ class FirestoreService {
 
   Future<List<ReportModel>> getReportsForSeller(String sellerId) async {
     try {
+      // Sorted client-side so no composite (sellerId + submittedAt) index is
+      // required — the equality filter alone needs no custom index.
       final snap = await _db
           .collection(AppConstants.colReports)
           .where('sellerId', isEqualTo: sellerId)
-          .orderBy('submittedAt', descending: true)
           .get();
-      return snap.docs
-          .map((d) => ReportModel.fromFirestore(d))
-          .toList();
+      final reports =
+          snap.docs.map((d) => ReportModel.fromFirestore(d)).toList();
+      reports.sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
+      return reports;
     } catch (e) {
       return [];
     }
@@ -190,14 +192,16 @@ class FirestoreService {
 
   Future<List<ReviewModel>> getReviewsForSeller(String sellerId) async {
     try {
+      // Sorted client-side so no composite (sellerId + createdAt) index is
+      // required — this is what caused review lists to appear empty before.
       final snap = await _db
           .collection(AppConstants.colReviews)
           .where('sellerId', isEqualTo: sellerId)
-          .orderBy('createdAt', descending: true)
           .get();
-      return snap.docs
-          .map((d) => ReviewModel.fromFirestore(d))
-          .toList();
+      final reviews =
+          snap.docs.map((d) => ReviewModel.fromFirestore(d)).toList();
+      reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return reviews;
     } catch (e) {
       return [];
     }
