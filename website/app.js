@@ -7,7 +7,10 @@
 (function () {
   'use strict';
 
-  var LS_SELLERS = 'sb_sellers_v2';
+  // Bumped to v3 when the demo roster was re-synced to the app's real
+  // sellers — this makes returning visitors drop their cached v2 data and
+  // load the fresh roster automatically instead of showing stale sellers.
+  var LS_SELLERS = 'sb_sellers_v3';
   var LS_USER = 'sb_user_v1';
 
   // ── Severity weights for the report-severity factor (40%) ───────────────
@@ -26,9 +29,9 @@
   function seed() {
     return [
       {
-        id: 'priya', name: 'Priya Fashions', handle: '@priya_fashions',
-        phone: '9841234567', platform: 'Instagram', category: 'Clothing & Fashion',
-        verified: true, accountAgeDays: 540,
+        id: 'priya', name: 'Priya Fashions', handle: '@priyafashionsktm',
+        phone: '9841234567', platform: 'TikTok', category: 'Clothing & Fashion',
+        verified: true, accountAgeDays: 240,
         reports: [],
         reviews: [
           { id: 'r1', rating: 5, comment: 'Genuine seller, delivered my kurtha on time with original packaging.', evidence: true, reporter: 'Anita', date: daysAgo(20),
@@ -38,73 +41,100 @@
         ]
       },
       {
-        id: 'quickbuy', name: 'QuickBuy Electronics', handle: '@quickbuy_np',
-        phone: '9801112233', platform: 'TikTok', category: 'Electronics & Gadgets',
-        verified: false, accountAgeDays: 35,
+        id: 'quickbuy', name: 'QuickBuy Electronics', handle: '@quickbuy.electronics',
+        phone: '9871234570', platform: 'TikTok', category: 'Electronics & Gadgets',
+        verified: false, accountAgeDays: 45,
         reports: [
           { id: 'p1', type: 'no_delivery', amount: 8500, platform: 'TikTok', desc: 'Saw a "smart watch" on TikTok, moved to WhatsApp, paid Rs 8,500 advance via QR. Never delivered, then blocked me.', evidence: true, reporter: 'Verified buyer #4821', date: daysAgo(15),
             proof: [
               { kind: 'chat', app: 'WhatsApp', scenario: 'blocked', seller: 'QuickBuy Electronics', item: 'the smart watch', amount: 8500 },
-              { kind: 'payment', method: 'eSewa', amount: 8500, to: 'QuickBuy Electronics', id: '9801112233', ref: 'ESW8842190', when: '15 days ago' }
+              { kind: 'payment', method: 'eSewa', amount: 8500, to: 'QuickBuy Electronics', id: '9871234570', ref: 'ESW8842190', when: '15 days ago' }
             ] },
           { id: 'p2', type: 'no_delivery', amount: 12000, platform: 'WhatsApp', desc: 'Advance payment of Rs 12,000 taken for earbuds, account disappeared right after.', evidence: true, reporter: 'Verified buyer #7732', date: daysAgo(9),
             proof: [
-              { kind: 'payment', method: 'Khalti', amount: 12000, to: 'QuickBuy Electronics', id: '9801112233', ref: 'KHL771203', when: '9 days ago' },
+              { kind: 'payment', method: 'Khalti', amount: 12000, to: 'QuickBuy Electronics', id: '9871234570', ref: 'KHL771203', when: '9 days ago' },
               { kind: 'chat', app: 'WhatsApp', scenario: 'blocked', seller: 'QuickBuy Electronics', item: 'the earbuds', amount: 12000 }
             ] },
           { id: 'p3', type: 'payment_issue', amount: 5000, platform: 'TikTok', desc: 'Sent eSewa payment of Rs 5,000, no response for weeks.', evidence: true, reporter: 'Verified buyer #1290', date: daysAgo(4),
             proof: [
-              { kind: 'payment', method: 'eSewa', amount: 5000, to: 'QuickBuy Electronics', id: '9801112233', ref: 'ESW1290055', when: '3 weeks ago' }
+              { kind: 'payment', method: 'eSewa', amount: 5000, to: 'QuickBuy Electronics', id: '9871234570', ref: 'ESW1290055', when: '3 weeks ago' }
             ] },
           { id: 'p4', type: 'fake_product', amount: 6500, platform: 'Instagram', desc: 'Received a fake charger instead of the branded one shown in the video.', evidence: true, reporter: 'Verified buyer #5567', date: daysAgo(2),
             proof: [
               { kind: 'chat', app: 'Instagram', scenario: 'wrongitem', seller: 'QuickBuy Electronics', item: 'the original charger', amount: 6500 }
             ] }
         ],
-        reviews: []
+        reviews: [
+          { id: 'qv1', rating: 2, comment: 'Item not as described and getting any refund was a real struggle.', evidence: true, reporter: 'Ramesh', date: daysAgo(5),
+            proof: [ { kind: 'chat', app: 'TikTok', scenario: 'wrongitem', seller: 'QuickBuy Electronics', item: 'the advertised watch', amount: 8500 } ] },
+          { id: 'qv2', rating: 2, comment: 'Slow replies, product quality was poor. Would not order again.', evidence: false, reporter: 'Nabin', date: daysAgo(3),
+            proof: [] }
+        ]
       },
       {
-        id: 'sunset', name: 'Sunset Cosmetics', handle: '@sunset_cosmetics',
-        phone: '9812345678', platform: 'Facebook', category: 'Cosmetics & Beauty',
-        verified: false, accountAgeDays: 120,
+        id: 'sunset', name: 'Sunset Cosmetics', handle: '@sunsetcosmetics.np',
+        phone: '9861234569', platform: 'TikTok', category: 'Beauty & Cosmetics',
+        verified: false, accountAgeDays: 90,
         reports: [
-          { id: 's1', type: 'wrong_item', amount: 2200, platform: 'Facebook', desc: 'Ordered a branded serum, received a different cheaper product.', evidence: true, reporter: 'Verified buyer #3344', date: daysAgo(12),
+          { id: 's1', type: 'fake_product', amount: 2500, platform: 'TikTok', desc: 'Ordered Korean skincare shown in the seller video, received local counterfeit with fake Korean branding.', evidence: true, reporter: 'Verified buyer #3344', date: daysAgo(15),
             proof: [
-              { kind: 'payment', method: 'eSewa', amount: 2200, to: 'Sunset Cosmetics', id: '9812345678', ref: 'ESW3344021', when: '12 days ago' },
-              { kind: 'chat', app: 'Facebook', scenario: 'wrongitem', seller: 'Sunset Cosmetics', item: 'the branded serum', amount: 2200 }
+              { kind: 'payment', method: 'eSewa', amount: 2500, to: 'Sunset Cosmetics', id: '9861234569', ref: 'ESW3344021', when: '15 days ago' },
+              { kind: 'chat', app: 'TikTok', scenario: 'wrongitem', seller: 'Sunset Cosmetics', item: 'the Korean serum', amount: 2500 }
             ] }
         ],
         reviews: [
           { id: 'rv1', rating: 4, comment: 'Products are okay, packaging could be better but a legit seller overall.', evidence: true, reporter: 'Sita', date: daysAgo(6),
-            proof: [ { kind: 'chat', app: 'Facebook', scenario: 'received', seller: 'Sunset Cosmetics', item: 'the lip set' } ] }
+            proof: [ { kind: 'chat', app: 'Facebook', scenario: 'received', seller: 'Sunset Cosmetics', item: 'the lip set' } ] },
+          { id: 'rv2', rating: 3, comment: 'Genuine items when in stock, but replied slowly. Asked for a video call before I paid.', evidence: true, reporter: 'Puja', date: daysAgo(18),
+            proof: [ { kind: 'payment', method: 'eSewa', amount: 1600, to: 'Sunset Cosmetics', id: '9861234569', ref: 'ESW1600233', when: '18 days ago' } ] }
         ]
       },
       {
-        id: 'himalayan', name: 'Himalayan Handicrafts', handle: '@himalayan_crafts',
-        phone: '9856701234', platform: 'Instagram', category: 'Handmade & Crafts',
-        verified: true, accountAgeDays: 800,
+        id: 'technepal', name: 'TechNepal Store', handle: '@technepalstore',
+        phone: '9851234568', platform: 'TikTok', category: 'Electronics & Gadgets',
+        verified: true, accountAgeDays: 180,
         reports: [],
         reviews: [
-          { id: 'h1', rating: 5, comment: 'Beautiful handmade pashmina, exactly as pictured. Highly recommend!', evidence: true, reporter: 'Kiran', date: daysAgo(30),
-            proof: [ { kind: 'chat', app: 'Instagram', scenario: 'received', seller: 'Himalayan Handicrafts', item: 'the pashmina' } ] },
-          { id: 'h2', rating: 5, comment: 'Authentic crafts and fast shipping inside Kathmandu valley.', evidence: true, reporter: 'Maya', date: daysAgo(11),
-            proof: [ { kind: 'payment', method: 'Khalti', amount: 3200, to: 'Himalayan Handicrafts', id: '9856701234', ref: 'KHL320119', when: '11 days ago' } ] }
+          { id: 't1', rating: 5, comment: 'Bought a power bank, completely genuine with warranty card and original box. Works perfectly.', evidence: true, reporter: 'Rojan', date: daysAgo(35),
+            proof: [ { kind: 'payment', method: 'Khalti', amount: 2400, to: 'TechNepal Store', id: '9851234568', ref: 'KHL240118', when: '35 days ago' } ] },
+          { id: 't2', rating: 4, comment: 'Original product, fast delivery to Lalitpur. More competitive than New Road stores.', evidence: true, reporter: 'Sabina', date: daysAgo(12),
+            proof: [ { kind: 'chat', app: 'Instagram', scenario: 'received', seller: 'TechNepal Store', item: 'the earphones' } ] }
         ]
       },
       {
-        id: 'gadgetzone', name: 'GadgetZone Nepal', handle: '@gadgetzone',
-        phone: '9803456789', platform: 'TikTok', category: 'Electronics & Gadgets',
-        verified: false, accountAgeDays: 75,
+        id: 'fastdeal', name: 'FastDeal Nepal', handle: '@fastdealnepal',
+        phone: '9881234571', platform: 'TikTok', category: 'General Merchandise',
+        verified: false, accountAgeDays: 12,
         reports: [
-          { id: 'g1', type: 'fake_product', amount: 15000, platform: 'TikTok', desc: 'Sold a refurbished phone as brand new. Paid Rs 15,000, seller ignored complaints then blocked me.', evidence: true, reporter: 'Verified buyer #9981', date: daysAgo(7),
-            proof: [
-              { kind: 'payment', method: 'eSewa', amount: 15000, to: 'GadgetZone Nepal', id: '9803456789', ref: 'ESW9981700', when: '7 days ago' },
-              { kind: 'chat', app: 'TikTok', scenario: 'blocked', seller: 'GadgetZone Nepal', item: 'the new phone', amount: 15000 }
-            ] }
+          { id: 'f1', type: 'no_delivery', amount: 15000, platform: 'TikTok', desc: 'Paid Rs 15,000 advance for 3 winter jackets. Account vanished after 2 days, later reappeared under a new name.', evidence: true, reporter: 'Verified buyer #2201', date: daysAgo(9),
+            proof: [ { kind: 'payment', method: 'eSewa', amount: 15000, to: 'FastDeal Nepal', id: '9881234571', ref: 'ESW2201900', when: '9 days ago' } ] },
+          { id: 'f2', type: 'payment_issue', amount: 12000, platform: 'Instagram', desc: 'Sent Rs 12,000 via Khalti after seeing copied product photos. Seller never replied and deleted the account.', evidence: true, reporter: 'Verified buyer #3390', date: daysAgo(5),
+            proof: [ { kind: 'payment', method: 'Khalti', amount: 12000, to: 'FastDeal Nepal', id: '9881234571', ref: 'KHL339012', when: '5 days ago' } ] },
+          { id: 'f3', type: 'no_delivery', amount: 8500, platform: 'TikTok', desc: 'Advance for a "branded" speaker, blocked me right after payment.', evidence: true, reporter: 'Verified buyer #4412', date: daysAgo(7),
+            proof: [ { kind: 'chat', app: 'TikTok', scenario: 'blocked', seller: 'FastDeal Nepal', item: 'the speaker', amount: 8500 } ] },
+          { id: 'f4', type: 'fake_product', amount: 9500, platform: 'Instagram', desc: 'Received a cheap knock-off watch instead of the one advertised.', evidence: true, reporter: 'Verified buyer #5567', date: daysAgo(6),
+            proof: [ { kind: 'payment', method: 'eSewa', amount: 9500, to: 'FastDeal Nepal', id: '9881234571', ref: 'ESW5567095', when: '6 days ago' } ] },
+          { id: 'f5', type: 'no_delivery', amount: 11000, platform: 'TikTok', desc: 'Full advance taken for shoes, nothing delivered and no response.', evidence: true, reporter: 'Verified buyer #6620', date: daysAgo(4),
+            proof: [ { kind: 'payment', method: 'Khalti', amount: 11000, to: 'FastDeal Nepal', id: '9881234571', ref: 'KHL662011', when: '4 days ago' } ] },
+          { id: 'f6', type: 'payment_issue', amount: 14000, platform: 'Instagram', desc: 'Paid Rs 14,000, seller kept asking for more "delivery charges" then stopped replying.', evidence: true, reporter: 'Verified buyer #7788', date: daysAgo(3),
+            proof: [ { kind: 'payment', method: 'eSewa', amount: 14000, to: 'FastDeal Nepal', id: '9881234571', ref: 'ESW7788140', when: '3 days ago' } ] },
+          { id: 'f7', type: 'no_delivery', amount: 13500, platform: 'TikTok', desc: 'Advance for a phone, order never arrived and the account was deleted.', evidence: true, reporter: 'Verified buyer #8891', date: daysAgo(2),
+            proof: [ { kind: 'chat', app: 'TikTok', scenario: 'blocked', seller: 'FastDeal Nepal', item: 'the phone', amount: 13500 } ] }
         ],
+        reviews: []
+      },
+      {
+        id: 'everest', name: 'Everest Electronics', handle: '@sageshelectronics',
+        phone: '9828046299', platform: 'TikTok', category: 'Electronics & Gadgets',
+        verified: false, accountAgeDays: 60,
+        reports: [],
         reviews: [
-          { id: 'gv1', rating: 2, comment: 'Item not as described, had a lot of trouble getting any refund.', evidence: true, reporter: 'Ramesh', date: daysAgo(5),
-            proof: [ { kind: 'chat', app: 'TikTok', scenario: 'wrongitem', seller: 'GadgetZone Nepal', item: 'the advertised phone', amount: 15000 } ] }
+          { id: 'e1', rating: 5, comment: 'Quality accessories at a fair price, delivered on time in Kathmandu.', evidence: true, reporter: 'Dipesh', date: daysAgo(14),
+            proof: [ { kind: 'payment', method: 'eSewa', amount: 2100, to: 'Everest Electronics', id: '9828046299', ref: 'ESW2100460', when: '14 days ago' } ] },
+          { id: 'e2', rating: 4, comment: 'Genuine product, replied to all my questions before I paid. Recommended.', evidence: true, reporter: 'Anjali', date: daysAgo(9),
+            proof: [ { kind: 'chat', app: 'Instagram', scenario: 'received', seller: 'Everest Electronics', item: 'the charger' } ] },
+          { id: 'e3', rating: 4, comment: 'Good local seller. Packaging was fine and the item matched the photos.', evidence: false, reporter: 'Sagar', date: daysAgo(4),
+            proof: [] }
         ]
       }
     ];
@@ -452,7 +482,7 @@
       'Trust Rating: HIGH RISK, ' + r.score + '/100\n' +
       'Fraud Reports: ' + s.reports.length + '\n' +
       'Amount Reported Lost: NPR ' + Number(lost).toLocaleString('en-IN') + '\n\n' +
-      'Check any seller before paying:\nsafebuy-nepal.vercel.app\n\n' +
+      'Check any seller before paying:\nsafebuynepal.vercel.app\n\n' +
       'Shared via SafeBuy Nepal';
   }
   function copyText(text, done) {
@@ -517,7 +547,7 @@
         'DESCRIPTION\n' + (newest ? newest.desc : 'See attached SafeBuy Nepal report records.') + '\n\n' +
         'APPLICABLE LAW\nElectronic Transactions Act 2063, Section 48 (Electronic Fraud: advance payment taken, goods never sent)\n\n' +
         'All evidence is preserved on the SafeBuy Nepal platform and available on request.\n\n' +
-        'Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)';
+        'Filed via SafeBuy Nepal (safebuynepal.vercel.app)';
       openModal(
         '<h3 class="sb-form-title">🏛️ Escalate to Nepal Police</h3>' +
         '<div class="sb-bureau"><b>Nepal Police Cybercrime Investigation Bureau</b>' +

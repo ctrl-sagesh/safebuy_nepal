@@ -1,7 +1,7 @@
 /* SafeBuy Nepal — Service Worker
    Makes the site installable + offline-capable, and AUTO-UPDATES:
    network-first for content so any change you deploy shows up on next open. */
-const CACHE = 'safebuy-nepal-v2';
+const CACHE = 'safebuy-nepal-v3';
 const CORE = [
   './',
   './index.html',
