@@ -24,10 +24,9 @@
       padding: 16px 20px; display: flex; align-items: center; gap: 12px;
     }
     .logo {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(255,255,255,0.2);
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-family: 'Poppins'; font-weight: 700; font-size: 16px;
+      width: 40px; height: 40px; border-radius: 10px;
+      object-fit: cover; display: block; flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
     }
     .header-text h1 { color: #fff; font-family: 'Poppins'; font-weight: 700; font-size: 18px; }
     .header-text p { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 13px; }
@@ -100,7 +99,7 @@
 <body>
   <div class="page">
     <div class="header">
-      <div class="logo">SB</div>
+      <img class="logo" src="icons/icon-512.png" alt="SafeBuy Nepal" />
       <div class="header-text">
         <h1>SafeBuy Nepal</h1>
         <p>Seller Verification</p>
