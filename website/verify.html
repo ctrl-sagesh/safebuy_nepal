@@ -32,6 +32,21 @@
     .header-text h1 { color: #fff; font-family: 'Poppins'; font-weight: 700; font-size: 18px; }
     .header-text p { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 13px; }
 
+    /* Direct search box so users can check any seller without knowing the URL. */
+    .search-section { padding: 16px 16px 0; }
+    .search-box { display: flex; gap: 8px; }
+    .search-box input {
+      flex: 1; min-width: 0; height: 48px; padding: 0 16px;
+      border: 1.5px solid #E2E8F0; border-radius: 14px;
+      font-family: 'Inter', sans-serif; font-size: 14px; color: #1A1A1A;
+      outline: none; transition: border-color .15s;
+    }
+    .search-box input:focus { border-color: #1565C0; }
+    .search-box button {
+      height: 48px; padding: 0 20px; border: none; border-radius: 14px; cursor: pointer;
+      background: #1565C0; color: #fff; font-family: 'Poppins'; font-weight: 600; font-size: 15px;
+    }
+
     .loading-state { padding: 48px 20px; text-align: center; }
     .pulse-shield { width: 64px; height: 64px; margin: 0 auto; animation: pulse 0.9s ease-in-out infinite alternate; }
     @keyframes pulse { from { transform: scale(1); opacity: .85; } to { transform: scale(1.1); opacity: 1; } }
@@ -91,6 +106,13 @@
       </div>
     </div>
 
+    <div class="search-section">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Enter phone number or @handle" maxlength="20" />
+        <button onclick="searchSeller()">Check</button>
+      </div>
+    </div>
+
     <div id="content"></div>
 
     <div class="footer">
@@ -103,7 +125,7 @@
   <script>
     // Firebase config. The API key is NOT a secret — the sellers collection
     // is publicly readable by Firestore security rules, so an unauthenticated
-    // REST query is exactly what is intended here.
+    // REST read is exactly what is intended here.
     const PROJECT_ID = 'safebuy-nepal';
     const API_KEY = 'AIzaSyD6Ww7TzJyaKODGOOkVKHNJuDud-aPKOVc';
     const SITE = 'https://safebuy-nepal.vercel.app';
@@ -119,12 +141,20 @@
       const handle = (params.get('handle') || '').replace(/^@/, '');
       const query = phone || handle;
 
-      if (!query) { showError('No seller identifier provided'); return; }
+      if (!query) { el.innerHTML = ''; return; }
+      // Reflect the active query in the search box.
+      const box = document.getElementById('searchInput');
+      if (box) box.value = phone || ('@' + handle);
       showLoading();
 
       try {
-        let seller = await runQuery(phone ? 'phone' : 'tiktokHandle', query);
-        // Handle fallback across the other social fields.
+        let seller = null;
+        // Demo sellers are keyed by phone as the document ID, so a direct
+        // document read is both the fastest and the most reliable path.
+        if (phone) seller = await fetchByDocId(phone);
+        // Fall back to a field query (covers handle lookups and any seller
+        // whose document ID is not the phone number).
+        if (!seller) seller = await runQuery(phone ? 'phone' : 'tiktokHandle', query);
         if (!seller && handle) {
           seller = await runQuery('instagramHandle', query)
                 || await runQuery('facebookHandle', query);
@@ -136,6 +166,17 @@
       }
     }
 
+    // Method 1 — direct document fetch by ID (sellers use phone as doc ID).
+    async function fetchByDocId(phone) {
+      const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/sellers/${phone}?key=${API_KEY}`;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data && data.fields) return parseDoc(data);
+      return null;
+    }
+
+    // Method 2 — query by an equality filter on a field (fallback).
     async function runQuery(field, value) {
       const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery?key=${API_KEY}`;
       const body = {
@@ -151,46 +192,78 @@
       return null;
     }
 
-    function num(f) {
+    function getNum(f) {
       if (!f) return 0;
-      if (f.integerValue !== undefined) return parseInt(f.integerValue, 10);
-      if (f.doubleValue !== undefined) return Math.round(parseFloat(f.doubleValue));
-      return 0;
+      return parseFloat(f.integerValue || f.doubleValue || '0') || 0;
     }
+    function getStr(f) { return (f && f.stringValue) || ''; }
+    function getBool(f) { return (f && f.booleanValue) || false; }
 
     function parseDoc(doc) {
       const f = doc.fields || {};
+
+      // Time active, from accountCreatedAt.
+      let monthsActive = 0, daysActive = 0;
+      if (f.accountCreatedAt && f.accountCreatedAt.timestampValue) {
+        const created = new Date(f.accountCreatedAt.timestampValue);
+        const diffMs = Date.now() - created.getTime();
+        daysActive = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+        monthsActive = Math.floor(daysActive / 30);
+      }
+
       return {
-        businessName: (f.businessName && f.businessName.stringValue) || (f.name && f.name.stringValue) || 'Unknown Seller',
-        phone: (f.phone && f.phone.stringValue) || '',
-        trustScore: num(f.trustScore) || 50,
-        trustVerdict: (f.trustVerdict && f.trustVerdict.stringValue) || 'unverified',
-        reviewCount: num(f.reviewCount),
-        scamReportCount: num(f.scamReportCount),
-        verificationTier: (f.verificationTier && f.verificationTier.stringValue) || 'none',
-        accountCreatedAt: f.accountCreatedAt && f.accountCreatedAt.timestampValue,
-        totalAmountLost: num(f.totalAmountLost),
-        tiktokHandle: (f.tiktokHandle && f.tiktokHandle.stringValue) || ''
+        businessName: getStr(f.businessName) || getStr(f.name) || 'Unknown Seller',
+        phone: getStr(f.phone),
+        trustScore: Math.round(getNum(f.trustScore)),
+        trustVerdict: getStr(f.trustVerdict) || 'unverified',
+        reviewCount: Math.round(getNum(f.reviewCount)),
+        scamReportCount: Math.round(getNum(f.scamReportCount)),
+        totalAmountLost: Math.round(getNum(f.totalAmountLost)),
+        verificationTier: getStr(f.verificationTier) || 'none',
+        isVerified: getBool(f.isVerified),
+        monthsActive,
+        daysActive,
+        tiktokHandle: getStr(f.tiktokHandle),
+        instagramHandle: getStr(f.instagramHandle),
+        averageRating: getNum(f.averageRating)
       };
     }
 
     const VERDICTS = {
-      trusted: { bg: '#E8F5E9', color: '#2E7D32', icon: '✓', label: 'TRUSTED SELLER' },
+      trusted:    { bg: '#E8F5E9', color: '#2E7D32', icon: '✓', label: 'TRUSTED SELLER' },
       unverified: { bg: '#FFF8E1', color: '#E65100', icon: '⚠', label: 'UNVERIFIED SELLER' },
-      high_risk: { bg: '#FFEBEE', color: '#C62828', icon: '✕', label: 'HIGH RISK' }
+      high_risk:  { bg: '#FFEBEE', color: '#C62828', icon: '✕', label: 'HIGH RISK — DO NOT PAY' }
     };
-    const TIERS = { premium: 'Premium', verified: 'Verified', basic: 'Basic', none: 'Unverified' };
+    const TIERS = {
+      premium: 'Premium Verified',
+      identity: 'Identity Verified',
+      verified: 'Verified',
+      basic: 'Basic Verified',
+      none: 'Unverified'
+    };
 
     function showResult(s, query) {
-      const months = s.accountCreatedAt ? Math.max(0, Math.floor((Date.now() - new Date(s.accountCreatedAt)) / (1000*60*60*24*30))) : 0;
       const v = VERDICTS[s.trustVerdict] || VERDICTS.unverified;
-      const complaintsChip = s.scamReportCount > 0 ? `<span class="stat-chip complaints">${s.scamReportCount} Complaints</span>` : '';
-      const warning = s.trustVerdict === 'high_risk'
-        ? `<div class="warning-box">${s.scamReportCount} fraud complaint${s.scamReportCount === 1 ? '' : 's'} filed against this seller${s.totalAmountLost > 0 ? ' totalling NPR ' + s.totalAmountLost.toLocaleString() : ''}.</div>` : '';
+
+      const activeText = s.monthsActive >= 1
+        ? `${s.monthsActive} Month${s.monthsActive > 1 ? 's' : ''} Active`
+        : `${s.daysActive} Day${s.daysActive !== 1 ? 's' : ''} Active`;
+
+      const complaintsChip = s.scamReportCount > 0
+        ? `<span class="stat-chip complaints">${s.scamReportCount} Complaint${s.scamReportCount > 1 ? 's' : ''}</span>`
+        : '';
+
+      const warning = (s.trustVerdict === 'high_risk' && s.scamReportCount > 0)
+        ? `<div class="warning-box">${s.scamReportCount} fraud complaint${s.scamReportCount > 1 ? 's' : ''}${s.totalAmountLost > 0 ? ' totalling NPR ' + s.totalAmountLost.toLocaleString() : ''} reported by the community. We strongly recommend not paying this seller.</div>`
+        : '';
+
       const confidence = s.trustVerdict === 'trusted'
-        ? `<div class="confidence-box">Clean record with ${s.reviewCount} verified review${s.reviewCount === 1 ? '' : 's'} and zero complaints.</div>` : '';
+        ? `<div class="confidence-box">Clean record with ${s.reviewCount} verified review${s.reviewCount !== 1 ? 's' : ''} and zero fraud complaints.</div>`
+        : '';
+
       const reportBtn = s.trustVerdict === 'high_risk'
-        ? `<button class="btn-primary" style="background:#C62828" onclick="reportFraud('${s.phone}')">Report Fraud</button>` : '';
+        ? `<button class="btn-primary" style="background:#C62828" onclick="reportFraud('${escapeHtml(s.phone)}')">Report This Seller</button>`
+        : '';
 
       el.innerHTML = `
         <div class="result-card">
@@ -203,13 +276,13 @@
           </div>
           <div class="seller-details">
             <div class="business-name">${escapeHtml(s.businessName)}</div>
-            <div class="phone-display">${escapeHtml(query)}</div>
+            <div class="phone-display">${escapeHtml(s.phone || query)}</div>
             <div class="stats-row">
-              <span class="stat-chip reviews">${s.reviewCount} Reviews</span>
-              <span class="stat-chip months">${months} Months Active</span>
+              <span class="stat-chip reviews">${s.reviewCount} Review${s.reviewCount !== 1 ? 's' : ''}</span>
+              <span class="stat-chip months">${activeText}</span>
               ${complaintsChip}
             </div>
-            <span class="tier-badge">⚑ ${TIERS[s.verificationTier] || 'Unverified'} tier</span>
+            <span class="tier-badge">⚑ ${TIERS[s.verificationTier] || 'Unverified'}</span>
             ${warning}
             ${confidence}
           </div>
@@ -265,6 +338,19 @@
       });
     }
 
+    // Search box → navigate to the same page with the query, so results are
+    // shareable via URL.
+    function searchSeller() {
+      const raw = (document.getElementById('searchInput').value || '').trim();
+      if (!raw) return;
+      const digits = raw.replace(/\D/g, '');
+      if (digits) {
+        window.location.href = `verify.html?phone=${digits}`;
+      } else {
+        window.location.href = `verify.html?handle=${encodeURIComponent(raw.replace(/^@/, ''))}`;
+      }
+    }
+
     function downloadApp() { window.location.href = SITE + '/#download'; }
     function searchAnother() { window.location.href = 'verify.html'; }
     function reportFraud(phone) {
@@ -273,7 +359,15 @@
       setTimeout(function () { window.location.href = SITE + '/#download'; }, 800);
     }
 
-    window.onload = init;
+    window.onload = function () {
+      const box = document.getElementById('searchInput');
+      if (box) {
+        box.addEventListener('keypress', function (e) {
+          if (e.key === 'Enter') searchSeller();
+        });
+      }
+      init();
+    };
   </script>
 </body>
 </html>

@@ -428,6 +428,35 @@ async function seedSellers() {
   for (const s of sellers) {
     await seedDoc(db.collection('sellers').doc(s.id), s.data, `sellers/${s.id}`);
   }
+
+  // Idempotent creation (above) never overwrites an existing document, which
+  // means a seller seeded earlier with different numbers keeps the stale trust
+  // data forever — that is exactly why the public /verify page could show an
+  // old verdict/score. Force-refresh the trust-critical fields on every run so
+  // re-seeding always repairs the live data. KYC images, location, etc. are
+  // left untouched.
+  console.log('  refreshing trust fields');
+  for (const s of sellers) {
+    const d = s.data;
+    await db.collection('sellers').doc(s.id).set(
+      {
+        name: d.name,
+        businessName: d.businessName,
+        trustScore: d.trustScore,
+        trustVerdict: d.trustVerdict,
+        scamReportCount: d.scamReportCount,
+        reportCount: d.reportCount,
+        reviewCount: d.reviewCount,
+        totalOrders: d.totalOrders,
+        averageRating: d.averageRating,
+        isVerified: d.isVerified,
+        verifiedBadge: d.verifiedBadge,
+        verificationTier: d.verificationTier,
+        accountCreatedAt: d.accountCreatedAt,
+      },
+      { merge: true }
+    );
+  }
 }
 
 // ── REPORTS ───────────────────────────────────────────────────────────────────
