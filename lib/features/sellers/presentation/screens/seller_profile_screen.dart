@@ -143,7 +143,7 @@ class _SellerProfileScreenState
       if (s.instagramHandle?.isNotEmpty == true) 'Instagram',
       if (s.facebookHandle?.isNotEmpty == true) 'Facebook',
     ];
-    final verifyUrl = 'safebuy-nepal.vercel.app/verify?phone=${s.phone}';
+    final verifyUrl = 'safebuynepal.vercel.app/verify?phone=${s.phone}';
     return 'FRAUD WARNING - SafeBuy Nepal\n\n'
         'Seller: ${s.displayName}\n'
         'Platform: ${platforms.isEmpty ? 'Social commerce' : platforms.join(' / ')}\n'

@@ -216,7 +216,7 @@ the information above is true to the best of my knowledge, and I understand
 that filing a false complaint is an offence under the laws of Nepal.
 
 Signature: ${_me?.fullName ?? ''}
-Filed via SafeBuy Nepal (safebuy-nepal.vercel.app)
+Filed via SafeBuy Nepal (safebuynepal.vercel.app)
 ''';
   }
 

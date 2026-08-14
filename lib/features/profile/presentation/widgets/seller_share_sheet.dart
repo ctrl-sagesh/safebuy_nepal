@@ -33,7 +33,7 @@ class _SellerShareSheet extends StatelessWidget {
 
   final SellerModel seller;
 
-  static const _site = 'https://safebuy-nepal.vercel.app';
+  static const _site = 'https://safebuynepal.vercel.app';
 
   String get _verifyUrl {
     if (seller.phone.isNotEmpty) return '$_site/verify?phone=${seller.phone}';

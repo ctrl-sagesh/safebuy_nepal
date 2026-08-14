@@ -318,6 +318,8 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
                                     a['title'] as String? ??
                                         _t('Community alert',
                                             'सामुदायिक सतर्कता'),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.inter(
                                       fontSize: 13.5,
                                       fontWeight: FontWeight.w600,

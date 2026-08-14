@@ -108,7 +108,7 @@ class AboutScreen extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: () async {
                     await Clipboard.setData(const ClipboardData(
-                        text: 'https://safebuy-nepal.vercel.app'));
+                        text: 'https://safebuynepal.vercel.app'));
                     if (context.mounted) {
                       PopupHelper.showInfo(
                           context, 'Website link copied to clipboard');

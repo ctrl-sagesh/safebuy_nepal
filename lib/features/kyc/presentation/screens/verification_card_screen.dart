@@ -72,7 +72,7 @@ class _VerificationCardScreenState
     final text = 'SafeBuy Nepal Verified Seller\n'
         '${s.displayName}\n'
         'Card ID: ${s.safebuyCardId}\n'
-        'Verify at: safebuy-nepal.vercel.app';
+        'Verify at: safebuynepal.vercel.app';
     await Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
       PopupHelper.showSuccess(

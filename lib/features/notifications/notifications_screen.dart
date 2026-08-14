@@ -333,6 +333,8 @@ class _NotifCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(item.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.titleSmall().copyWith(
                                 fontWeight: item.read
                                     ? FontWeight.w500
