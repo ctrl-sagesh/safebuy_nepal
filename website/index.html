@@ -54,7 +54,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=12">
+  <link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
   <!-- Scroll progress bar -->
@@ -244,30 +244,31 @@
           <div class="phone-glow"></div>
           <div class="phone-frame">
             <div class="phone-screen">
-              <div class="slide slide-1 active">
-                <div class="slide-header">SafeBuy Nepal</div>
-                <div class="slide-search"><span class="search-typing" id="searchTyping"></span></div>
-                <div class="slide-result trusted-result">
-                  <div class="res-avatar">P</div>
-                  <div class="res-info"><strong>Priya Fashions</strong><small>9841234567</small></div>
-                  <div class="res-badge trusted">87 ✓</div>
+              <!-- Seller profile screen — mirrors the app's seller profile -->
+              <div class="sp-screen">
+                <div class="sp-header">
+                  <div class="sp-avatar">P</div>
+                  <div class="sp-name">Priya Fashions</div>
+                  <div class="sp-sub">Clothing &amp; Fashion · Kathmandu</div>
                 </div>
-              </div>
-              <div class="slide slide-2">
-                <div class="slide-header">SafeBuy Nepal</div>
-                <div class="slide-alert">⚠️ HIGH RISK SELLER</div>
-                <div class="slide-result danger-result">
-                  <div class="res-avatar danger">Q</div>
-                  <div class="res-info"><strong>QuickBuy Electronics</strong><small>4 reports filed</small></div>
-                  <div class="res-badge danger">31 ✕</div>
-                </div>
-              </div>
-              <div class="slide slide-3">
-                <div class="slide-header">Report Submitted</div>
-                <div class="slide-success">
-                  <div class="checkmark-circle">✓</div>
-                  <p>Report Filed Successfully</p>
-                  <small>RPT-2026-A7F3E2</small>
+                <div class="sp-body">
+                  <div class="sp-card sp-score-card">
+                    <div class="sp-ring"><b class="sp-ring-num">87</b><span class="sp-ring-den">/100</span></div>
+                    <div class="sp-score-info">
+                      <span class="sp-verdict">✓ TRUSTED</span>
+                      <div class="sp-verified">Last verified: 12 Feb 2026</div>
+                      <div class="sp-mini"><span>⭐ 23</span><span>📋 0</span><span>📦 156</span></div>
+                    </div>
+                  </div>
+                  <div class="sp-confidence">Active for 8 months. The community has left 23 reviews, and there are zero fraud complaints on record.</div>
+                  <div class="sp-card sp-verify-card">
+                    <div class="sp-tier">🛡 PREMIUM TIER</div>
+                    <div class="sp-check"><span>Phone verified</span><span class="sp-done">✓ Done</span></div>
+                    <div class="sp-check"><span>Identity verified</span><span class="sp-done">✓ Done</span></div>
+                    <div class="sp-check"><span>Location verified</span><span class="sp-done">✓ Done</span></div>
+                    <div class="sp-check"><span>Social media linked</span><span class="sp-done">✓ Done</span></div>
+                  </div>
+                  <div class="sp-tabs"><span class="sp-tab active">Reviews (23)</span><span class="sp-tab">Complaints (0)</span><span class="sp-tab">About</span></div>
                 </div>
               </div>
             </div>
