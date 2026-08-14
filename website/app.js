@@ -184,9 +184,9 @@
     var score = Math.max(2, Math.min(100, Math.round(raw)));
 
     var verdict, color, label;
-    if (score >= 80) { verdict = 'trusted'; color = '#00B850'; label = 'TRUSTED'; }
-    else if (score >= 50) { verdict = 'unverified'; color = '#F59300'; label = 'UNVERIFIED'; }
-    else { verdict = 'high_risk'; color = '#E23B3B'; label = 'HIGH RISK'; }
+    if (score >= 80) { verdict = 'trusted'; color = '#00C853'; label = 'TRUSTED'; }
+    else if (score >= 50) { verdict = 'unverified'; color = '#FF8F00'; label = 'UNVERIFIED'; }
+    else { verdict = 'high_risk'; color = '#D32F2F'; label = 'HIGH RISK'; }
     return { score: score, verdict: verdict, color: color, label: label };
   }
 

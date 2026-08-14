@@ -22,9 +22,10 @@
   --primary-50: #EAF2FD;
   --primary-100: #D8E8FB;
 
-  --trusted: #00B850;
-  --unverified: #F59300;
-  --high-risk: #E23B3B;
+  /* Verdict colours mirror the app's AppColors tokens exactly. */
+  --trusted: #00C853;
+  --unverified: #FF8F00;
+  --high-risk: #D32F2F;
   --purple: #7C5CFC;
   --crimson: #C1121F;
 

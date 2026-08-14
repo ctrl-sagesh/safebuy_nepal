@@ -66,15 +66,16 @@
     .phone-display { font-size: 13px; color: #666; margin-bottom: 16px; }
     .stats-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
     .stat-chip { padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 12px; border: 1px solid; }
-    .stat-chip.reviews { background: #E8F5E9; color: #2E7D32; border-color: #A5D6A7; }
+    .stat-chip.reviews { background: #E8F5E9; color: #00C853; border-color: #A5D6A7; }
     .stat-chip.months { background: #EFF6FF; color: #1565C0; border-color: #90CAF9; }
-    .stat-chip.complaints { background: #FFEBEE; color: #C62828; border-color: #FFCDD2; }
+    .stat-chip.complaints { background: #FFEBEE; color: #D32F2F; border-color: #FFCDD2; }
     .tier-badge {
       display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px;
       background: #F3E5F5; color: #6A1B9A; font-weight: 600; font-size: 12px; border: 1px solid #CE93D8;
     }
-    .warning-box { margin-top: 16px; padding: 14px; border-radius: 10px; background: #FFEBEE; border: 1px solid #FFCDD2; font-weight: 500; font-size: 13px; color: #C62828; line-height: 1.45; }
-    .confidence-box { margin-top: 16px; padding: 14px; border-radius: 10px; background: #E8F5E9; border: 1px solid #A5D6A7; font-weight: 500; font-size: 13px; color: #2E7D32; line-height: 1.45; }
+    .warning-box { margin-top: 16px; padding: 14px; border-radius: 10px; background: #FFEBEE; border: 1px solid #FFCDD2; font-weight: 500; font-size: 13px; color: #D32F2F; line-height: 1.45; }
+    /* Body text is dark like the app's trusted box; only the verdict label/score use the green token. */
+    .confidence-box { margin-top: 16px; padding: 14px; border-radius: 10px; background: #E8F5E9; border: 1px solid #A5D6A7; font-weight: 500; font-size: 13px; color: #0A1628; line-height: 1.45; }
 
     .actions { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
     .btn-primary { width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer; font-family: 'Poppins'; font-weight: 600; font-size: 15px; color: #fff; background: #1565C0; }
@@ -87,9 +88,9 @@
     }
     .not-found-state h2, .error-state h2 { font-family: 'Poppins'; font-weight: 600; font-size: 18px; color: #1A1A1A; }
     .not-found-state > p, .error-state > p { font-size: 13px; color: #666; margin-top: 8px; }
-    .safety-tips { margin-top: 20px; text-align: left; background: #FFF8E1; border-radius: 12px; padding: 16px; border-left: 4px solid #E65100; }
-    .safety-tips h4 { font-family: 'Poppins'; font-weight: 600; font-size: 14px; color: #E65100; margin-bottom: 12px; }
-    .safety-tips .tip { font-size: 13px; color: #555; padding: 8px 0 8px 10px; border-left: 2px solid #E65100; margin-bottom: 8px; }
+    .safety-tips { margin-top: 20px; text-align: left; background: #FFF8E1; border-radius: 12px; padding: 16px; border-left: 4px solid #FF8F00; }
+    .safety-tips h4 { font-family: 'Poppins'; font-weight: 600; font-size: 14px; color: #FF8F00; margin-bottom: 12px; }
+    .safety-tips .tip { font-size: 13px; color: #555; padding: 8px 0 8px 10px; border-left: 2px solid #FF8F00; margin-bottom: 8px; }
 
     .footer { padding: 20px; text-align: center; border-top: 1px solid #F0F0F0; margin-top: 16px; }
     .footer p { font-size: 12px; color: #999; }
@@ -230,9 +231,9 @@
     }
 
     const VERDICTS = {
-      trusted:    { bg: '#E8F5E9', color: '#2E7D32', icon: '✓', label: 'TRUSTED SELLER' },
-      unverified: { bg: '#FFF8E1', color: '#E65100', icon: '⚠', label: 'UNVERIFIED SELLER' },
-      high_risk:  { bg: '#FFEBEE', color: '#C62828', icon: '✕', label: 'HIGH RISK — DO NOT PAY' }
+      trusted:    { bg: '#E8F5E9', color: '#00C853', icon: '✓', label: 'TRUSTED SELLER' },
+      unverified: { bg: '#FFF8E1', color: '#FF8F00', icon: '⚠', label: 'UNVERIFIED SELLER' },
+      high_risk:  { bg: '#FFEBEE', color: '#D32F2F', icon: '✕', label: 'HIGH RISK — DO NOT PAY' }
     };
     const TIERS = {
       premium: 'Premium Verified',
@@ -262,7 +263,7 @@
         : '';
 
       const reportBtn = s.trustVerdict === 'high_risk'
-        ? `<button class="btn-primary" style="background:#C62828" onclick="reportFraud('${escapeHtml(s.phone)}')">Report This Seller</button>`
+        ? `<button class="btn-primary" style="background:#D32F2F" onclick="reportFraud('${escapeHtml(s.phone)}')">Report This Seller</button>`
         : '';
 
       el.innerHTML = `
@@ -324,7 +325,7 @@
       el.innerHTML = `
         <div class="error-state">
           <div class="search-illustration" style="background:#FFEBEE">
-            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#C62828" stroke-width="2"><path d="M1 1l22 22"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#D32F2F" stroke-width="2"><path d="M1 1l22 22"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
           </div>
           <h2>Could not connect</h2>
           <p>${escapeHtml(msg)}</p>
