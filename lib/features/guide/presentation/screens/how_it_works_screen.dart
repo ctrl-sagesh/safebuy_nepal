@@ -287,7 +287,7 @@ class _SellersTab extends StatelessWidget {
           ]),
         ),
         _Section(
-          title: '🪪 Verification Process',
+          title: '🆔 Verification Process',
           child: Column(children: [
             _NumStep(1, '🔵',
                 'BASIC: register your business with phone and email'),
@@ -348,8 +348,9 @@ class _AboutTab extends StatelessWidget {
         _Section(
           title: '🎯 Our Mission',
           child: Text(
-            'Social commerce fraud is Nepal\'s fastest growing digital '
-            'crime, with a 340% rise in complaints in 2023 alone. Most '
+            'Social commerce fraud is one of Nepal\'s fastest growing '
+            'digital crimes. Nepal Police registered 20,526 cybercrime '
+            'complaints last fiscal year but made only 155 arrests. Most '
             'losses are individually too small for police action but '
             'collectively devastating. SafeBuy Nepal gives buyers a '
             '30-second verification habit and gives honest sellers a '

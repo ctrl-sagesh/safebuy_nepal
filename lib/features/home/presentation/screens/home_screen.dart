@@ -1032,7 +1032,7 @@ class _FestivalBanner extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Dashain season brings a significant increase in social commerce '
+            '$festival season brings a significant increase in social commerce '
             'fraud across Nepal. Exercise extra caution when buying from new '
             'or unverified sellers. Always verify on SafeBuy Nepal before '
             'making any payment.',

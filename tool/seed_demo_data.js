@@ -944,6 +944,86 @@ async function main() {
   await seedNotifications();
   await linkAdminSeller();
 
+// Verification Cards
+console.log('Verification Cards');
+await db.collection('verification_cards')
+  .doc('SBV-2026-00001')
+  .set({
+    sellerId: '9841234567',
+    sellerName: 'Priya Fashions',
+    cardId: 'SBV-2026-00001',
+    verificationTier: 'premium',
+    issuedAt: monthsAgo(6),
+    expiresAt: monthsFromNow(6),
+    isActive: true,
+    qrCodeUrl: '',
+  });
+console.log('  create verification_cards/SBV-2026-00001');
+
+// Fraud Detector Log
+console.log('Fraud Detector Log');
+await db.collection('fraud_detector_log')
+  .doc('log_001')
+  .set({
+    sellerId: '9881234571',
+    sellerName: 'FastDeal Nepal',
+    patternType: 'new_account_multiple_reports',
+    triggeredAt: daysAgo(8),
+    actionTaken: 'score_capped_at_40',
+    reportCount: 7,
+    severity: 'high',
+  });
+console.log('  create fraud_detector_log/log_001');
+
+// Admin Notifications
+console.log('Admin Notifications');
+await db.collection('admin_notifications')
+  .doc('admin_notif_001')
+  .set({
+    type: 'kyc_pending',
+    title: 'KYC Review Required',
+    body: 'Sunset Cosmetics has submitted identity verification documents',
+    relatedSellerId: '9861234569',
+    isRead: false,
+    createdAt: daysAgo(3),
+  });
+console.log('  create admin_notifications/admin_notif_001');
+
+// Admin Audit Log
+console.log('Admin Audit Log');
+await db.collection('admin_audit_log')
+  .doc('audit_001')
+  .set({
+    adminId: 'AdFCuXsadSbG89lwNDmW2c3NP5Q2',
+    action: 'seller_verified',
+    targetId: '9841234567',
+    targetType: 'seller',
+    before: { verificationTier: 'basic' },
+    after: { verificationTier: 'premium' },
+    timestamp: monthsAgo(6),
+    notes: 'All KYC documents verified and approved',
+  });
+console.log('  create admin_audit_log/audit_001');
+
+// Escalation Records
+console.log('Escalation Records');
+await db.collection('escalation_records')
+  .doc('esc_001')
+  .set({
+    reportId: 'RPT-2026-00003',
+    sellerPhone: '9881234571',
+    sellerName: 'FastDeal Nepal',
+    complainantId: 'community_003',
+    sentAt: daysAgo(7),
+    status: 'submitted',
+    recipientEmail: 'cybercrime@nepalpolice.gov.np',
+    amountLost: 15000,
+    incidentType: 'Item not delivered',
+    platform: 'TikTok',
+    legalSection: 'Electronic Transactions Act 2063 Section 48',
+  });
+console.log('  create escalation_records/esc_001');  
+
   console.log('\n=================================');
   console.log(`Done. Created: ${stats.created}   Skipped (existing): ${stats.skipped}`);
   process.exit(0);

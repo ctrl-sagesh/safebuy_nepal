@@ -7,7 +7,7 @@ import '../core/agent_response.dart';
 import 'safeguard_intent_classifier.dart';
 import 'safeguard_knowledge_base.dart';
 
-/// Agent 1: SafeGuard AI conversational assistant.
+/// Agent 1: SafeGuard conversational assistant.
 ///
 /// Classifies user intent, fetches live Firestore data for seller queries,
 /// and returns context-aware bilingual responses.

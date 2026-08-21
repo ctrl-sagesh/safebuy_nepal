@@ -250,13 +250,11 @@ class NepalScamNewsData {
           'dispatch. The timing was deliberate: festival period '
           'creates urgency among buyers and increases willingness '
           'to pay in advance for popular items. 67 buyers were '
-          'defrauded across the two-month festival period. Nepal '
-          'Police cybercrime bureau reported a 340 percent increase '
-          'in social commerce fraud complaints during October and '
-          'November 2023 compared to the previous year. Consumer '
-          'rights organisations called for mandatory seller '
+          'defrauded across the two-month festival period. Complaints '
+          'of this kind rise sharply during the festival months. '
+          'Consumer rights organisations called for mandatory seller '
           'registration requirements for digital commerce.',
-      'source': 'Nepal Police Annual Report 2023, Consumer Rights Nepal',
+      'source': 'Illustrative case based on reported festival fraud patterns',
       'lesson':
           'Festival seasons are peak fraud periods. Exercise '
           'extra caution during Dashain and Tihar when shopping '
@@ -268,39 +266,31 @@ class NepalScamNewsData {
     {
       'id': 'case_009',
       'headline':
-          'Cybercrime Bureau Reports 340% Rise in Social Commerce Fraud in 2023',
-      'date': 'December 2023',
+          'Cybercrime Complaints Top 20,000 in Nepal, but Only 155 Arrests Made',
+      'date': 'August 2026',
       'category': 'Statistics',
       'platform': 'All Platforms',
-      'amountLost': 'NPR 4.2 Crore (estimated)',
-      'victims': '2,400+',
+      'amountLost': 'N/A',
+      'victims': '20,526 complaints',
       'district': 'National',
       'body':
-          'Nepal Police Cybercrime Investigation Bureau released its '
-          '2023 annual report highlighting a dramatic 340 percent '
-          'increase in complaints related to social media commerce '
-          'fraud compared to 2022. The report documented 2,400 '
-          'registered complaints though officials acknowledged the '
-          'actual number of incidents is estimated to be 10 to 15 '
-          'times higher due to widespread underreporting. Victims '
-          'cited embarrassment, small individual amounts, and lack '
-          'of faith in recovery as primary reasons for not filing '
-          'formal complaints. The bureau identified TikTok as the '
-          'fastest growing platform for fraud with a 560 percent '
-          'increase in TikTok-related complaints. Facebook remained '
-          'the highest volume platform by total complaints. The '
-          'report estimated total losses at NPR 4.2 crore for '
-          'registered complaints alone, with total actual losses '
-          'estimated to exceed NPR 40 crore when accounting for '
-          'underreporting. The bureau specifically called for '
-          '"community-based early warning systems" as a complement '
-          'to formal law enforcement action.',
+          'Nepal Police registered 20,526 cybercrime complaints in the '
+          'last fiscal year, but only 155 arrests were made. Online '
+          'fraud is a large share of this caseload. In 2023/24 online '
+          'fraud accounted for 1,835 cases, about a fifth of all '
+          'cybercrime, and this figure more than doubled from the year '
+          'before. Cybercrime cases are now registered at about 52 per '
+          'day. The gap between complaints and arrests reflects how '
+          'hard these cases are to trace once a seller has taken the '
+          'money and abandoned the account. With 15.40 million internet '
+          'users in Nepal as of January 2024, a very large number of '
+          'people are exposed to this risk.',
       'source':
-          'Nepal Police Cybercrime Investigation Bureau Annual Report 2023',
+          'Nepal Police Cyber Bureau; The Himalayan Times; The Kathmandu Post',
       'lesson':
-          'Social commerce fraud is a national crisis in Nepal. '
-          'Community accountability platforms like SafeBuy Nepal '
-          'are essential until formal regulatory frameworks exist.',
+          'Formal enforcement cannot keep pace with the volume of '
+          'complaints. Community accountability platforms like SafeBuy '
+          'Nepal help buyers avoid fraud before it happens.',
     },
 
     // CASE 10
@@ -344,34 +334,34 @@ class NepalScamNewsData {
 
   static const List<Map<String, String>> scamStats = [
     {
-      'stat': '340%',
-      'label': 'Increase in social commerce fraud complaints in 2023',
-      'source': 'Nepal Police Cybercrime Bureau 2023',
+      'stat': '20,526',
+      'label': 'Cybercrime complaints registered in the last fiscal year',
+      'source': 'Nepal Police Cyber Bureau; The Himalayan Times',
     },
     {
-      'stat': 'NPR 40Cr+',
-      'label': 'Estimated total losses from social commerce fraud in 2023',
-      'source': 'Nepal Police Annual Report 2023',
+      'stat': '155',
+      'label': 'Arrests made from those complaints',
+      'source': 'The Himalayan Times',
     },
     {
-      'stat': '10-15x',
-      'label': 'Actual incidents estimated vs registered complaints',
-      'source': 'Cybercrime Bureau Nepal',
+      'stat': '1,835',
+      'label': 'Online fraud cases in 2023/24, about a fifth of all cybercrime',
+      'source': 'The Kathmandu Post',
     },
     {
-      'stat': '560%',
-      'label': 'Increase in TikTok-specific fraud complaints 2022-2023',
-      'source': 'Nepal Police Annual Report 2023',
+      'stat': '52 / day',
+      'label': 'Cybercrime cases registered per day last fiscal year',
+      'source': 'The Kathmandu Post',
     },
     {
-      'stat': '2,400+',
-      'label': 'Registered social commerce fraud complaints in 2023',
-      'source': 'Nepal Police Cybercrime Bureau',
+      'stat': '70,000+',
+      'label': 'People targeted by a single social media scam before arrests',
+      'source': 'The Himalayan Times',
     },
     {
-      'stat': 'NPR 4.2Cr',
-      'label': 'Total losses from registered complaints alone in 2023',
-      'source': 'Nepal Police Annual Report 2023',
+      'stat': '15.40M',
+      'label': 'Internet users in Nepal, January 2024',
+      'source': 'The Kathmandu Post',
     },
   ];
 

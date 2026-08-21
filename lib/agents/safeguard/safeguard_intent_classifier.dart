@@ -1,4 +1,4 @@
-/// All intents the SafeGuard AI agent can classify.
+/// All intents the SafeGuard agent can classify.
 enum SafeguardIntent {
   greet,
   askAboutSeller,

@@ -20,7 +20,7 @@ class KnowledgeEntry {
   final String? followUpNe;
 }
 
-/// Static knowledge base for the SafeGuard AI agent.
+/// Static knowledge base for the SafeGuard agent.
 /// Each intent maps to a bilingual response with optional follow-up.
 class SafeguardKnowledgeBase {
   SafeguardKnowledgeBase._();

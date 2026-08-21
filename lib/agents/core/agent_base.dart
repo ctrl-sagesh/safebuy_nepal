@@ -12,7 +12,7 @@ abstract class AgentBase {
   /// Unique identifier (e.g. 'safeguard', 'fraud_detector').
   final String agentId;
 
-  /// Human-readable name (e.g. 'SafeGuard AI').
+  /// Human-readable name (e.g. 'SafeGuard').
   final String agentName;
 
   /// Short description of what the agent does.

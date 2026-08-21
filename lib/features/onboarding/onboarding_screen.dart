@@ -295,7 +295,8 @@ class _ProblemSlide extends StatelessWidget {
       body: 'Every month, thousands of Nepali buyers lose money to '
           'TikTok and Instagram sellers who disappear after payment. '
           'There was no way to know who to trust.',
-      footnote: 'NPR 40 crore lost in 2023 alone (Nepal Police Report)',
+      footnote:
+          '20,526 cybercrime complaints registered last fiscal year (Nepal Police Cyber Bureau)',
     );
   }
 }

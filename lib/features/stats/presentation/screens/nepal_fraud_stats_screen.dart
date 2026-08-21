@@ -36,14 +36,15 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
   /// True when the amount-lost aggregate was denied (guest user).
   bool _lostNeedsSignIn = false;
 
-  // Registered complaints per year (Nepal Police Annual Report 2023;
-  // 2024 projected). The 2023 value is the 340% spike.
+  // Registered cybercrime complaints per fiscal year, Nepal Police
+  // Cyber Bureau, as reported by The Kathmandu Post and The Himalayan
+  // Times. The latest year reached 20,526 complaints.
   static const _complaintsByYear = [
-    (2020, 280.0),
-    (2021, 390.0),
-    (2022, 545.0),
-    (2023, 2400.0),
-    (2024, 2900.0),
+    (2020, 3906.0),
+    (2021, 4741.0),
+    (2022, 9013.0),
+    (2023, 19000.0),
+    (2024, 20526.0),
   ];
 
   static const _fraudTypes = [
@@ -186,7 +187,7 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
           // ── Official Nepal Police data ──────────────────────────────────
           _sectionHeader('Official Nepal Police Data', _red),
           const SizedBox(height: 4),
-          Text('Registered social commerce fraud complaints, 2020 to 2024',
+          Text('Registered cybercrime complaints, Nepal Police Cyber Bureau',
               style: GoogleFonts.inter(fontSize: 11.5, color: _textDim)),
           const SizedBox(height: 14),
           _chartCard(
@@ -207,6 +208,7 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
+                      interval: 5000,
                       reservedSize: 42,
                       getTitlesWidget: (v, _) => Text(
                         v >= 1000
@@ -220,6 +222,7 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
+                      interval: 1,
                       getTitlesWidget: (v, _) => Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text('${2020 + v.toInt()}',
@@ -242,8 +245,8 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
                     dotData: FlDotData(
                       show: true,
                       getDotPainter: (spot, _, _, _) => FlDotCirclePainter(
-                        radius: spot.x == 3 ? 6 : 3.5,
-                        color: spot.x == 3 ? _red : Colors.white,
+                        radius: spot.x == 4 ? 6 : 3.5,
+                        color: spot.x == 4 ? _red : Colors.white,
                         strokeColor: _red,
                         strokeWidth: 2,
                       ),
@@ -258,25 +261,25 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text('The 2023 spike is a 340% year-on-year increase.',
+          Text('Complaints have risen sharply, reaching 20,526 last fiscal year.',
               style: GoogleFonts.inter(fontSize: 11, color: _textDim)),
           const SizedBox(height: 14),
 
           // 4 headline stat boxes
           Row(children: [
-            Expanded(child: _statBox('340%', 'complaint increase in 2023')),
+            Expanded(child: _statBox('20,526', 'cybercrime complaints last fiscal year')),
             const SizedBox(width: 10),
-            Expanded(child: _statBox('NPR 40Cr+', 'estimated losses 2023')),
+            Expanded(child: _statBox('155', 'arrests made')),
           ]),
           const SizedBox(height: 10),
           Row(children: [
-            Expanded(child: _statBox('560%', 'TikTok fraud growth, 2022 to 2023')),
+            Expanded(child: _statBox('1,835', 'online fraud cases, 2023/24')),
             const SizedBox(width: 10),
             Expanded(
-                child: _statBox('2,400+', 'registered complaints 2023')),
+                child: _statBox('52 / day', 'cybercrime cases last fiscal')),
           ]),
           const SizedBox(height: 6),
-          Text('Source: Nepal Police Annual Report 2023, Cybercrime Bureau',
+          Text('Source: Nepal Police Cyber Bureau; The Kathmandu Post; The Himalayan Times',
               style: GoogleFonts.inter(fontSize: 10.5, color: _textDim)),
 
           const SizedBox(height: 26),
@@ -406,7 +409,7 @@ class _NepalFraudStatsScreenState extends State<NepalFraudStatsScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text('Share of complaints by platform (2023 registered cases)',
+          Text('Platforms where social commerce fraud is most reported (indicative)',
               style: GoogleFonts.inter(fontSize: 11, color: _textDim)),
 
           const SizedBox(height: 26),

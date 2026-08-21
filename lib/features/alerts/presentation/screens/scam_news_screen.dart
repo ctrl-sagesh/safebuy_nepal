@@ -452,6 +452,7 @@ class _StatsTab extends StatelessWidget {
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
+                          interval: 1,
                           getTitlesWidget: (v, _) => Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
@@ -490,7 +491,7 @@ class _StatsTab extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '2023: +340% spike in registered complaints. '
+                'Over 20,000 cybercrime complaints registered last fiscal year. '
                 'SafeBuy Nepal launched in response.',
                 style: GoogleFonts.inter(
                   fontSize: 11.5,

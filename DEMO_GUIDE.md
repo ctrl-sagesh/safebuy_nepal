@@ -68,7 +68,7 @@
   ETA 2063/CPA 2075 complaint → Cybercrime Bureau (unique differentiator)
 - **KYC verification framework** (aligned with ETA 2063)
 - **Pure Firebase architecture** (Auth + Firestore + Storage + Functions)
-- **4 rule-based AI agents** (no external API cost)
+- **4 rule-based agents** (no external API cost)
 - **Seller-side value**: 48h response window, clean-record loyalty badges,
   verification card with locked QR (honest sellers gain, not just buyers)
 
